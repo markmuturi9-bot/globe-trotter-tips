@@ -3,6 +3,7 @@ import { Globe, MapPin, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { TipCard } from '@/components/tips/TipCard';
 import { TipDetail } from '@/components/tips/TipDetail';
+import { InteractiveMap } from '@/components/map/InteractiveMap';
 import { useCountriesWithTips, useTipsByCountry } from '@/hooks/useTips';
 import type { Tip, Country } from '@/types';
 
@@ -25,6 +26,17 @@ export function MapView() {
   const tipsWithoutLocation = useMemo(() => 
     countryTips?.filter(tip => !tip.latitude && !tip.longitude) || [], 
     [countryTips]
+  );
+
+  const mapMarkers = useMemo(() => 
+    countriesWithTips.map(country => ({
+      id: country.id,
+      position: [country.latitude || 0, country.longitude || 0] as [number, number],
+      label: country.code,
+      count: country.tipCount,
+      onClick: () => setSelectedCountry(country),
+    })),
+    [countriesWithTips]
   );
   
   if (isLoading) {
@@ -49,7 +61,7 @@ export function MapView() {
             className="mb-2"
           >
             <ArrowLeft className="w-4 h-4 mr-1" />
-            Back to Globe
+            Back to Map
           </Button>
           <h2 className="font-serif text-2xl font-semibold">{selectedCountry.name}</h2>
           <p className="text-sm text-muted-foreground">
@@ -101,52 +113,8 @@ export function MapView() {
   
   return (
     <div className="flex-1 flex flex-col">
-      <div className="flex-1 relative bg-gradient-to-b from-accent/30 to-background overflow-hidden">
-        {/* Visual globe representation */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="relative w-64 h-64 md:w-96 md:h-96">
-            {/* Globe circle */}
-            <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border-2 border-primary/20" />
-            
-            {/* Decorative lines */}
-            <div className="absolute inset-4 rounded-full border border-dashed border-primary/10" />
-            <div className="absolute inset-8 rounded-full border border-dashed border-primary/10" />
-            <div className="absolute inset-12 rounded-full border border-dashed border-primary/10" />
-            
-            {/* Center icon */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <Globe className="w-16 h-16 md:w-24 md:h-24 text-primary/40" />
-            </div>
-          </div>
-        </div>
-        
-        {/* Country markers floating around */}
-        <div className="absolute inset-0 pointer-events-none">
-          {countriesWithTips.slice(0, 8).map((country, index) => {
-            const angle = (index / 8) * 2 * Math.PI;
-            const radius = 35 + (index % 2) * 10;
-            const x = 50 + Math.cos(angle) * radius;
-            const y = 50 + Math.sin(angle) * radius;
-            
-            return (
-              <button
-                key={country.id}
-                onClick={() => setSelectedCountry(country)}
-                className="absolute pointer-events-auto transform -translate-x-1/2 -translate-y-1/2 group"
-                style={{ left: `${x}%`, top: `${y}%` }}
-              >
-                <div className="flex flex-col items-center animate-fade-in" style={{ animationDelay: `${index * 100}ms` }}>
-                  <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-medium text-sm shadow-medium group-hover:scale-110 transition-transform">
-                    {country.tipCount}
-                  </div>
-                  <span className="text-xs font-medium mt-1 bg-card/90 px-2 py-0.5 rounded shadow-soft">
-                    {country.code}
-                  </span>
-                </div>
-              </button>
-            );
-          })}
-        </div>
+      <div className="flex-1 relative">
+        <InteractiveMap markers={mapMarkers} />
       </div>
       
       {/* Country list below */}

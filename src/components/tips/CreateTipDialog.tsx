@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/select';
 import { useCountries, useCreateTip } from '@/hooks/useTips';
 import { useToast } from '@/hooks/use-toast';
+import { ImageUpload } from './ImageUpload';
 import type { TipCategory } from '@/types';
 import { CATEGORY_LABELS, CATEGORY_ICONS } from '@/types';
 
@@ -34,6 +35,7 @@ export function CreateTipDialog({ onClose }: CreateTipDialogProps) {
     description: '',
     address: '',
   });
+  const [images, setImages] = useState<string[]>([]);
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,6 +56,7 @@ export function CreateTipDialog({ onClose }: CreateTipDialogProps) {
         title: formData.title,
         description: formData.description,
         address: formData.address || undefined,
+        images: images.length > 0 ? images : undefined,
       });
       
       toast({
@@ -62,10 +65,11 @@ export function CreateTipDialog({ onClose }: CreateTipDialogProps) {
       });
       
       onClose();
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Create tip error:', error);
       toast({
         title: 'Error',
-        description: 'Failed to create tip. Please try again.',
+        description: error?.message || 'Failed to create tip. Please try again.',
         variant: 'destructive',
       });
     }
@@ -152,6 +156,10 @@ export function CreateTipDialog({ onClose }: CreateTipDialogProps) {
             />
           </div>
           
+          <div className="space-y-2">
+            <Label>Photos (optional)</Label>
+            <ImageUpload images={images} onImagesChange={setImages} maxImages={5} />
+          </div>
           <div className="flex gap-3 pt-4">
             <Button type="button" variant="outline" className="flex-1" onClick={onClose}>
               Cancel
