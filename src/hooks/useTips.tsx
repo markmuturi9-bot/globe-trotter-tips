@@ -121,19 +121,42 @@ export function useCreateTip() {
   
   return useMutation({
     mutationFn: async (input: CreateTipInput) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      
+      if (authError) {
+        console.error('Auth error:', authError);
+        throw new Error('Authentication error: ' + authError.message);
+      }
+      
+      if (!user) {
+        console.error('No user found');
+        throw new Error('Not authenticated - please sign in again');
+      }
+      
+      console.log('Creating tip for user:', user.id, 'with data:', input);
       
       const { data, error } = await supabase
         .from('tips')
         .insert({
           user_id: user.id,
-          ...input,
+          country_id: input.country_id,
+          category: input.category,
+          title: input.title,
+          description: input.description,
+          address: input.address || null,
+          latitude: input.latitude || null,
+          longitude: input.longitude || null,
+          images: input.images || null,
         })
         .select()
         .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase insert error:', error);
+        throw new Error(error.message);
+      }
+      
+      console.log('Tip created successfully:', data);
       return data;
     },
     onSuccess: () => {
