@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,6 +14,7 @@ import {
 import { useCountries, useCreateTip } from '@/hooks/useTips';
 import { useToast } from '@/hooks/use-toast';
 import { ImageUpload } from './ImageUpload';
+import { AddressAutocomplete } from './AddressAutocomplete';
 import type { TipCategory } from '@/types';
 import { CATEGORY_LABELS, CATEGORY_ICONS } from '@/types';
 
@@ -34,9 +35,27 @@ export function CreateTipDialog({ onClose }: CreateTipDialogProps) {
     title: '',
     description: '',
     address: '',
+    latitude: null as number | null,
+    longitude: null as number | null,
   });
   const [images, setImages] = useState<string[]>([]);
+
+  // Get the selected country's code for address filtering
+  const selectedCountryCode = useMemo(() => {
+    if (!countries || !formData.country_id) return undefined;
+    const country = countries.find(c => c.id === formData.country_id);
+    return country?.code;
+  }, [countries, formData.country_id]);
   
+  const handleAddressSelect = (result: { address: string; position: { lat: number; lng: number } }) => {
+    setFormData(prev => ({
+      ...prev,
+      address: result.address,
+      latitude: result.position.lat,
+      longitude: result.position.lng,
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -56,6 +75,8 @@ export function CreateTipDialog({ onClose }: CreateTipDialogProps) {
         title: formData.title,
         description: formData.description,
         address: formData.address || undefined,
+        latitude: formData.latitude || undefined,
+        longitude: formData.longitude || undefined,
         images: images.length > 0 ? images : undefined,
       });
       
@@ -90,7 +111,14 @@ export function CreateTipDialog({ onClose }: CreateTipDialogProps) {
             <Label htmlFor="country">Country *</Label>
             <Select
               value={formData.country_id}
-              onValueChange={(value) => setFormData(prev => ({ ...prev, country_id: value }))}
+              onValueChange={(value) => setFormData(prev => ({ 
+                ...prev, 
+                country_id: value,
+                // Reset address when country changes
+                address: '',
+                latitude: null,
+                longitude: null,
+              }))}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select a country" />
@@ -148,12 +176,31 @@ export function CreateTipDialog({ onClose }: CreateTipDialogProps) {
           
           <div className="space-y-2">
             <Label htmlFor="address">Address (optional)</Label>
-            <Input
-              id="address"
-              value={formData.address}
-              onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
-              placeholder="Street address or location name"
-            />
+            {formData.country_id ? (
+              <AddressAutocomplete
+                value={formData.address}
+                onChange={(value) => setFormData(prev => ({ 
+                  ...prev, 
+                  address: value,
+                  // Clear coordinates if manually editing
+                  latitude: null,
+                  longitude: null,
+                }))}
+                onSelect={handleAddressSelect}
+                countryCode={selectedCountryCode}
+                placeholder="Search for an address..."
+              />
+            ) : (
+              <Input
+                disabled
+                placeholder="Select a country first"
+              />
+            )}
+            {formData.latitude && formData.longitude && (
+              <p className="text-xs text-muted-foreground">
+                📍 Location saved ({formData.latitude.toFixed(4)}, {formData.longitude.toFixed(4)})
+              </p>
+            )}
           </div>
           
           <div className="space-y-2">
