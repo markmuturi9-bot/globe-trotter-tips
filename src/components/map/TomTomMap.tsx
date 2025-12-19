@@ -3,6 +3,7 @@ import tt from '@tomtom-international/web-sdk-maps';
 import '@tomtom-international/web-sdk-maps/dist/maps.css';
 import type { MapConfig, MapMarker } from './MapProvider';
 import { MAP_DEFAULTS } from './MapProvider';
+import { supabase } from '@/integrations/supabase/client';
 
 interface TomTomMapProps {
   config?: Partial<MapConfig>;
@@ -23,8 +24,29 @@ export function TomTomMap({
   const mapInstanceRef = useRef<tt.Map | null>(null);
   const markersRef = useRef<tt.Marker[]>([]);
   const [mapLoaded, setMapLoaded] = useState(false);
-  
-  const apiKey = import.meta.env.VITE_TOMTOM_API_KEY;
+  const [apiKey, setApiKey] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch API key from edge function
+  useEffect(() => {
+    async function fetchApiKey() {
+      try {
+        const { data, error } = await supabase.functions.invoke('get-tomtom-key');
+        if (error) {
+          setError('Failed to fetch API key');
+          return;
+        }
+        if (data?.apiKey) {
+          setApiKey(data.apiKey);
+        } else if (data?.error) {
+          setError(data.error);
+        }
+      } catch (e) {
+        setError('Failed to connect to server');
+      }
+    }
+    fetchApiKey();
+  }, []);
 
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current || !apiKey) return;
@@ -36,7 +58,6 @@ export function TomTomMap({
       container: mapRef.current,
       center: [mapConfig.center[1], mapConfig.center[0]], // TomTom uses [lng, lat]
       zoom: mapConfig.zoom,
-      style: 'https://api.tomtom.com/style/2/custom/style/dG9tdG9tQEBAZElLSjFLckMxdkN4a3FjTTsxZTg1NjQ1Mi05OTBlLTRmMmQtYWFjNi02NjI2ZWYyZjkyYjM=.json?key=' + apiKey,
     });
 
     mapInstanceRef.current.on('load', () => {
@@ -86,10 +107,21 @@ export function TomTomMap({
   // Country highlighting is handled via markers with country codes
   // TomTom doesn't easily support vector tile filtering like Mapbox
 
+  if (error) {
+    return (
+      <div className={`w-full h-full flex items-center justify-center bg-muted ${className}`}>
+        <p className="text-muted-foreground">{error}</p>
+      </div>
+    );
+  }
+
   if (!apiKey) {
     return (
       <div className={`w-full h-full flex items-center justify-center bg-muted ${className}`}>
-        <p className="text-muted-foreground">TomTom API key not configured</p>
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-muted-foreground">Loading map...</p>
+        </div>
       </div>
     );
   }
