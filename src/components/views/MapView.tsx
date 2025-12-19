@@ -3,7 +3,7 @@ import { Globe, MapPin, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { TipCard } from '@/components/tips/TipCard';
 import { TipDetail } from '@/components/tips/TipDetail';
-import { InteractiveMap } from '@/components/map/InteractiveMap';
+import { TomTomMap } from '@/components/map/TomTomMap';
 import { useCountriesWithTips, useTipsByCountry } from '@/hooks/useTips';
 import type { Tip, Country } from '@/types';
 
@@ -36,6 +36,11 @@ export function MapView() {
       count: country.tipCount,
       onClick: () => setSelectedCountry(country),
     })),
+    [countriesWithTips]
+  );
+
+  const highlightedCountryCodes = useMemo(() => 
+    countriesWithTips.map(country => country.code),
     [countriesWithTips]
   );
   
@@ -112,33 +117,12 @@ export function MapView() {
   }
   
   return (
-    <div className="flex-1 flex flex-col">
-      <div className="flex-1 relative">
-        <InteractiveMap markers={mapMarkers} />
-      </div>
-      
-      {/* Country list below */}
-      <div className="p-4 border-t border-border bg-card">
-        <h3 className="text-sm font-medium text-muted-foreground mb-3">
-          Countries with tips ({countriesWithTips.length})
-        </h3>
-        <div className="flex flex-wrap gap-2">
-          {countriesWithTips.map(country => (
-            <button
-              key={country.id}
-              onClick={() => setSelectedCountry(country)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-secondary hover:bg-secondary/80 rounded-full text-sm transition-colors"
-            >
-              <span className="font-medium">{country.name}</span>
-              <span className="text-xs text-muted-foreground">({country.tipCount})</span>
-            </button>
-          ))}
-          
-          {countriesWithTips.length === 0 && (
-            <p className="text-sm text-muted-foreground">No tips have been shared yet. Be the first!</p>
-          )}
-        </div>
-      </div>
+    <div className="flex-1 flex flex-col h-full">
+      <TomTomMap 
+        markers={mapMarkers} 
+        highlightedCountryCodes={highlightedCountryCodes}
+        className="flex-1"
+      />
     </div>
   );
 }
