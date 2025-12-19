@@ -1,12 +1,16 @@
 import { useState, useMemo } from 'react';
-import { Search, ChevronDown, ChevronRight, Filter } from 'lucide-react';
+import { Search, ChevronDown, ChevronRight, Filter, ArrowUpDown } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuCheckboxItem,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
 import { TipCard } from '@/components/tips/TipCard';
 import { TipDetail } from '@/components/tips/TipDetail';
@@ -16,6 +20,8 @@ import { CATEGORY_LABELS, CATEGORY_ICONS } from '@/types';
 
 const allCategories: TipCategory[] = ['general', 'food', 'attractions', 'activities', 'accommodation', 'other'];
 
+type SortOption = 'alphabetical' | 'most_tips';
+
 export function ListView() {
   const { data: tips, isLoading } = useTips();
   const { data: countries } = useCountries();
@@ -23,6 +29,7 @@ export function ListView() {
   const [selectedCategories, setSelectedCategories] = useState<Set<TipCategory>>(new Set(allCategories));
   const [expandedCountries, setExpandedCountries] = useState<Set<string>>(new Set());
   const [selectedTip, setSelectedTip] = useState<Tip | null>(null);
+  const [sortBy, setSortBy] = useState<SortOption>('alphabetical');
   
   const countriesMap = useMemo(() => {
     if (!countries) return new Map();
@@ -44,28 +51,34 @@ export function ListView() {
     });
     
     // Group by country
-    const grouped = new Map<string, { countryName: string; tips: Map<TipCategory, Tip[]> }>();
+    const grouped = new Map<string, { countryName: string; tipCount: number; tips: Map<TipCategory, Tip[]> }>();
     
     filtered.forEach(tip => {
       const countryId = tip.country_id;
       const countryName = tip.countries?.name || countriesMap.get(countryId)?.name || 'Unknown';
       
       if (!grouped.has(countryId)) {
-        grouped.set(countryId, { countryName, tips: new Map() });
+        grouped.set(countryId, { countryName, tipCount: 0, tips: new Map() });
       }
       
       const countryGroup = grouped.get(countryId)!;
+      countryGroup.tipCount++;
       if (!countryGroup.tips.has(tip.category)) {
         countryGroup.tips.set(tip.category, []);
       }
       countryGroup.tips.get(tip.category)!.push(tip);
     });
     
-    // Sort countries alphabetically
-    return new Map([...grouped.entries()].sort((a, b) => 
-      a[1].countryName.localeCompare(b[1].countryName)
-    ));
-  }, [tips, searchQuery, selectedCategories, countriesMap]);
+    // Sort based on selected option
+    const sortedEntries = [...grouped.entries()].sort((a, b) => {
+      if (sortBy === 'most_tips') {
+        return b[1].tipCount - a[1].tipCount; // Most tips first
+      }
+      return a[1].countryName.localeCompare(b[1].countryName); // Alphabetical
+    });
+    
+    return new Map(sortedEntries);
+  }, [tips, searchQuery, selectedCategories, countriesMap, sortBy]);
   
   const toggleCountry = (countryId: string) => {
     setExpandedCountries(prev => {
@@ -121,6 +134,7 @@ export function ListView() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuLabel>Categories</DropdownMenuLabel>
               {allCategories.map(category => (
                 <DropdownMenuCheckboxItem
                   key={category}
@@ -130,6 +144,25 @@ export function ListView() {
                   {CATEGORY_ICONS[category]} {CATEGORY_LABELS[category]}
                 </DropdownMenuCheckboxItem>
               ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="icon">
+                <ArrowUpDown className="w-4 h-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuLabel>Sort by</DropdownMenuLabel>
+              <DropdownMenuRadioGroup value={sortBy} onValueChange={(v) => setSortBy(v as SortOption)}>
+                <DropdownMenuRadioItem value="alphabetical">
+                  Alphabetical (A-Z)
+                </DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="most_tips">
+                  Most tips first
+                </DropdownMenuRadioItem>
+              </DropdownMenuRadioGroup>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
