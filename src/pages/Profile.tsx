@@ -1,18 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '@/components/layout/Header';
 import { MainNav } from '@/components/layout/MainNav';
-import { MapView } from '@/components/views/MapView';
-import { ListView } from '@/components/views/ListView';
 import { ProfileView } from '@/components/views/ProfileView';
 import { CreateTipDialog } from '@/components/tips/CreateTipDialog';
 import { useAuth } from '@/hooks/useAuth';
-import type { ViewType } from '@/types';
+import { useState } from 'react';
 
-export default function Index() {
+export default function Profile() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
-  const [activeView, setActiveView] = useState<ViewType>('map');
   const [showCreateTip, setShowCreateTip] = useState(false);
   
   useEffect(() => {
@@ -41,17 +38,15 @@ export default function Index() {
       <Header onCreateTip={() => setShowCreateTip(true)} />
       
       <div className="hidden md:block">
-        <MainNav activeView={activeView} onViewChange={setActiveView} />
+        <MainNav activeView="profile" onViewChange={(view) => navigate(`/${view}`)} />
       </div>
       
       <main className="flex-1 flex flex-col pb-16 md:pb-0">
-        {activeView === 'map' && <MapView />}
-        {activeView === 'list' && <ListView />}
-        {activeView === 'profile' && <ProfileView />}
+        <ProfileView />
       </main>
       
       <div className="md:hidden">
-        <MainNav activeView={activeView} onViewChange={setActiveView} />
+        <MainNav activeView="profile" onViewChange={(view) => navigate(`/${view}`)} />
       </div>
       
       {showCreateTip && (
