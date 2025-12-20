@@ -165,6 +165,46 @@ export function useCreateTip() {
   });
 }
 
+interface UpdateTipInput {
+  id: string;
+  country_id?: string;
+  category?: TipCategory;
+  title?: string;
+  description?: string;
+  address?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  images?: string[];
+}
+
+export function useUpdateTip() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (input: UpdateTipInput) => {
+      const { id, ...updates } = input;
+      
+      const { data, error } = await supabase
+        .from('tips')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+      
+      if (error) {
+        console.error('Supabase update error:', error);
+        throw new Error(error.message);
+      }
+      
+      console.log('Tip updated successfully:', data);
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tips'] });
+    },
+  });
+}
+
 export function useDeleteTip() {
   const queryClient = useQueryClient();
   
