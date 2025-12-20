@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { Settings, LogOut, MapPin, Calendar, FileText, Globe } from 'lucide-react';
+import { Settings, LogOut, MapPin, Calendar, FileText, Globe, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { TipCard } from '@/components/tips/TipCard';
 import { TipDetail } from '@/components/tips/TipDetail';
+import { BulkTipImport } from '@/components/tips/BulkTipImport';
 import { useAuth } from '@/hooks/useAuth';
 import { useTipsByUser } from '@/hooks/useTips';
 import { supabase } from '@/integrations/supabase/client';
@@ -19,6 +20,7 @@ export function ProfileView() {
   const { toast } = useToast();
   const [selectedTip, setSelectedTip] = useState<Tip | null>(null);
   const [showSettings, setShowSettings] = useState(false);
+  const [showBulkImport, setShowBulkImport] = useState(false);
   
   const uniqueCountries = new Set(userTips?.map(tip => tip.country_id) || []);
   
@@ -141,7 +143,17 @@ export function ProfileView() {
       
       {/* User Tips */}
       <div className="p-4">
-        <h3 className="font-medium mb-4">Your Tips</h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-medium">Your Tips</h3>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowBulkImport(true)}
+          >
+            <Sparkles className="w-4 h-4 mr-2" />
+            AI Import
+          </Button>
+        </div>
         
         {loadingTips ? (
           <p className="text-sm text-muted-foreground">Loading tips...</p>
@@ -166,6 +178,10 @@ export function ProfileView() {
       
       {selectedTip && (
         <TipDetail tip={selectedTip} onClose={() => setSelectedTip(null)} />
+      )}
+      
+      {showBulkImport && (
+        <BulkTipImport onClose={() => setShowBulkImport(false)} />
       )}
     </div>
   );
