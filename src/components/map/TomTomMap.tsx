@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import tt from '@tomtom-international/web-sdk-maps';
 import '@tomtom-international/web-sdk-maps/dist/maps.css';
+import Supercluster from 'supercluster';
 import type { MapConfig, MapMarker } from './MapProvider';
 import { MAP_DEFAULTS } from './MapProvider';
 import { supabase } from '@/integrations/supabase/client';
@@ -12,6 +13,18 @@ interface TomTomMapProps {
   className?: string;
   onMarkerClick?: (markerId: string) => void;
 }
+
+type ClusterProperties = {
+  cluster: boolean;
+  cluster_id?: number;
+  point_count?: number;
+  point_count_abbreviated?: string;
+  markerId?: string;
+  markerLabel?: string;
+  markerCount?: number;
+};
+
+type PointFeature = GeoJSON.Feature<GeoJSON.Point, ClusterProperties>;
 
 export function TomTomMap({ 
   config, 
@@ -26,6 +39,40 @@ export function TomTomMap({
   const [mapLoaded, setMapLoaded] = useState(false);
   const [apiKey, setApiKey] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [zoom, setZoom] = useState(config?.zoom ?? MAP_DEFAULTS.zoom);
+  const [bounds, setBounds] = useState<[number, number, number, number] | null>(null);
+
+  // Create supercluster index
+  const supercluster = useMemo(() => {
+    const index = new Supercluster<ClusterProperties>({
+      radius: 60,
+      maxZoom: 16,
+      minZoom: 0,
+    });
+
+    const points: PointFeature[] = markers.map(marker => ({
+      type: 'Feature',
+      properties: {
+        cluster: false,
+        markerId: marker.id,
+        markerLabel: marker.label,
+        markerCount: marker.count,
+      },
+      geometry: {
+        type: 'Point',
+        coordinates: [marker.position[1], marker.position[0]], // [lng, lat]
+      },
+    }));
+
+    index.load(points);
+    return index;
+  }, [markers]);
+
+  // Get clusters based on current zoom and bounds
+  const clusters = useMemo(() => {
+    if (!bounds) return [];
+    return supercluster.getClusters(bounds, Math.floor(zoom));
+  }, [supercluster, bounds, zoom]);
 
   // Fetch API key from edge function
   useEffect(() => {
@@ -48,6 +95,14 @@ export function TomTomMap({
     fetchApiKey();
   }, []);
 
+  const updateBoundsAndZoom = useCallback(() => {
+    if (!mapInstanceRef.current) return;
+    const b = mapInstanceRef.current.getBounds();
+    const z = mapInstanceRef.current.getZoom();
+    setBounds([b.getWest(), b.getSouth(), b.getEast(), b.getNorth()]);
+    setZoom(z);
+  }, []);
+
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current || !apiKey) return;
 
@@ -62,15 +117,19 @@ export function TomTomMap({
 
     mapInstanceRef.current.on('load', () => {
       setMapLoaded(true);
+      updateBoundsAndZoom();
     });
+
+    mapInstanceRef.current.on('moveend', updateBoundsAndZoom);
+    mapInstanceRef.current.on('zoomend', updateBoundsAndZoom);
 
     return () => {
       mapInstanceRef.current?.remove();
       mapInstanceRef.current = null;
     };
-  }, [apiKey]);
+  }, [apiKey, config, updateBoundsAndZoom]);
 
-  // Update markers when they change
+  // Update markers when clusters change
   useEffect(() => {
     if (!mapInstanceRef.current || !mapLoaded) return;
 
@@ -78,34 +137,63 @@ export function TomTomMap({
     markersRef.current.forEach(marker => marker.remove());
     markersRef.current = [];
 
-    // Add new markers
-    markers.forEach((marker) => {
+    // Add cluster/individual markers
+    clusters.forEach((cluster) => {
+      const [lng, lat] = cluster.geometry.coordinates;
+      const props = cluster.properties;
+
       const el = document.createElement('div');
       el.className = 'tomtom-custom-marker';
-      el.innerHTML = `
-        <div class="relative group cursor-pointer">
-          <div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-primary-foreground font-medium text-sm shadow-lg border-2 border-background transition-transform hover:scale-110">
-            ${marker.count ?? ''}
+
+      if (props.cluster) {
+        // Cluster marker
+        const count = props.point_count || 0;
+        el.innerHTML = `
+          <div class="relative group cursor-pointer">
+            <div class="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-primary-foreground font-semibold text-sm shadow-lg border-2 border-background transition-transform hover:scale-110">
+              ${count}
+            </div>
           </div>
-          ${marker.label ? `<span class="absolute -bottom-5 left-1/2 -translate-x-1/2 text-xs font-medium bg-card px-2 py-0.5 rounded shadow whitespace-nowrap">${marker.label}</span>` : ''}
-        </div>
-      `;
-      
-      el.addEventListener('click', () => {
-        marker.onClick?.();
-        onMarkerClick?.(marker.id);
-      });
+        `;
+        
+        el.addEventListener('click', () => {
+          // Zoom into the cluster
+          if (mapInstanceRef.current && props.cluster_id !== undefined) {
+            const expansionZoom = Math.min(
+              supercluster.getClusterExpansionZoom(props.cluster_id),
+              16
+            );
+            mapInstanceRef.current.setCenter([lng, lat]);
+            mapInstanceRef.current.setZoom(expansionZoom);
+          }
+        });
+      } else {
+        // Individual marker
+        const markerId = props.markerId!;
+        const marker = markers.find(m => m.id === markerId);
+        
+        el.innerHTML = `
+          <div class="relative group cursor-pointer">
+            <div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-primary-foreground font-medium text-sm shadow-lg border-2 border-background transition-transform hover:scale-110">
+              ${props.markerCount ?? ''}
+            </div>
+            ${props.markerLabel ? `<span class="absolute -bottom-5 left-1/2 -translate-x-1/2 text-xs font-medium bg-card px-2 py-0.5 rounded shadow whitespace-nowrap">${props.markerLabel}</span>` : ''}
+          </div>
+        `;
+        
+        el.addEventListener('click', () => {
+          marker?.onClick?.();
+          onMarkerClick?.(markerId);
+        });
+      }
 
       const ttMarker = new tt.Marker({ element: el })
-        .setLngLat([marker.position[1], marker.position[0]]) // TomTom uses [lng, lat]
+        .setLngLat([lng, lat])
         .addTo(mapInstanceRef.current!);
       
       markersRef.current.push(ttMarker);
     });
-  }, [markers, onMarkerClick, mapLoaded]);
-
-  // Country highlighting is handled via markers with country codes
-  // TomTom doesn't easily support vector tile filtering like Mapbox
+  }, [clusters, markers, onMarkerClick, mapLoaded, supercluster]);
 
   if (error) {
     return (
