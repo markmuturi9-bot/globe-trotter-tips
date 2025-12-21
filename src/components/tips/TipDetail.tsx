@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { X, MapPin, Clock, User, ExternalLink, Pencil, Trash2 } from 'lucide-react';
+import { X, MapPin, Clock, User, ExternalLink, Pencil, Trash2, Languages, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CategoryBadge } from './CategoryBadge';
 import { EditTipDialog } from './EditTipDialog';
 import { useAuth } from '@/hooks/useAuth';
 import { useDeleteTip } from '@/hooks/useTips';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import type { Tip } from '@/types';
 import { format } from 'date-fns';
 import {
@@ -30,6 +31,10 @@ export function TipDetail({ tip, onClose }: TipDetailProps) {
   const deleteTip = useDeleteTip();
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
+  const [isTranslating, setIsTranslating] = useState(false);
+  const [translatedTitle, setTranslatedTitle] = useState<string | null>(null);
+  const [translatedDescription, setTranslatedDescription] = useState<string | null>(null);
+  const [isShowingTranslation, setIsShowingTranslation] = useState(false);
   
   const countryName = tip.countries?.name || 'Unknown';
   const username = tip.profiles?.username || 'Anonymous';
@@ -51,6 +56,51 @@ export function TipDetail({ tip, onClose }: TipDetailProps) {
       });
     }
   };
+
+  const handleTranslate = async () => {
+    if (isShowingTranslation) {
+      setIsShowingTranslation(false);
+      return;
+    }
+
+    if (translatedTitle && translatedDescription) {
+      setIsShowingTranslation(true);
+      return;
+    }
+
+    setIsTranslating(true);
+    try {
+      // Get user's browser language
+      const userLang = navigator.language.split('-')[0] || 'en';
+      
+      const [titleResult, descResult] = await Promise.all([
+        supabase.functions.invoke('translate-text', {
+          body: { text: tip.title, targetLanguage: userLang }
+        }),
+        supabase.functions.invoke('translate-text', {
+          body: { text: tip.description, targetLanguage: userLang }
+        })
+      ]);
+
+      if (titleResult.error) throw titleResult.error;
+      if (descResult.error) throw descResult.error;
+
+      setTranslatedTitle(titleResult.data.translatedText);
+      setTranslatedDescription(descResult.data.translatedText);
+      setIsShowingTranslation(true);
+    } catch (error: any) {
+      toast({
+        title: 'Translation failed',
+        description: error?.message || 'Could not translate the tip.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsTranslating(false);
+    }
+  };
+
+  const displayTitle = isShowingTranslation && translatedTitle ? translatedTitle : tip.title;
+  const displayDescription = isShowingTranslation && translatedDescription ? translatedDescription : tip.description;
   
   return (
     <>
@@ -59,6 +109,19 @@ export function TipDetail({ tip, onClose }: TipDetailProps) {
           <div className="flex items-center justify-between p-4 border-b border-border">
             <CategoryBadge category={tip.category} />
             <div className="flex items-center gap-1">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={handleTranslate}
+                disabled={isTranslating}
+                title={isShowingTranslation ? "Show original" : "Translate"}
+              >
+                {isTranslating ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Languages className={`w-4 h-4 ${isShowingTranslation ? 'text-primary' : ''}`} />
+                )}
+              </Button>
               {isOwner && (
                 <>
                   <Button variant="ghost" size="icon" onClick={() => setIsEditing(true)}>
@@ -94,7 +157,11 @@ export function TipDetail({ tip, onClose }: TipDetailProps) {
           </div>
           
           <div className="p-6 overflow-y-auto max-h-[calc(100%-4rem)]">
-            <h2 className="font-serif text-2xl font-semibold mb-4">{tip.title}</h2>
+            <h2 className="font-serif text-2xl font-semibold mb-4">{displayTitle}</h2>
+            
+            {isShowingTranslation && (
+              <p className="text-xs text-muted-foreground mb-2 italic">Translated</p>
+            )}
             
             <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground mb-6">
               <span className="flex items-center gap-1.5">
@@ -112,7 +179,7 @@ export function TipDetail({ tip, onClose }: TipDetailProps) {
             </div>
             
             <div className="prose prose-sm max-w-none mb-6">
-              <p className="text-foreground whitespace-pre-wrap">{tip.description}</p>
+              <p className="text-foreground whitespace-pre-wrap">{displayDescription}</p>
             </div>
             
             {tip.address && (
