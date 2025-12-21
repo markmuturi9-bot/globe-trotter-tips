@@ -1,10 +1,10 @@
 import { useState, useMemo } from 'react';
-import { Globe, MapPin, ArrowLeft } from 'lucide-react';
+import { Globe, MapPin, ArrowLeft, ChevronDown, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { TipCard } from '@/components/tips/TipCard';
 import { TipDetail } from '@/components/tips/TipDetail';
 import { TomTomMap } from '@/components/map/TomTomMap';
 import { useCountriesWithTips, useTips } from '@/hooks/useTips';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import type { Tip, Country } from '@/types';
 import type { MapMarker } from '@/components/map/MapProvider';
 
@@ -17,6 +17,7 @@ export function MapView() {
   const { data: allTips, isLoading: tipsLoading } = useTips();
   const [selectedCountry, setSelectedCountry] = useState<CountryWithTips | null>(null);
   const [selectedTip, setSelectedTip] = useState<Tip | null>(null);
+  const [noLocationOpen, setNoLocationOpen] = useState(false);
 
   // Tips for the selected country
   const countryTips = useMemo(() => {
@@ -71,7 +72,10 @@ export function MapView() {
         position: [country.latitude || 0, country.longitude || 0] as [number, number],
         label: country.code,
         count: country.tipCount,
-        onClick: () => setSelectedCountry(country),
+        onClick: () => {
+          setSelectedCountry(country);
+          setNoLocationOpen(false);
+        },
       }));
     }
   }, [selectedCountry, countriesWithTips, tipsWithLocation, tipsWithoutLocation]);
@@ -151,20 +155,23 @@ export function MapView() {
             )}
             
             {tipsWithoutLocation.length > 0 && (
-              <div>
-                <h4 className="text-xs font-medium text-muted-foreground mb-1">
-                  General ({tipsWithoutLocation.length})
-                </h4>
-                {tipsWithoutLocation.map(tip => (
-                  <button
-                    key={tip.id}
-                    onClick={() => setSelectedTip(tip)}
-                    className="w-full text-left text-sm p-2 rounded hover:bg-muted transition-colors"
-                  >
-                    {tip.title}
-                  </button>
-                ))}
-              </div>
+              <Collapsible open={noLocationOpen} onOpenChange={setNoLocationOpen}>
+                <CollapsibleTrigger className="flex items-center gap-1 text-xs font-medium text-muted-foreground mb-1 hover:text-foreground transition-colors w-full">
+                  {noLocationOpen ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+                  Tips utan adress ({tipsWithoutLocation.length})
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  {tipsWithoutLocation.map(tip => (
+                    <button
+                      key={tip.id}
+                      onClick={() => setSelectedTip(tip)}
+                      className="w-full text-left text-sm p-2 rounded hover:bg-muted transition-colors"
+                    >
+                      {tip.title}
+                    </button>
+                  ))}
+                </CollapsibleContent>
+              </Collapsible>
             )}
           </div>
         </div>
