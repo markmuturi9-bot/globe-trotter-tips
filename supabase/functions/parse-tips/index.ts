@@ -30,9 +30,12 @@ serve(async (req) => {
     const systemPrompt = `You are an expert at extracting travel tips from unstructured text. 
 Your task is to parse the input text and extract individual travel tips.
 
+IMPORTANT: Keep all text in its ORIGINAL LANGUAGE. Do NOT translate anything to English or any other language.
+The title and description should be in the same language as the input text.
+
 For each tip, extract:
-- title: A short, catchy title (max 100 chars)
-- description: The detailed tip/recommendation
+- title: A short, catchy title in the ORIGINAL language (max 100 chars)
+- description: The detailed tip/recommendation in the ORIGINAL language
 - category: One of: general, food, attractions, activities, accommodation, other
 - country_id: The UUID of the country from the list below (if mentioned or can be inferred)
 - address: A specific address or location if mentioned (optional)
@@ -44,12 +47,12 @@ If the text contains multiple tips, create multiple objects.
 If no country is mentioned but can be inferred from context, use that.
 If category cannot be determined, use "general".
 
-Example output:
+Example output (if input is in Swedish):
 {
   "tips": [
     {
-      "title": "Best pizza in Rome",
-      "description": "Try the margherita at Pizzeria Da Baffetto. They've been making pizzas since 1922...",
+      "title": "Bästa pizzan i Rom",
+      "description": "Prova margheritan på Pizzeria Da Baffetto. De har gjort pizza sedan 1922...",
       "category": "food",
       "country_id": "uuid-for-italy",
       "address": "Via del Governo Vecchio 114, Rome"

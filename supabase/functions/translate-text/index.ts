@@ -1,0 +1,104 @@
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  try {
+    const { text, targetLanguage = 'en' } = await req.json();
+    
+    if (!text) {
+      return new Response(
+        JSON.stringify({ error: 'No text provided' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    if (!LOVABLE_API_KEY) {
+      throw new Error('LOVABLE_API_KEY is not configured');
+    }
+
+    const languageNames: Record<string, string> = {
+      'en': 'English',
+      'sv': 'Swedish',
+      'es': 'Spanish',
+      'fr': 'French',
+      'de': 'German',
+      'it': 'Italian',
+      'pt': 'Portuguese',
+      'nl': 'Dutch',
+      'ja': 'Japanese',
+      'zh': 'Chinese',
+      'ko': 'Korean',
+    };
+
+    const targetLangName = languageNames[targetLanguage] || targetLanguage;
+
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-2.5-flash",
+        messages: [
+          { 
+            role: "system", 
+            content: `You are a translator. Translate the given text to ${targetLangName}. 
+Only return the translated text, nothing else. Preserve the formatting and line breaks.` 
+          },
+          { role: "user", content: text }
+        ],
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("AI gateway error:", response.status, errorText);
+      
+      if (response.status === 429) {
+        return new Response(
+          JSON.stringify({ error: "Rate limit exceeded. Please try again later." }),
+          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      if (response.status === 402) {
+        return new Response(
+          JSON.stringify({ error: "AI credits exhausted. Please add credits to continue." }),
+          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
+      throw new Error(`AI gateway error: ${response.status}`);
+    }
+
+    const aiResponse = await response.json();
+    const translatedText = aiResponse.choices?.[0]?.message?.content;
+    
+    if (!translatedText) {
+      throw new Error('No content in AI response');
+    }
+
+    console.log('Translated text:', translatedText);
+
+    return new Response(
+      JSON.stringify({ translatedText }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+
+  } catch (error) {
+    console.error('Error in translate-text:', error);
+    return new Response(
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+  }
+});
