@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Globe, MapPin, ArrowLeft, ChevronDown, ChevronRight } from 'lucide-react';
+import { Globe, ArrowLeft, ChevronDown, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { TipDetail } from '@/components/tips/TipDetail';
 import { TomTomMap } from '@/components/map/TomTomMap';
@@ -116,33 +116,28 @@ export function MapView() {
         <div className="absolute top-4 left-4 z-10">
           <Button
             variant="secondary"
-            size="sm"
+            size="icon"
             onClick={() => setSelectedCountry(null)}
-            className="shadow-lg"
+            className="shadow-lg h-9 w-9"
           >
-            <ArrowLeft className="w-4 h-4 mr-1" />
-            Back to World
+            <ArrowLeft className="w-4 h-4" />
           </Button>
         </div>
       )}
 
-      {/* Country info overlay */}
+      {/* Country info overlay - centered */}
       {selectedCountry && (
-        <div className="absolute top-4 right-4 z-10 bg-card p-4 rounded-lg shadow-lg max-w-xs">
-          <h2 className="font-serif text-xl font-semibold">{selectedCountry.name}</h2>
-          <p className="text-sm text-muted-foreground mb-3">
-            {selectedCountry.tipCount} tip{selectedCountry.tipCount !== 1 ? 's' : ''} shared
-          </p>
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 bg-card px-4 py-3 rounded-lg shadow-lg">
+          <h2 className="font-serif text-lg font-semibold text-center">{selectedCountry.name}</h2>
           
-          {/* Quick tip list */}
-          <div className="max-h-60 overflow-y-auto space-y-2">
-            {tipsWithLocation.length > 0 && (
-              <div className="mb-2">
-                <h4 className="text-xs font-medium text-muted-foreground flex items-center gap-1 mb-1">
-                  <MapPin className="w-3 h-3" />
-                  With location ({tipsWithLocation.length})
-                </h4>
-                {tipsWithLocation.map(tip => (
+          {tipsWithoutLocation.length > 0 && (
+            <Collapsible open={noLocationOpen} onOpenChange={setNoLocationOpen} className="mt-2">
+              <CollapsibleTrigger className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors mx-auto">
+                {noLocationOpen ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+                Tips utan adress ({tipsWithoutLocation.length})
+              </CollapsibleTrigger>
+              <CollapsibleContent className="mt-2">
+                {tipsWithoutLocation.map(tip => (
                   <button
                     key={tip.id}
                     onClick={() => setSelectedTip(tip)}
@@ -151,29 +146,9 @@ export function MapView() {
                     {tip.title}
                   </button>
                 ))}
-              </div>
-            )}
-            
-            {tipsWithoutLocation.length > 0 && (
-              <Collapsible open={noLocationOpen} onOpenChange={setNoLocationOpen}>
-                <CollapsibleTrigger className="flex items-center gap-1 text-xs font-medium text-muted-foreground mb-1 hover:text-foreground transition-colors w-full">
-                  {noLocationOpen ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
-                  Tips utan adress ({tipsWithoutLocation.length})
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                  {tipsWithoutLocation.map(tip => (
-                    <button
-                      key={tip.id}
-                      onClick={() => setSelectedTip(tip)}
-                      className="w-full text-left text-sm p-2 rounded hover:bg-muted transition-colors"
-                    >
-                      {tip.title}
-                    </button>
-                  ))}
-                </CollapsibleContent>
-              </Collapsible>
-            )}
-          </div>
+              </CollapsibleContent>
+            </Collapsible>
+          )}
         </div>
       )}
 
