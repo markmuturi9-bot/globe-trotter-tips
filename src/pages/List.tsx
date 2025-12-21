@@ -1,37 +1,13 @@
-import { useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '@/components/layout/Header';
 import { MainNav } from '@/components/layout/MainNav';
 import { ListView } from '@/components/views/ListView';
 import { CreateTipDialog } from '@/components/tips/CreateTipDialog';
-import { useAuth } from '@/hooks/useAuth';
-import { useState } from 'react';
 
 export default function List() {
-  const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [showCreateTip, setShowCreateTip] = useState(false);
-  
-  useEffect(() => {
-    if (!loading && !user) {
-      navigate('/auth');
-    }
-  }, [user, loading, navigate]);
-  
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center">
-          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-  
-  if (!user) {
-    return null;
-  }
   
   return (
     <div className="min-h-screen flex flex-col bg-background">
