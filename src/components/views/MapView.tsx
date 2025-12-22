@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { Globe, ArrowLeft, ChevronDown, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { TipDetail } from '@/components/tips/TipDetail';
-import { TomTomMap } from '@/components/map/TomTomMap';
+import { MapboxGlobe } from '@/components/map/MapboxGlobe';
 import { useCountriesWithTips, useTips } from '@/hooks/useTips';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import type { Tip, Country } from '@/types';
@@ -152,7 +152,7 @@ export function MapView() {
         </div>
       )}
 
-      <TomTomMap 
+      <MapboxGlobe 
         key={selectedCountry?.id || 'world'}
         config={mapConfig}
         markers={mapMarkers} 
