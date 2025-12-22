@@ -7,6 +7,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import Map from "./pages/Map";
 import List from "./pages/List";
 import Profile from "./pages/Profile";
+import Friends from "./pages/Friends";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -23,6 +24,7 @@ const App = () => (
             <Route path="/" element={<Navigate to="/map" replace />} />
             <Route path="/map" element={<Map />} />
             <Route path="/list" element={<List />} />
+            <Route path="/friends" element={<Friends />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="*" element={<NotFound />} />

@@ -74,7 +74,7 @@ export interface Notification {
   created_at: string;
 }
 
-export type ViewType = 'map' | 'list' | 'profile';
+export type ViewType = 'map' | 'list' | 'profile' | 'friends';
 
 export const CATEGORY_LABELS: Record<TipCategory, string> = {
   general: 'General',

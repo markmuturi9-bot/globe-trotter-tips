@@ -1,4 +1,4 @@
-import { Map, List, User } from 'lucide-react';
+import { Map, List, User, Users } from 'lucide-react';
 import type { ViewType } from '@/types';
 import { cn } from '@/lib/utils';
 
@@ -10,6 +10,7 @@ interface MainNavProps {
 const navItems: { view: ViewType; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
   { view: 'map', label: 'Map', icon: Map },
   { view: 'list', label: 'List', icon: List },
+  { view: 'friends', label: 'Friends', icon: Users },
   { view: 'profile', label: 'Profile', icon: User },
 ];
 
