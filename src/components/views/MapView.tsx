@@ -1,29 +1,85 @@
 import { useState, useMemo } from 'react';
-import { Globe, ArrowLeft, ChevronDown, ChevronRight } from 'lucide-react';
+import { Globe, ArrowLeft, ChevronDown, ChevronRight, Filter, Users, User, Globe2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { TipDetail } from '@/components/tips/TipDetail';
 import { MapboxGlobe } from '@/components/map/MapboxGlobe';
 import { useCountriesWithTips, useTips } from '@/hooks/useTips';
+import { useFriendships } from '@/hooks/useFriendships';
+import { useAuth } from '@/hooks/useAuth';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import type { Tip, Country } from '@/types';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import type { Tip, Country, Profile } from '@/types';
 import type { MapMarker } from '@/components/map/MapProvider';
 
 interface CountryWithTips extends Country {
   tipCount: number;
 }
 
+type FilterType = 'all' | 'friends' | 'me' | string; // string for specific friend ID
+
 export function MapView() {
+  const { user } = useAuth();
+  const { data: friendships } = useFriendships();
   const { data: countriesWithTips, isLoading: countriesLoading } = useCountriesWithTips();
   const { data: allTips, isLoading: tipsLoading } = useTips();
   const [selectedCountry, setSelectedCountry] = useState<CountryWithTips | null>(null);
   const [selectedTip, setSelectedTip] = useState<Tip | null>(null);
   const [noLocationOpen, setNoLocationOpen] = useState(false);
+  const [filter, setFilter] = useState<FilterType>('all');
 
-  // Tips for the selected country
+  // Get accepted friends
+  const acceptedFriends = useMemo(() => {
+    if (!user || !friendships) return [];
+    return friendships
+      .filter(f => f.status === 'accepted')
+      .map(f => {
+        const friend = f.requester_id === user.id ? f.addressee : f.requester;
+        return friend;
+      })
+      .filter(Boolean) as Profile[];
+  }, [user, friendships]);
+
+  const friendIds = useMemo(() => acceptedFriends.map(f => f.id), [acceptedFriends]);
+
+  // Filter tips based on selected filter
+  const filteredTips = useMemo(() => {
+    if (!allTips) return [];
+    
+    switch (filter) {
+      case 'all':
+        return allTips;
+      case 'friends':
+        return allTips.filter(tip => friendIds.includes(tip.user_id));
+      case 'me':
+        return user ? allTips.filter(tip => tip.user_id === user.id) : [];
+      default:
+        // Specific friend ID
+        return allTips.filter(tip => tip.user_id === filter);
+    }
+  }, [allTips, filter, friendIds, user]);
+
+  // Recalculate countries with tips based on filtered tips
+  const filteredCountriesWithTips = useMemo(() => {
+    if (!countriesWithTips || !filteredTips) return [];
+    
+    const tipCountByCountry = filteredTips.reduce((acc, tip) => {
+      acc[tip.country_id] = (acc[tip.country_id] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    return countriesWithTips
+      .map(country => ({
+        ...country,
+        tipCount: tipCountByCountry[country.id] || 0,
+      }))
+      .filter(country => country.tipCount > 0);
+  }, [countriesWithTips, filteredTips]);
+
+  // Tips for the selected country (filtered)
   const countryTips = useMemo(() => {
-    if (!selectedCountry || !allTips) return [];
-    return allTips.filter(tip => tip.country_id === selectedCountry.id);
-  }, [selectedCountry, allTips]);
+    if (!selectedCountry || !filteredTips) return [];
+    return filteredTips.filter(tip => tip.country_id === selectedCountry.id);
+  }, [selectedCountry, filteredTips]);
 
   const tipsWithLocation = useMemo(() => 
     countryTips.filter(tip => tip.latitude && tip.longitude), 
@@ -38,12 +94,8 @@ export function MapView() {
   // Create markers for the map
   const mapMarkers: MapMarker[] = useMemo(() => {
     if (selectedCountry) {
-      // When a country is selected, show individual tip markers
-      // Tips with exact location use their coordinates
-      // Tips without location use country coordinates
       const tipMarkers: MapMarker[] = [];
 
-      // Add markers for tips with exact locations
       tipsWithLocation.forEach(tip => {
         tipMarkers.push({
           id: tip.id,
@@ -53,21 +105,19 @@ export function MapView() {
         });
       });
 
-      // Add markers for tips without locations at country position
       if (tipsWithoutLocation.length > 0 && selectedCountry.latitude && selectedCountry.longitude) {
         tipMarkers.push({
           id: `no-location-${selectedCountry.id}`,
           position: [selectedCountry.latitude, selectedCountry.longitude],
           count: tipsWithoutLocation.length,
           label: 'General tips',
-          onClick: () => {}, // Could open a list
+          onClick: () => {},
         });
       }
 
       return tipMarkers;
     } else {
-      // World view - show country markers
-      return countriesWithTips.map(country => ({
+      return filteredCountriesWithTips.map(country => ({
         id: country.id,
         position: [country.latitude || 0, country.longitude || 0] as [number, number],
         label: country.code,
@@ -78,7 +128,7 @@ export function MapView() {
         },
       }));
     }
-  }, [selectedCountry, countriesWithTips, tipsWithLocation, tipsWithoutLocation]);
+  }, [selectedCountry, filteredCountriesWithTips, tipsWithLocation, tipsWithoutLocation]);
 
   // Map config for country view
   const mapConfig = useMemo(() => {
@@ -92,11 +142,22 @@ export function MapView() {
   }, [selectedCountry]);
 
   const highlightedCountryCodes = useMemo(() => 
-    countriesWithTips.map(country => country.code),
-    [countriesWithTips]
+    filteredCountriesWithTips.map(country => country.code),
+    [filteredCountriesWithTips]
   );
 
   const isLoading = countriesLoading || tipsLoading;
+
+  const getFilterLabel = () => {
+    switch (filter) {
+      case 'all': return 'Alla';
+      case 'friends': return 'Vänner';
+      case 'me': return 'Mina tips';
+      default:
+        const friend = acceptedFriends.find(f => f.id === filter);
+        return friend?.username || 'Vän';
+    }
+  };
 
   if (isLoading) {
     return (
@@ -111,6 +172,57 @@ export function MapView() {
 
   return (
     <div className="flex-1 flex flex-col h-full relative">
+      {/* Filter dropdown - top right */}
+      <div className="absolute top-4 right-4 z-10">
+        <Select value={filter} onValueChange={(value) => setFilter(value)}>
+          <SelectTrigger className="w-[160px] bg-card shadow-lg">
+            <Filter className="w-4 h-4 mr-2" />
+            <SelectValue>{getFilterLabel()}</SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">
+              <div className="flex items-center gap-2">
+                <Globe2 className="w-4 h-4" />
+                Alla användare
+              </div>
+            </SelectItem>
+            {user && (
+              <>
+                <SelectItem value="me">
+                  <div className="flex items-center gap-2">
+                    <User className="w-4 h-4" />
+                    Mina tips
+                  </div>
+                </SelectItem>
+                <SelectItem value="friends">
+                  <div className="flex items-center gap-2">
+                    <Users className="w-4 h-4" />
+                    Alla vänner
+                  </div>
+                </SelectItem>
+                {acceptedFriends.length > 0 && (
+                  <>
+                    <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">
+                      Specifik vän
+                    </div>
+                    {acceptedFriends.map(friend => (
+                      <SelectItem key={friend.id} value={friend.id}>
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-4 rounded-full bg-primary/20 flex items-center justify-center text-[10px] font-medium">
+                            {friend.username.substring(0, 1).toUpperCase()}
+                          </div>
+                          {friend.username}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </>
+                )}
+              </>
+            )}
+          </SelectContent>
+        </Select>
+      </div>
+
       {/* Back button when viewing a country */}
       {selectedCountry && (
         <div className="absolute top-4 left-4 z-10">
@@ -153,13 +265,13 @@ export function MapView() {
       )}
 
       <MapboxGlobe 
-        key={selectedCountry?.id || 'world'}
+        key={`${selectedCountry?.id || 'world'}-${filter}`}
         config={mapConfig}
         markers={mapMarkers} 
         highlightedCountryCodes={highlightedCountryCodes}
         className="flex-1"
         onMarkerClick={(id) => {
-          const tip = allTips?.find(t => t.id === id);
+          const tip = filteredTips?.find(t => t.id === id);
           if (tip) {
             setSelectedTip(tip);
           }
