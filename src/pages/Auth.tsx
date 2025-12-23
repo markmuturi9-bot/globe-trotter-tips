@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
@@ -27,6 +28,7 @@ export default function Auth() {
 
   const [isSignUp, setIsSignUp] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [formData, setFormData] = useState({
     username: "",
     email: "",
@@ -41,6 +43,12 @@ export default function Auth() {
 
     try {
       if (isSignUp) {
+        if (!acceptedTerms) {
+          setErrors({ terms: "Du måste godkänna villkoren för att registrera dig" });
+          setLoading(false);
+          return;
+        }
+        
         const result = signUpSchema.safeParse(formData);
         if (!result.success) {
           const fieldErrors: Record<string, string> = {};
@@ -178,15 +186,41 @@ export default function Auth() {
                 {errors.password && <p className="text-xs text-destructive">{errors.password}</p>}
               </div>
 
+              {isSignUp && (
+                <div className="space-y-2">
+                  <div className="flex items-start space-x-2">
+                    <Checkbox 
+                      id="terms" 
+                      checked={acceptedTerms}
+                      onCheckedChange={(checked) => setAcceptedTerms(checked === true)}
+                    />
+                    <Label htmlFor="terms" className="text-sm leading-relaxed cursor-pointer">
+                      Jag godkänner{' '}
+                      <Link to="/terms" className="text-primary hover:underline" target="_blank">
+                        användarvillkoren
+                      </Link>{' '}
+                      och{' '}
+                      <Link to="/privacy" className="text-primary hover:underline" target="_blank">
+                        integritetspolicyn
+                      </Link>
+                    </Label>
+                  </div>
+                  {errors.terms && <p className="text-xs text-destructive">{errors.terms}</p>}
+                </div>
+              )}
+
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "Loading..." : isSignUp ? "Create Account" : "Sign In"}
+                {loading ? "Loading..." : isSignUp ? "Skapa konto" : "Logga in"}
               </Button>
             </form>
           </CardContent>
         </Card>
 
         <p className="text-center text-xs text-muted-foreground mt-6">
-          By continuing, you agree to our terms of service.
+          Genom att använda tjänsten godkänner du våra{' '}
+          <Link to="/terms" className="text-primary hover:underline">villkor</Link>
+          {' '}och{' '}
+          <Link to="/privacy" className="text-primary hover:underline">integritetspolicy</Link>.
         </p>
       </div>
     </div>
