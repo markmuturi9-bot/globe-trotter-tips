@@ -150,7 +150,7 @@ export function MapboxGlobe({
     
     const map = new mapboxgl.Map({
       container: mapRef.current,
-      style: 'mapbox://styles/mapbox/light-v11',
+      style: 'mapbox://styles/mapbox/outdoors-v12',
       center: [mapConfig.center[1], mapConfig.center[0]], // Mapbox uses [lng, lat]
       zoom: mapConfig.zoom,
       pitch: 20,
@@ -193,15 +193,15 @@ export function MapboxGlobe({
         url: 'mapbox://mapbox.country-boundaries-v1'
       });
 
-      // Add layer for all countries (gray)
+      // Add layer for all countries (semi-transparent gray overlay)
       map.addLayer({
         id: 'countries-gray',
         type: 'fill',
         source: 'country-boundaries',
         'source-layer': 'country_boundaries',
         paint: {
-          'fill-color': '#d1d5db',
-          'fill-opacity': 0.7
+          'fill-color': '#9ca3af',
+          'fill-opacity': 0.6
         }
       });
 
@@ -212,7 +212,7 @@ export function MapboxGlobe({
         source: 'country-boundaries',
         'source-layer': 'country_boundaries',
         paint: {
-          'line-color': '#9ca3af',
+          'line-color': '#6b7280',
           'line-width': 0.5
         }
       });
