@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { Globe } from "lucide-react";
+import { Globe, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -125,23 +125,39 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-b from-accent/50 to-background">
-      <div className="w-full max-w-sm">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
-            <Globe className="w-8 h-8 text-primary" />
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden">
+      {/* Background gradient */}
+      <div className="absolute inset-0 bg-gradient-to-br from-accent via-background to-background" />
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-bl from-primary/10 via-purple-500/5 to-transparent rounded-full blur-3xl" />
+      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-gradient-to-tr from-blue-500/10 via-primary/5 to-transparent rounded-full blur-3xl" />
+      
+      <div className="w-full max-w-sm relative z-10">
+        <div className="text-center mb-8 animate-fade-in">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-purple-500 mb-5 shadow-lg shadow-primary/25">
+            <Globe className="w-8 h-8 text-white" />
           </div>
-          <h1 className="font-serif text-3xl font-semibold tracking-tight">TipTip</h1>
-          <p className="text-muted-foreground mt-2">Share your travel tips with the world</p>
+          <h1 className="font-display text-3xl font-bold tracking-tight">TipTip</h1>
+          <p className="text-muted-foreground mt-2 flex items-center justify-center gap-1.5">
+            <Sparkles className="w-4 h-4" />
+            Share your travel tips with the world
+          </p>
         </div>
 
-        <Card className="shadow-medium">
+        <Card className="shadow-lg border-border/50 backdrop-blur-sm bg-card/80 animate-slide-up">
           <CardHeader className="pb-4">
-            <div className="flex gap-2">
-              <Button variant={!isSignUp ? "default" : "ghost"} className="flex-1" onClick={() => setIsSignUp(false)}>
+            <div className="flex gap-2 p-1 bg-muted/50 rounded-xl">
+              <Button 
+                variant={!isSignUp ? "default" : "ghost"} 
+                className={`flex-1 ${!isSignUp ? '' : 'hover:bg-background/50'}`}
+                onClick={() => setIsSignUp(false)}
+              >
                 Sign In
               </Button>
-              <Button variant={isSignUp ? "default" : "ghost"} className="flex-1" onClick={() => setIsSignUp(true)}>
+              <Button 
+                variant={isSignUp ? "default" : "ghost"} 
+                className={`flex-1 ${isSignUp ? '' : 'hover:bg-background/50'}`}
+                onClick={() => setIsSignUp(true)}
+              >
                 Sign Up
               </Button>
             </div>
@@ -188,19 +204,20 @@ export default function Auth() {
 
               {isSignUp && (
                 <div className="space-y-2">
-                  <div className="flex items-start space-x-2">
+                  <div className="flex items-start space-x-3">
                     <Checkbox 
                       id="terms" 
                       checked={acceptedTerms}
                       onCheckedChange={(checked) => setAcceptedTerms(checked === true)}
+                      className="mt-0.5"
                     />
-                    <Label htmlFor="terms" className="text-sm leading-relaxed cursor-pointer">
+                    <Label htmlFor="terms" className="text-sm leading-relaxed cursor-pointer text-muted-foreground">
                       Jag godkänner{' '}
-                      <Link to="/terms" className="text-primary hover:underline" target="_blank">
+                      <Link to="/terms" className="text-primary hover:underline font-medium" target="_blank">
                         användarvillkoren
                       </Link>{' '}
                       och{' '}
-                      <Link to="/privacy" className="text-primary hover:underline" target="_blank">
+                      <Link to="/privacy" className="text-primary hover:underline font-medium" target="_blank">
                         integritetspolicyn
                       </Link>
                     </Label>
@@ -209,14 +226,14 @@ export default function Auth() {
                 </div>
               )}
 
-              <Button type="submit" className="w-full" disabled={loading}>
+              <Button type="submit" className="w-full" size="lg" disabled={loading}>
                 {loading ? "Loading..." : isSignUp ? "Skapa konto" : "Logga in"}
               </Button>
             </form>
           </CardContent>
         </Card>
 
-        <p className="text-center text-xs text-muted-foreground mt-6">
+        <p className="text-center text-xs text-muted-foreground mt-6 px-4">
           Genom att använda tjänsten godkänner du våra{' '}
           <Link to="/terms" className="text-primary hover:underline">villkor</Link>
           {' '}och{' '}
