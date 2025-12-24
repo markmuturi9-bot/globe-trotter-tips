@@ -1,5 +1,6 @@
 import { Globe, Bell, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { useAuth } from "@/hooks/useAuth";
 
 interface HeaderProps {
@@ -19,20 +20,24 @@ export function Header({ onCreateTip }: HeaderProps) {
           <span className="font-display text-xl font-semibold tracking-tight">TipTip</span>
         </div>
 
-        {user && (
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="relative rounded-xl">
-              <Bell className="w-5 h-5" />
-            </Button>
-
-            {onCreateTip && (
-              <Button onClick={onCreateTip} size="sm" className="gap-2 shadow-sm">
-                <Plus className="w-4 h-4" />
-                <span className="hidden sm:inline">Add Tip</span>
+        <div className="flex items-center gap-1">
+          <ThemeToggle />
+          
+          {user && (
+            <>
+              <Button variant="ghost" size="icon" className="relative rounded-xl">
+                <Bell className="w-5 h-5" />
               </Button>
-            )}
-          </div>
-        )}
+
+              {onCreateTip && (
+                <Button onClick={onCreateTip} size="sm" className="gap-2 shadow-sm ml-1">
+                  <Plus className="w-4 h-4" />
+                  <span className="hidden sm:inline">Add Tip</span>
+                </Button>
+              )}
+            </>
+          )}
+        </div>
       </div>
     </header>
   );
