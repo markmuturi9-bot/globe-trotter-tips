@@ -136,6 +136,41 @@
     @apply border-border;
   }
 
+  /* Safe area CSS variables for iOS notch and Android */
+  :root {
+    --safe-area-inset-top: env(safe-area-inset-top, 0px);
+    --safe-area-inset-right: env(safe-area-inset-right, 0px);
+    --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-area-inset-left: env(safe-area-inset-left, 0px);
+  }
+
+  html {
+    /* Enable safe area on iOS */
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+
+  /* Native app specific styles */
+  html.native-app {
+    /* Prevent overscroll bounce on iOS */
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  html.native-app body {
+    /* Prevent text selection on native */
+    -webkit-user-select: none;
+    user-select: none;
+    /* Prevent tap highlight */
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Allow text selection in input fields */
+  html.native-app input,
+  html.native-app textarea {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+
   body {
     @apply bg-background text-foreground antialiased;
     font-family: 'Inter', 'DM Sans', system-ui, -apple-system, sans-serif;
