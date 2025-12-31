@@ -172,8 +172,8 @@ export function MapView() {
 
   return (
     <div className="flex-1 flex flex-col h-full relative">
-      {/* Filter dropdown - top right */}
-      <div className="absolute top-4 right-4 z-10">
+      {/* Filter dropdown - top left */}
+      <div className="absolute top-4 left-4 z-10">
         <Select value={filter} onValueChange={(value) => setFilter(value)}>
           <SelectTrigger className="w-[160px] bg-card shadow-lg">
             <Filter className="w-4 h-4 mr-2" />
@@ -223,9 +223,9 @@ export function MapView() {
         </Select>
       </div>
 
-      {/* Back button when viewing a country */}
+      {/* Back button when viewing a country - below filter */}
       {selectedCountry && (
-        <div className="absolute top-4 left-4 z-10">
+        <div className="absolute top-16 left-4 z-10">
           <Button
             variant="secondary"
             size="icon"
