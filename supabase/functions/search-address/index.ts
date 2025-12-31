@@ -7,20 +7,23 @@ const corsHeaders = {
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response(null, { headers: corsHeaders })
   }
 
-  const tomtomApiKey = Deno.env.get('TOMTOM_API_KEY')
+  const mapboxToken = Deno.env.get('MAPBOX_PUBLIC_TOKEN')
   
-  if (!tomtomApiKey) {
+  if (!mapboxToken) {
+    console.error('MAPBOX_PUBLIC_TOKEN not configured')
     return new Response(
-      JSON.stringify({ error: 'TomTom API key not configured' }),
+      JSON.stringify({ error: 'Mapbox API key not configured' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
 
   try {
     const { query, countryCode } = await req.json()
+    
+    console.log(`Searching for address: "${query}" in country: ${countryCode || 'any'}`)
     
     if (!query || query.length < 2) {
       return new Response(
@@ -29,39 +32,56 @@ serve(async (req) => {
       )
     }
 
-    // TomTom Search API - Fuzzy Search with country filter
+    // Mapbox Geocoding API
     const params = new URLSearchParams({
-      key: tomtomApiKey,
-      query: query,
+      access_token: mapboxToken,
+      autocomplete: 'true',
       limit: '5',
-      typeahead: 'true',
+      types: 'place,locality,neighborhood,address,poi',
     })
     
+    // Add country filter if provided (Mapbox uses lowercase 2-letter codes)
     if (countryCode) {
-      params.append('countrySet', countryCode)
+      params.append('country', countryCode.toLowerCase())
     }
 
-    const response = await fetch(
-      `https://api.tomtom.com/search/2/search/${encodeURIComponent(query)}.json?${params}`
-    )
+    const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?${params}`
+    console.log(`Mapbox Geocoding API request: ${url.replace(mapboxToken, '[REDACTED]')}`)
+
+    const response = await fetch(url)
 
     if (!response.ok) {
-      throw new Error('TomTom API request failed')
+      const errorText = await response.text()
+      console.error(`Mapbox API error: ${response.status} - ${errorText}`)
+      throw new Error('Mapbox API request failed')
     }
 
     const data = await response.json()
     
-    const results = data.results?.map((result: any) => ({
-      id: result.id,
-      address: result.address?.freeformAddress || result.poi?.name || '',
-      name: result.poi?.name,
-      position: {
-        lat: result.position?.lat,
-        lng: result.position?.lon,
-      },
-      country: result.address?.country,
-      city: result.address?.municipality,
-    })) || []
+    console.log(`Found ${data.features?.length || 0} results`)
+    
+    // Transform Mapbox response to match our AddressResult interface
+    const results = data.features?.map((feature: any) => {
+      // Extract city from context
+      const cityContext = feature.context?.find((c: any) => 
+        c.id?.startsWith('place') || c.id?.startsWith('locality')
+      )
+      const countryContext = feature.context?.find((c: any) => 
+        c.id?.startsWith('country')
+      )
+      
+      return {
+        id: feature.id,
+        address: feature.place_name || '',
+        name: feature.text,
+        position: {
+          lat: feature.center?.[1],
+          lng: feature.center?.[0],
+        },
+        country: countryContext?.text || feature.properties?.country,
+        city: cityContext?.text || feature.properties?.locality,
+      }
+    }) || []
 
     return new Response(
       JSON.stringify({ results }),
