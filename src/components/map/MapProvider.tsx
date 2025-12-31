@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 
-// Map provider abstraction - currently using Leaflet
-// Can be swapped to Mapbox, TomTom, etc. by changing this file
+// Map provider abstraction - currently using Mapbox GL
+// Address search uses TomTom Search API via search-address edge function
 
 export interface MapConfig {
   center: [number, number];
