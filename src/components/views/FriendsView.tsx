@@ -36,8 +36,8 @@ export function FriendsView() {
         <Card className="w-full max-w-md">
           <CardContent className="pt-6 text-center">
             <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-            <h2 className="font-serif text-xl font-semibold mb-2">Logga in för att se vänner</h2>
-            <p className="text-muted-foreground">Du måste vara inloggad för att söka vänner och se deras aktivitet.</p>
+            <h2 className="font-serif text-xl font-semibold mb-2">Log in to see friends</h2>
+            <p className="text-muted-foreground">You need to be logged in to search for friends and see their activity.</p>
           </CardContent>
         </Card>
       </div>
@@ -72,18 +72,18 @@ export function FriendsView() {
   const handleSendRequest = async (addresseeId: string) => {
     try {
       await sendRequest.mutateAsync(addresseeId);
-      toast.success('Vänförfrågan skickad!');
+      toast.success('Friend request sent!');
     } catch (error: any) {
-      toast.error(error.message || 'Kunde inte skicka förfrågan');
+      toast.error(error.message || 'Could not send request');
     }
   };
 
   const handleRespondToRequest = async (friendshipId: string, accept: boolean) => {
     try {
       await respondToRequest.mutateAsync({ friendshipId, accept });
-      toast.success(accept ? 'Vänförfrågan accepterad!' : 'Vänförfrågan avvisad');
+      toast.success(accept ? 'Friend request accepted!' : 'Friend request declined');
     } catch (error: any) {
-      toast.error(error.message || 'Något gick fel');
+      toast.error(error.message || 'Something went wrong');
     }
   };
 
@@ -94,14 +94,14 @@ export function FriendsView() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Search className="w-5 h-5" />
-            Sök användare
+            Search users
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="Sök på användarnamn..."
+              placeholder="Search by username..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
@@ -111,7 +111,7 @@ export function FriendsView() {
           {searchTerm.length >= 2 && (
             <div className="mt-4 space-y-2">
               {searchLoading ? (
-                <p className="text-sm text-muted-foreground">Söker...</p>
+                <p className="text-sm text-muted-foreground">Searching...</p>
               ) : searchResults && searchResults.length > 0 ? (
                 searchResults.map((profile) => (
                   <div 
@@ -130,7 +130,7 @@ export function FriendsView() {
                       </div>
                     </div>
                     {hasRelationship(profile.id) ? (
-                      <Badge variant="secondary">Redan vän/förfrågan</Badge>
+                      <Badge variant="secondary">Already friend/requested</Badge>
                     ) : (
                       <Button 
                         size="sm" 
@@ -138,13 +138,13 @@ export function FriendsView() {
                         disabled={sendRequest.isPending}
                       >
                         <UserPlus className="w-4 h-4 mr-1" />
-                        Lägg till
+                        Add
                       </Button>
                     )}
                   </div>
                 ))
               ) : (
-                <p className="text-sm text-muted-foreground">Inga användare hittades</p>
+                <p className="text-sm text-muted-foreground">No users found</p>
               )}
             </div>
           )}
@@ -156,11 +156,11 @@ export function FriendsView() {
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="friends" className="flex items-center gap-2">
             <Users className="w-4 h-4" />
-            Vänner ({acceptedFriends.length})
+            Friends ({acceptedFriends.length})
           </TabsTrigger>
           <TabsTrigger value="requests" className="flex items-center gap-2">
             <UserPlus className="w-4 h-4" />
-            Förfrågningar
+            Requests
             {pendingRequests && pendingRequests.length > 0 && (
               <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs">
                 {pendingRequests.length}
@@ -169,7 +169,7 @@ export function FriendsView() {
           </TabsTrigger>
           <TabsTrigger value="activity" className="flex items-center gap-2">
             <Clock className="w-4 h-4" />
-            Aktivitet
+            Activity
           </TabsTrigger>
         </TabsList>
 
@@ -177,12 +177,12 @@ export function FriendsView() {
           <Card>
             <CardContent className="pt-6">
               {friendshipsLoading ? (
-                <p className="text-muted-foreground text-center">Laddar...</p>
+                <p className="text-muted-foreground text-center">Loading...</p>
               ) : acceptedFriends.length === 0 ? (
                 <div className="text-center py-8">
                   <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-muted-foreground">Du har inga vänner ännu.</p>
-                  <p className="text-sm text-muted-foreground">Sök efter användare ovan för att lägga till vänner!</p>
+                  <p className="text-muted-foreground">You don't have any friends yet.</p>
+                  <p className="text-sm text-muted-foreground">Search for users above to add friends!</p>
                 </div>
               ) : (
                 <div className="grid gap-3">
@@ -214,7 +214,7 @@ export function FriendsView() {
               {!pendingRequests || pendingRequests.length === 0 ? (
                 <div className="text-center py-8">
                   <UserPlus className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-muted-foreground">Inga väntande vänförfrågningar.</p>
+                  <p className="text-muted-foreground">No pending friend requests.</p>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -263,15 +263,15 @@ export function FriendsView() {
         <TabsContent value="activity" className="mt-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Vänners senaste tips</CardTitle>
+              <CardTitle className="text-lg">Friends' latest tips</CardTitle>
             </CardHeader>
             <CardContent>
               {friendsTips.length === 0 ? (
                 <div className="text-center py-8">
                   <Clock className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-muted-foreground">Inga tips från dina vänner ännu.</p>
+                  <p className="text-muted-foreground">No tips from your friends yet.</p>
                   {acceptedFriends.length === 0 && (
-                    <p className="text-sm text-muted-foreground">Lägg till vänner för att se deras aktivitet!</p>
+                    <p className="text-sm text-muted-foreground">Add friends to see their activity!</p>
                   )}
                 </div>
               ) : (

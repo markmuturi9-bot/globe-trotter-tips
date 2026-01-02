@@ -144,7 +144,7 @@ export function BulkTipImport({ onClose }: BulkTipImportProps) {
     
     recognition.continuous = true;
     recognition.interimResults = true;
-    recognition.lang = 'sv-SE'; // Swedish, can be changed
+    recognition.lang = 'en-US'; // Use English as default for speech recognition
     
     recognition.onstart = () => {
       setIsRecording(true);

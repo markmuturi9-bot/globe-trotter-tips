@@ -150,12 +150,12 @@ export function MapView() {
 
   const getFilterLabel = () => {
     switch (filter) {
-      case 'all': return 'Alla';
-      case 'friends': return 'Vänner';
-      case 'me': return 'Mina tips';
+      case 'all': return 'All';
+      case 'friends': return 'Friends';
+      case 'me': return 'My tips';
       default:
         const friend = acceptedFriends.find(f => f.id === filter);
-        return friend?.username || 'Vän';
+        return friend?.username || 'Friend';
     }
   };
 
@@ -183,7 +183,7 @@ export function MapView() {
             <SelectItem value="all">
               <div className="flex items-center gap-2">
                 <Globe2 className="w-4 h-4" />
-                Alla användare
+                All users
               </div>
             </SelectItem>
             {user && (
@@ -191,19 +191,19 @@ export function MapView() {
                 <SelectItem value="me">
                   <div className="flex items-center gap-2">
                     <User className="w-4 h-4" />
-                    Mina tips
+                    My tips
                   </div>
                 </SelectItem>
                 <SelectItem value="friends">
                   <div className="flex items-center gap-2">
                     <Users className="w-4 h-4" />
-                    Alla vänner
+                    All friends
                   </div>
                 </SelectItem>
                 {acceptedFriends.length > 0 && (
                   <>
                     <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">
-                      Specifik vän
+                      Specific friend
                     </div>
                     {acceptedFriends.map(friend => (
                       <SelectItem key={friend.id} value={friend.id}>
@@ -246,7 +246,7 @@ export function MapView() {
             <Collapsible open={noLocationOpen} onOpenChange={setNoLocationOpen} className="mt-2">
               <CollapsibleTrigger className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors mx-auto">
                 {noLocationOpen ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
-                Tips utan adress ({tipsWithoutLocation.length})
+                Tips without address ({tipsWithoutLocation.length})
               </CollapsibleTrigger>
               <CollapsibleContent className="mt-2">
                 {tipsWithoutLocation.map(tip => (
