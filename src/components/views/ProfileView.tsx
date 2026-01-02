@@ -1,17 +1,15 @@
 import { useState } from 'react';
-import { Settings, LogOut, MapPin, Calendar, FileText, Globe, Sparkles, Download, Trash2, AlertTriangle } from 'lucide-react';
+import { Settings, LogOut, Calendar, FileText, Globe, Download, Trash2, AlertTriangle, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { TipCard } from '@/components/tips/TipCard';
-import { TipDetail } from '@/components/tips/TipDetail';
-import { BulkTipImport } from '@/components/tips/BulkTipImport';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
 import { useTipsByUser } from '@/hooks/useTips';
+import { useImageUpload } from '@/hooks/useImageUpload';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import type { Tip } from '@/types';
 import { format } from 'date-fns';
 import {
   AlertDialog,
@@ -27,13 +25,11 @@ import {
 
 export function ProfileView() {
   const { user, profile, signOut, refreshProfile } = useAuth();
-  const { data: userTips, isLoading: loadingTips } = useTipsByUser(user?.id || null);
+  const { data: userTips } = useTipsByUser(user?.id || null);
   const { toast } = useToast();
-  const [selectedTip, setSelectedTip] = useState<Tip | null>(null);
-  const [showSettings, setShowSettings] = useState(false);
+  const { uploadImage, uploading } = useImageUpload();
   const [isExporting, setIsExporting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [showBulkImport, setShowBulkImport] = useState(false);
   
   const uniqueCountries = new Set(userTips?.map(tip => tip.country_id) || []);
   
@@ -64,12 +60,32 @@ export function ProfileView() {
     await signOut();
   };
 
+  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !user) return;
+
+    try {
+      const imageUrl = await uploadImage(file);
+      if (!imageUrl) throw new Error('Upload failed');
+      
+      toast({
+        title: 'Profile picture uploaded',
+        description: 'Your profile picture has been uploaded.',
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Upload failed',
+        description: error?.message || 'Failed to upload profile picture.',
+        variant: 'destructive',
+      });
+    }
+  };
+
   const handleExportData = async () => {
     if (!user) return;
     setIsExporting(true);
     
     try {
-      // Fetch all user data
       const [profileResult, tipsResult, friendshipsResult] = await Promise.all([
         supabase.from('profiles').select('*').eq('id', user.id).single(),
         supabase.from('tips').select('*').eq('user_id', user.id),
@@ -83,7 +99,6 @@ export function ProfileView() {
         friendships: friendshipsResult.data || [],
       };
 
-      // Create and download file
       const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -95,13 +110,13 @@ export function ProfileView() {
       URL.revokeObjectURL(url);
 
       toast({
-        title: 'Data exporterad',
-        description: 'Dina uppgifter har laddats ner som en JSON-fil.',
+        title: 'Data exported',
+        description: 'Your data has been downloaded as a JSON file.',
       });
     } catch (error) {
       toast({
-        title: 'Export misslyckades',
-        description: 'Kunde inte exportera dina uppgifter. Försök igen.',
+        title: 'Export failed',
+        description: 'Could not export your data. Please try again.',
         variant: 'destructive',
       });
     } finally {
@@ -114,29 +129,21 @@ export function ProfileView() {
     setIsDeleting(true);
     
     try {
-      // Delete all user tips first
       await supabase.from('tips').delete().eq('user_id', user.id);
-      
-      // Delete friendships
       await supabase.from('friendships').delete().or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`);
-      
-      // Delete messages
       await supabase.from('messages').delete().eq('sender_id', user.id);
-      
-      // Delete notifications
       await supabase.from('notifications').delete().eq('user_id', user.id);
       
-      // Sign out (profile will be deleted by cascade when auth user is deleted)
       await signOut();
       
       toast({
-        title: 'Konto raderat',
-        description: 'Ditt konto och alla uppgifter har raderats.',
+        title: 'Account deleted',
+        description: 'Your account and all data have been deleted.',
       });
     } catch (error) {
       toast({
-        title: 'Radering misslyckades',
-        description: 'Kunde inte radera kontot. Försök igen eller kontakta support.',
+        title: 'Deletion failed',
+        description: 'Could not delete account. Please try again or contact support.',
         variant: 'destructive',
       });
     } finally {
@@ -157,26 +164,31 @@ export function ProfileView() {
       {/* Profile Header */}
       <div className="bg-gradient-to-b from-primary/10 to-background p-6 pb-8">
         <div className="flex items-start justify-between mb-6">
-          <div className="w-16 h-16 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-2xl font-serif font-semibold">
-            {profile.username.charAt(0).toUpperCase()}
+          <div className="relative group">
+            <Avatar className="w-20 h-20">
+              <AvatarFallback className="text-2xl font-serif font-semibold bg-primary text-primary-foreground">
+                {profile.username.charAt(0).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <label className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+              <Camera className="w-6 h-6 text-white" />
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleAvatarUpload}
+                className="hidden"
+                disabled={uploading}
+              />
+            </label>
           </div>
           
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setShowSettings(!showSettings)}
-            >
-              <Settings className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={handleSignOut}
-            >
-              <LogOut className="w-4 h-4" />
-            </Button>
-          </div>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handleSignOut}
+          >
+            <LogOut className="w-4 h-4" />
+          </Button>
         </div>
         
         <h1 className="font-serif text-2xl font-semibold mb-1">@{profile.username}</h1>
@@ -209,144 +221,102 @@ export function ProfileView() {
         </Card>
       </div>
       
-      {/* Settings Panel */}
-      {showSettings && (
-        <div className="p-4 animate-slide-up space-y-4">
-          <Card>
-            <CardContent className="p-4">
-              <h3 className="font-medium mb-4">Sekretessinställningar</h3>
-              
-              <div className="flex items-center justify-between">
+      {/* Settings - Always visible */}
+      <div className="p-4 space-y-4">
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 mb-4">
+              <Settings className="w-4 h-4" />
+              <h3 className="font-medium">Privacy Settings</h3>
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div>
+                <Label htmlFor="privacy" className="text-sm font-medium">Public profile</Label>
+                <p className="text-xs text-muted-foreground">
+                  Everyone can see your profile and tips
+                </p>
+              </div>
+              <Switch
+                id="privacy"
+                checked={profile.privacy_setting === 'public'}
+                onCheckedChange={handlePrivacyChange}
+              />
+            </div>
+          </CardContent>
+        </Card>
+        
+        {/* GDPR Data Rights */}
+        <Card>
+          <CardContent className="p-4">
+            <h3 className="font-medium mb-4">Your Rights (GDPR)</h3>
+            
+            <div className="space-y-4">
+              <div className="flex items-start justify-between gap-4">
                 <div>
-                  <Label htmlFor="privacy" className="text-sm font-medium">Offentlig profil</Label>
+                  <p className="text-sm font-medium">Export your data</p>
                   <p className="text-xs text-muted-foreground">
-                    Alla kan se din profil och dina tips
+                    Download all your data as a JSON file
                   </p>
                 </div>
-                <Switch
-                  id="privacy"
-                  checked={profile.privacy_setting === 'public'}
-                  onCheckedChange={handlePrivacyChange}
-                />
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={handleExportData}
+                  disabled={isExporting}
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  {isExporting ? 'Exporting...' : 'Export'}
+                </Button>
               </div>
-            </CardContent>
-          </Card>
-          
-          {/* GDPR Data Rights */}
-          <Card>
-            <CardContent className="p-4">
-              <h3 className="font-medium mb-4">Dina rättigheter (GDPR)</h3>
               
-              <div className="space-y-4">
+              <div className="border-t border-border pt-4">
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <p className="text-sm font-medium">Exportera dina uppgifter</p>
+                    <p className="text-sm font-medium text-destructive">Delete account</p>
                     <p className="text-xs text-muted-foreground">
-                      Ladda ner all din data som en JSON-fil
+                      Permanently delete your account and all data
                     </p>
                   </div>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={handleExportData}
-                    disabled={isExporting}
-                  >
-                    <Download className="w-4 h-4 mr-2" />
-                    {isExporting ? 'Exporterar...' : 'Exportera'}
-                  </Button>
-                </div>
-                
-                <div className="border-t border-border pt-4">
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <p className="text-sm font-medium text-destructive">Radera konto</p>
-                      <p className="text-xs text-muted-foreground">
-                        Permanent radera ditt konto och all data
-                      </p>
-                    </div>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="destructive" size="sm" disabled={isDeleting}>
-                          <Trash2 className="w-4 h-4 mr-2" />
-                          Radera
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle className="flex items-center gap-2">
-                            <AlertTriangle className="w-5 h-5 text-destructive" />
-                            Radera konto permanent
-                          </AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Detta kan inte ångras. All din data kommer att raderas permanent, inklusive:
-                            <ul className="list-disc pl-6 mt-2 space-y-1">
-                              <li>Din profil och kontoinformation</li>
-                              <li>Alla dina tips och bilder</li>
-                              <li>Dina vänner och meddelanden</li>
-                            </ul>
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Avbryt</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={handleDeleteAccount}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                          >
-                            {isDeleting ? 'Raderar...' : 'Ja, radera mitt konto'}
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </div>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="destructive" size="sm" disabled={isDeleting}>
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Delete
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle className="flex items-center gap-2">
+                          <AlertTriangle className="w-5 h-5 text-destructive" />
+                          Permanently delete account
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This cannot be undone. All your data will be permanently deleted, including:
+                          <ul className="list-disc pl-6 mt-2 space-y-1">
+                            <li>Your profile and account information</li>
+                            <li>All your tips and images</li>
+                            <li>Your friends and messages</li>
+                          </ul>
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={handleDeleteAccount}
+                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        >
+                          {isDeleting ? 'Deleting...' : 'Yes, delete my account'}
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-      
-      {/* User Tips */}
-      <div className="p-4">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-medium">Your Tips</h3>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowBulkImport(true)}
-          >
-            <Sparkles className="w-4 h-4 mr-2" />
-            AI Import
-          </Button>
-        </div>
-        
-        {loadingTips ? (
-          <p className="text-sm text-muted-foreground">Loading tips...</p>
-        ) : userTips && userTips.length > 0 ? (
-          <div className="space-y-3">
-            {userTips.map(tip => (
-              <TipCard key={tip.id} tip={tip} onClick={() => setSelectedTip(tip)} />
-            ))}
-          </div>
-        ) : (
-          <Card className="border-dashed">
-            <CardContent className="p-8 text-center">
-              <MapPin className="w-8 h-8 mx-auto mb-3 text-muted-foreground" />
-              <p className="text-muted-foreground">You haven't shared any tips yet.</p>
-              <p className="text-sm text-muted-foreground mt-1">
-                Start sharing your travel experiences!
-              </p>
-            </CardContent>
-          </Card>
-        )}
+            </div>
+          </CardContent>
+        </Card>
       </div>
-      
-      {selectedTip && (
-        <TipDetail tip={selectedTip} onClose={() => setSelectedTip(null)} />
-      )}
-      
-      {showBulkImport && (
-        <BulkTipImport onClose={() => setShowBulkImport(false)} />
-      )}
     </div>
   );
 }
