@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Search, ChevronDown, ChevronRight, Filter, ArrowUpDown } from 'lucide-react';
+import { Search, ChevronDown, ChevronRight, Filter, ArrowUpDown, Users, User, Globe2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
@@ -12,34 +12,78 @@ import {
   DropdownMenuSeparator,
   DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { TipCard } from '@/components/tips/TipCard';
 import { TipDetail } from '@/components/tips/TipDetail';
 import { useTips, useCountries } from '@/hooks/useTips';
-import type { Tip, TipCategory } from '@/types';
+import { useFriendships } from '@/hooks/useFriendships';
+import { useAuth } from '@/hooks/useAuth';
+import type { Tip, TipCategory, Profile } from '@/types';
 import { CATEGORY_LABELS, CATEGORY_ICONS } from '@/types';
 
 const allCategories: TipCategory[] = ['general', 'food', 'attractions', 'activities', 'accommodation', 'other'];
 
 type SortOption = 'alphabetical' | 'most_tips';
+type UserFilterType = 'all' | 'friends' | 'me' | string;
 
 export function ListView() {
+  const { user } = useAuth();
   const { data: tips, isLoading } = useTips();
   const { data: countries } = useCountries();
+  const { data: friendships } = useFriendships();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<Set<TipCategory>>(new Set(allCategories));
   const [expandedCountries, setExpandedCountries] = useState<Set<string>>(new Set());
   const [selectedTip, setSelectedTip] = useState<Tip | null>(null);
   const [sortBy, setSortBy] = useState<SortOption>('alphabetical');
+  const [userFilter, setUserFilter] = useState<UserFilterType>('all');
+
+  // Get accepted friends
+  const acceptedFriends = useMemo(() => {
+    if (!user || !friendships) return [];
+    return friendships
+      .filter(f => f.status === 'accepted')
+      .map(f => {
+        const friend = f.requester_id === user.id ? f.addressee : f.requester;
+        return friend;
+      })
+      .filter(Boolean) as Profile[];
+  }, [user, friendships]);
+
+  const friendIds = useMemo(() => acceptedFriends.map(f => f.id), [acceptedFriends]);
   
   const countriesMap = useMemo(() => {
     if (!countries) return new Map();
     return new Map(countries.map(c => [c.id, c]));
   }, [countries]);
+
+  // Filter tips based on user filter
+  const userFilteredTips = useMemo(() => {
+    if (!tips) return [];
+    
+    switch (userFilter) {
+      case 'all':
+        return tips;
+      case 'friends':
+        return tips.filter(tip => friendIds.includes(tip.user_id));
+      case 'me':
+        return user ? tips.filter(tip => tip.user_id === user.id) : [];
+      default:
+        // Specific friend ID
+        return tips.filter(tip => tip.user_id === userFilter);
+    }
+  }, [tips, userFilter, friendIds, user]);
   
   const filteredAndGroupedTips = useMemo(() => {
-    if (!tips) return new Map();
+    if (!userFilteredTips) return new Map();
     
-    const filtered = tips.filter(tip => {
+    const filtered = userFilteredTips.filter(tip => {
       const matchesSearch = 
         tip.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         tip.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -78,7 +122,18 @@ export function ListView() {
     });
     
     return new Map(sortedEntries);
-  }, [tips, searchQuery, selectedCategories, countriesMap, sortBy]);
+  }, [userFilteredTips, searchQuery, selectedCategories, countriesMap, sortBy]);
+
+  const getUserFilterLabel = () => {
+    switch (userFilter) {
+      case 'all': return 'All';
+      case 'friends': return 'Friends';
+      case 'me': return 'My tips';
+      default:
+        const friend = acceptedFriends.find(f => f.id === userFilter);
+        return friend?.username || 'Friend';
+    }
+  };
   
   const toggleCountry = (countryId: string) => {
     setExpandedCountries(prev => {
@@ -127,7 +182,56 @@ export function ListView() {
             />
           </div>
           
-          <DropdownMenu>
+          {/* User filter */}
+          <Select value={userFilter} onValueChange={(value) => setUserFilter(value)}>
+            <SelectTrigger className="w-[130px]">
+              <Users className="w-4 h-4 mr-2" />
+              <SelectValue>{getUserFilterLabel()}</SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">
+                <div className="flex items-center gap-2">
+                  <Globe2 className="w-4 h-4" />
+                  All users
+                </div>
+              </SelectItem>
+              {user && (
+                <>
+                  <SelectItem value="me">
+                    <div className="flex items-center gap-2">
+                      <User className="w-4 h-4" />
+                      My tips
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="friends">
+                    <div className="flex items-center gap-2">
+                      <Users className="w-4 h-4" />
+                      All friends
+                    </div>
+                  </SelectItem>
+                  {acceptedFriends.length > 0 && (
+                    <>
+                      <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground">
+                        Specific friend
+                      </div>
+                      {acceptedFriends.map(friend => (
+                        <SelectItem key={friend.id} value={friend.id}>
+                          <div className="flex items-center gap-2">
+                            <div className="w-4 h-4 rounded-full bg-primary/20 flex items-center justify-center text-[10px] font-medium">
+                              {friend.username.substring(0, 1).toUpperCase()}
+                            </div>
+                            {friend.username}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </>
+                  )}
+                </>
+              )}
+            </SelectContent>
+          </Select>
+          
+          <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="icon">
                 <Filter className="w-4 h-4" />
@@ -140,6 +244,7 @@ export function ListView() {
                   key={category}
                   checked={selectedCategories.has(category)}
                   onCheckedChange={() => toggleCategory(category)}
+                  onSelect={(e) => e.preventDefault()}
                 >
                   {CATEGORY_ICONS[category]} {CATEGORY_LABELS[category]}
                 </DropdownMenuCheckboxItem>

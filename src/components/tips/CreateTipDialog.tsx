@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { X } from 'lucide-react';
+import { X, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -15,6 +15,7 @@ import { useCountries, useCreateTip } from '@/hooks/useTips';
 import { useToast } from '@/hooks/use-toast';
 import { ImageUpload } from './ImageUpload';
 import { AddressAutocomplete } from './AddressAutocomplete';
+import { BulkTipImport } from './BulkTipImport';
 import type { TipCategory } from '@/types';
 import { CATEGORY_LABELS, CATEGORY_ICONS } from '@/types';
 
@@ -28,6 +29,7 @@ export function CreateTipDialog({ onClose }: CreateTipDialogProps) {
   const { data: countries, isLoading: loadingCountries } = useCountries();
   const createTip = useCreateTip();
   const { toast } = useToast();
+  const [showBulkImport, setShowBulkImport] = useState(false);
   
   const [formData, setFormData] = useState({
     country_id: '',
@@ -39,6 +41,11 @@ export function CreateTipDialog({ onClose }: CreateTipDialogProps) {
     longitude: null as number | null,
   });
   const [images, setImages] = useState<string[]>([]);
+
+  // If showing bulk import, render that instead
+  if (showBulkImport) {
+    return <BulkTipImport onClose={() => setShowBulkImport(false)} />;
+  }
 
   // Get the selected country's code for address filtering
   const selectedCountryCode = useMemo(() => {
@@ -101,9 +108,20 @@ export function CreateTipDialog({ onClose }: CreateTipDialogProps) {
       <div className="fixed inset-x-4 top-[5%] bottom-[5%] md:inset-x-auto md:left-1/2 md:-translate-x-1/2 md:w-full md:max-w-lg bg-card rounded-xl shadow-strong overflow-hidden animate-scale-in">
         <div className="flex items-center justify-between p-4 border-b border-border">
           <h2 className="font-serif text-xl font-semibold">Share a Tip</h2>
-          <Button variant="ghost" size="icon" onClick={onClose}>
-            <X className="w-5 h-5" />
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => setShowBulkImport(true)}
+              className="text-primary"
+            >
+              <Sparkles className="w-4 h-4 mr-1" />
+              AI Import
+            </Button>
+            <Button variant="ghost" size="icon" onClick={onClose}>
+              <X className="w-5 h-5" />
+            </Button>
+          </div>
         </div>
         
         <form onSubmit={handleSubmit} className="p-6 overflow-y-auto max-h-[calc(100%-4rem)] space-y-5">

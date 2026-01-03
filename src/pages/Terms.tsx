@@ -9,112 +9,110 @@ export default function Terms() {
         <Link to="/">
           <Button variant="ghost" className="mb-6">
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Tillbaka
+            Back
           </Button>
         </Link>
 
-        <h1 className="text-3xl md:text-4xl font-serif font-semibold mb-2">Användarvillkor</h1>
-        <p className="text-muted-foreground mb-8">Senast uppdaterad: {new Date().toLocaleDateString('sv-SE')}</p>
+        <h1 className="text-3xl md:text-4xl font-serif font-semibold mb-2">Terms of Service</h1>
+        <p className="text-muted-foreground mb-8">Last updated: {new Date().toLocaleDateString('en-US')}</p>
 
         <div className="prose prose-slate dark:prose-invert max-w-none space-y-8">
           <section>
-            <h2 className="text-xl font-serif font-medium mb-3">1. Godkännande av villkor</h2>
+            <h2 className="text-xl font-serif font-medium mb-3">1. Acceptance of Terms</h2>
             <p className="text-muted-foreground leading-relaxed">
-              Genom att använda denna tjänst godkänner du dessa användarvillkor. 
-              Om du inte accepterar villkoren, vänligen använd inte tjänsten.
+              By using this service, you agree to these terms of service. 
+              If you do not accept the terms, please do not use the service.
             </p>
           </section>
 
           <section>
-            <h2 className="text-xl font-serif font-medium mb-3">2. Tjänstebeskrivning</h2>
+            <h2 className="text-xl font-serif font-medium mb-3">2. Service Description</h2>
             <p className="text-muted-foreground leading-relaxed">
-              Tjänsten är en plattform för att dela och upptäcka resetips. 
-              Användare kan skapa, dela och spara resetips samt interagera med andra användare.
+              The service is a platform for sharing and discovering travel tips. 
+              Users can create, share, and save travel tips as well as interact with other users.
             </p>
           </section>
 
           <section>
-            <h2 className="text-xl font-serif font-medium mb-3">3. Användarkonto</h2>
+            <h2 className="text-xl font-serif font-medium mb-3">3. User Account</h2>
             <ul className="list-disc pl-6 text-muted-foreground space-y-2">
-              <li>Du måste vara minst 16 år för att använda tjänsten</li>
-              <li>Du ansvarar för att hålla dina inloggningsuppgifter säkra</li>
-              <li>Du är ansvarig för all aktivitet på ditt konto</li>
-              <li>Du måste ange korrekt information vid registrering</li>
+              <li>You must be at least 16 years old to use the service</li>
+              <li>You are responsible for keeping your login credentials secure</li>
+              <li>You are responsible for all activity on your account</li>
+              <li>You must provide accurate information when registering</li>
             </ul>
           </section>
 
           <section>
-            <h2 className="text-xl font-serif font-medium mb-3">4. Användarinnehåll</h2>
+            <h2 className="text-xl font-serif font-medium mb-3">4. User Content</h2>
             <p className="text-muted-foreground leading-relaxed mb-4">
-              Du behåller äganderätten till innehåll du skapar. Genom att publicera innehåll 
-              ger du oss en licens att visa och distribuera det inom tjänsten.
+              You retain ownership of content you create. By publishing content, 
+              you grant us a license to display and distribute it within the service.
             </p>
-            <p className="text-muted-foreground leading-relaxed">Du får inte publicera innehåll som:</p>
+            <p className="text-muted-foreground leading-relaxed">You may not publish content that:</p>
             <ul className="list-disc pl-6 text-muted-foreground space-y-2 mt-4">
-              <li>Bryter mot lag eller andras rättigheter</li>
-              <li>Är kränkande, hotfullt eller diskriminerande</li>
-              <li>Innehåller vilseledande information</li>
-              <li>Är spam eller reklam utan tillåtelse</li>
+              <li>Violates laws or others' rights</li>
+              <li>Is offensive, threatening, or discriminatory</li>
+              <li>Contains misleading information</li>
+              <li>Is spam or unauthorized advertising</li>
             </ul>
           </section>
 
           <section>
-            <h2 className="text-xl font-serif font-medium mb-3">5. Uppförande</h2>
+            <h2 className="text-xl font-serif font-medium mb-3">5. Conduct</h2>
             <p className="text-muted-foreground leading-relaxed">
-              Du förväntas behandla andra användare med respekt. Vi förbehåller oss rätten 
-              att ta bort innehåll eller stänga av konton som bryter mot dessa villkor.
+              You are expected to treat other users with respect. We reserve the right 
+              to remove content or suspend accounts that violate these terms.
             </p>
           </section>
 
           <section>
-            <h2 className="text-xl font-serif font-medium mb-3">6. Immateriella rättigheter</h2>
+            <h2 className="text-xl font-serif font-medium mb-3">6. Intellectual Property</h2>
             <p className="text-muted-foreground leading-relaxed">
-              Tjänstens design, kod och varumärken tillhör oss. Du får inte kopiera, 
-              modifiera eller distribuera dessa utan skriftligt tillstånd.
+              The service's design, code, and trademarks belong to us. You may not copy, 
+              modify, or distribute these without written permission.
             </p>
           </section>
 
           <section>
-            <h2 className="text-xl font-serif font-medium mb-3">7. Ansvarsbegränsning</h2>
+            <h2 className="text-xl font-serif font-medium mb-3">7. Limitation of Liability</h2>
             <p className="text-muted-foreground leading-relaxed">
-              Tjänsten tillhandahålls "i befintligt skick". Vi garanterar inte att tjänsten 
-              alltid är tillgänglig eller felfri. Vi ansvarar inte för skador som uppstår 
-              genom användning av tjänsten, i den utsträckning lagen tillåter.
+              The service is provided "as is". We do not guarantee that the service 
+              will always be available or error-free. We are not liable for damages arising 
+              from use of the service, to the extent permitted by law.
             </p>
           </section>
 
           <section>
-            <h2 className="text-xl font-serif font-medium mb-3">8. Avsluta konto</h2>
+            <h2 className="text-xl font-serif font-medium mb-3">8. Account Termination</h2>
             <p className="text-muted-foreground leading-relaxed">
-              Du kan när som helst avsluta ditt konto via profilinställningarna. 
-              Vid kontoavslutning raderas dina uppgifter i enlighet med vår{' '}
-              <Link to="/privacy" className="text-primary hover:underline">
-                integritetspolicy
-              </Link>.
+              You can terminate your account at any time via profile settings. 
+              We may also terminate accounts that violate these terms.
             </p>
           </section>
 
           <section>
-            <h2 className="text-xl font-serif font-medium mb-3">9. Ändringar av villkor</h2>
+            <h2 className="text-xl font-serif font-medium mb-3">9. Changes to Terms</h2>
             <p className="text-muted-foreground leading-relaxed">
-              Vi kan uppdatera dessa villkor. Vid väsentliga ändringar informerar vi dig 
-              via e-post eller i tjänsten. Fortsatt användning efter ändring innebär 
-              att du accepterar de nya villkoren.
+              We may update these terms. Significant changes will be announced 
+              via email or in the service.
             </p>
           </section>
 
           <section>
-            <h2 className="text-xl font-serif font-medium mb-3">10. Tillämplig lag</h2>
+            <h2 className="text-xl font-serif font-medium mb-3">10. Governing Law</h2>
             <p className="text-muted-foreground leading-relaxed">
-              Dessa villkor lyder under svensk lag. Eventuella tvister ska i första hand 
-              lösas genom förhandling, i andra hand genom allmän domstol i Sverige.
+              These terms are governed by the laws of Sweden.
             </p>
           </section>
 
           <section>
-            <h2 className="text-xl font-serif font-medium mb-3">11. Kontakt</h2>
+            <h2 className="text-xl font-serif font-medium mb-3">11. Contact</h2>
             <p className="text-muted-foreground leading-relaxed">
-              För frågor om dessa villkor, kontakta oss via tjänstens kontaktfunktion.
+              If you have questions about these terms, please contact us at{' '}
+              <a href="mailto:support@tiptip.app" className="text-primary hover:underline">
+                support@tiptip.app
+              </a>.
             </p>
           </section>
         </div>

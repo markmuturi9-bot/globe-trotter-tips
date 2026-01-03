@@ -54,11 +54,11 @@ export function CookieConsent() {
           
           <div className="flex-1 space-y-4">
             <div>
-              <h3 className="font-display font-semibold text-foreground mb-1.5">Vi använder cookies</h3>
+              <h3 className="font-display font-semibold text-foreground mb-1.5">We use cookies</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                Vi använder nödvändiga cookies för att tjänsten ska fungera.{' '}
+                We use necessary cookies for the service to function.{' '}
                 <Link to="/privacy" className="text-primary hover:underline font-medium">
-                  Läs vår integritetspolicy
+                  Read our privacy policy
                 </Link>.
               </p>
             </div>
@@ -67,36 +67,36 @@ export function CookieConsent() {
               <div className="space-y-3 border-t border-border/50 pt-4 animate-fade-in">
                 <div className="flex items-start justify-between gap-4 p-3 rounded-xl bg-muted/30">
                   <div>
-                    <p className="text-sm font-medium">Nödvändiga cookies</p>
+                    <p className="text-sm font-medium">Necessary cookies</p>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      Krävs för inloggning och grundläggande funktionalitet.
+                      Required for login and basic functionality.
                     </p>
                   </div>
-                  <span className="text-xs text-primary bg-primary/10 px-2.5 py-1 rounded-full font-medium">Alltid på</span>
+                  <span className="text-xs text-primary bg-primary/10 px-2.5 py-1 rounded-full font-medium">Always on</span>
                 </div>
                 
                 <div className="flex items-start justify-between gap-4 p-3 rounded-xl bg-muted/30">
                   <div>
-                    <p className="text-sm font-medium">Funktionella cookies</p>
+                    <p className="text-sm font-medium">Functional cookies</p>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      Sparar dina preferenser som sidofältets läge.
+                      Saves your preferences like sidebar state.
                     </p>
                   </div>
-                  <span className="text-xs text-muted-foreground">Valfritt</span>
+                  <span className="text-xs text-muted-foreground">Optional</span>
                 </div>
               </div>
             )}
 
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
               <Button onClick={handleAcceptAll} className="flex-1 sm:flex-none">
-                Acceptera alla
+                Accept all
               </Button>
               <Button 
                 variant="outline" 
                 onClick={handleAcceptNecessary}
                 className="flex-1 sm:flex-none"
               >
-                Endast nödvändiga
+                Necessary only
               </Button>
               <Button 
                 variant="ghost" 
@@ -104,9 +104,9 @@ export function CookieConsent() {
                 className="text-sm gap-1.5"
               >
                 {showDetails ? (
-                  <>Dölj detaljer <ChevronUp className="w-4 h-4" /></>
+                  <>Hide details <ChevronUp className="w-4 h-4" /></>
                 ) : (
-                  <>Visa detaljer <ChevronDown className="w-4 h-4" /></>
+                  <>Show details <ChevronDown className="w-4 h-4" /></>
                 )}
               </Button>
             </div>

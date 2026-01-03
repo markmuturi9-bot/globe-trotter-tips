@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
 import { useTipsByUser } from '@/hooks/useTips';
 import { useImageUpload } from '@/hooks/useImageUpload';
@@ -68,9 +68,19 @@ export function ProfileView() {
       const imageUrl = await uploadImage(file);
       if (!imageUrl) throw new Error('Upload failed');
       
+      // Save avatar URL to profile
+      const { error } = await supabase
+        .from('profiles')
+        .update({ avatar_url: imageUrl })
+        .eq('id', user.id);
+      
+      if (error) throw error;
+      
+      await refreshProfile();
+      
       toast({
-        title: 'Profile picture uploaded',
-        description: 'Your profile picture has been uploaded.',
+        title: 'Profile picture updated',
+        description: 'Your profile picture has been saved.',
       });
     } catch (error: any) {
       toast({
@@ -166,6 +176,7 @@ export function ProfileView() {
         <div className="flex items-start justify-between mb-6">
           <div className="relative group">
             <Avatar className="w-20 h-20">
+              <AvatarImage src={(profile as any).avatar_url} alt={profile.username} />
               <AvatarFallback className="text-2xl font-serif font-semibold bg-primary text-primary-foreground">
                 {profile.username.charAt(0).toUpperCase()}
               </AvatarFallback>
