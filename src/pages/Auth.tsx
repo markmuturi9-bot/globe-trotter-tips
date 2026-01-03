@@ -44,7 +44,7 @@ export default function Auth() {
     try {
       if (isSignUp) {
         if (!acceptedTerms) {
-          setErrors({ terms: "Du måste godkänna villkoren för att registrera dig" });
+          setErrors({ terms: "You must accept the terms to sign up" });
           setLoading(false);
           return;
         }
@@ -212,13 +212,13 @@ export default function Auth() {
                       className="mt-0.5"
                     />
                     <Label htmlFor="terms" className="text-sm leading-relaxed cursor-pointer text-muted-foreground">
-                      Jag godkänner{' '}
+                      I accept the{' '}
                       <Link to="/terms" className="text-primary hover:underline font-medium" target="_blank">
-                        användarvillkoren
+                        terms of service
                       </Link>{' '}
-                      och{' '}
+                      and{' '}
                       <Link to="/privacy" className="text-primary hover:underline font-medium" target="_blank">
-                        integritetspolicyn
+                        privacy policy
                       </Link>
                     </Label>
                   </div>
@@ -227,17 +227,17 @@ export default function Auth() {
               )}
 
               <Button type="submit" className="w-full" size="lg" disabled={loading}>
-                {loading ? "Loading..." : isSignUp ? "Skapa konto" : "Logga in"}
+                {loading ? "Loading..." : isSignUp ? "Create account" : "Sign in"}
               </Button>
             </form>
           </CardContent>
         </Card>
 
         <p className="text-center text-xs text-muted-foreground mt-6 px-4">
-          Genom att använda tjänsten godkänner du våra{' '}
-          <Link to="/terms" className="text-primary hover:underline">villkor</Link>
-          {' '}och{' '}
-          <Link to="/privacy" className="text-primary hover:underline">integritetspolicy</Link>.
+          By using the service, you agree to our{' '}
+          <Link to="/terms" className="text-primary hover:underline">terms</Link>
+          {' '}and{' '}
+          <Link to="/privacy" className="text-primary hover:underline">privacy policy</Link>.
         </p>
       </div>
     </div>

@@ -9,139 +9,131 @@ export default function Privacy() {
         <Link to="/">
           <Button variant="ghost" className="mb-6">
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Tillbaka
+            Back
           </Button>
         </Link>
 
-        <h1 className="text-3xl md:text-4xl font-serif font-semibold mb-2">Integritetspolicy</h1>
-        <p className="text-muted-foreground mb-8">Senast uppdaterad: {new Date().toLocaleDateString('sv-SE')}</p>
+        <h1 className="text-3xl md:text-4xl font-serif font-semibold mb-2">Privacy Policy</h1>
+        <p className="text-muted-foreground mb-8">Last updated: {new Date().toLocaleDateString('en-US')}</p>
 
         <div className="prose prose-slate dark:prose-invert max-w-none space-y-8">
           <section>
-            <h2 className="text-xl font-serif font-medium mb-3">1. Inledning</h2>
+            <h2 className="text-xl font-serif font-medium mb-3">1. Introduction</h2>
             <p className="text-muted-foreground leading-relaxed">
-              Vi värnar om din integritet och är engagerade i att skydda dina personuppgifter. 
-              Denna integritetspolicy förklarar hur vi samlar in, använder och skyddar din information 
-              i enlighet med EU:s dataskyddsförordning (GDPR) och svensk lagstiftning.
+              We value your privacy and are committed to protecting your personal data. 
+              This privacy policy explains how we collect, use, and protect your information 
+              in accordance with the EU General Data Protection Regulation (GDPR) and applicable laws.
             </p>
           </section>
 
           <section>
-            <h2 className="text-xl font-serif font-medium mb-3">2. Personuppgiftsansvarig</h2>
+            <h2 className="text-xl font-serif font-medium mb-3">2. Data Controller</h2>
             <p className="text-muted-foreground leading-relaxed">
-              Personuppgiftsansvarig för behandlingen av dina personuppgifter är tjänstens ägare. 
-              Du kan kontakta oss via e-post för frågor om dataskydd.
+              The data controller for the processing of your personal data is the service owner. 
+              You can contact us via email for questions about data protection.
             </p>
           </section>
 
           <section>
-            <h2 className="text-xl font-serif font-medium mb-3">3. Vilka uppgifter vi samlar in</h2>
-            <p className="text-muted-foreground leading-relaxed mb-4">Vi samlar in följande kategorier av personuppgifter:</p>
+            <h2 className="text-xl font-serif font-medium mb-3">3. What Data We Collect</h2>
+            <p className="text-muted-foreground leading-relaxed mb-4">We collect the following categories of personal data:</p>
             <ul className="list-disc pl-6 text-muted-foreground space-y-2">
-              <li><strong>Kontouppgifter:</strong> E-postadress, användarnamn</li>
-              <li><strong>Innehåll du skapar:</strong> Resestipar, platser, bilder du laddar upp</li>
-              <li><strong>Teknisk data:</strong> IP-adress, webbläsartyp, enhetsinformation</li>
-              <li><strong>Användningsdata:</strong> Hur du interagerar med tjänsten</li>
+              <li><strong>Account information:</strong> Email address, username</li>
+              <li><strong>Content you create:</strong> Travel tips, locations, images you upload</li>
+              <li><strong>Technical data:</strong> IP address, browser type, device information</li>
+              <li><strong>Usage data:</strong> How you interact with the service</li>
             </ul>
           </section>
 
           <section>
-            <h2 className="text-xl font-serif font-medium mb-3">4. Rättslig grund för behandling</h2>
-            <p className="text-muted-foreground leading-relaxed mb-4">Vi behandlar dina personuppgifter baserat på:</p>
+            <h2 className="text-xl font-serif font-medium mb-3">4. Legal Basis for Processing</h2>
+            <p className="text-muted-foreground leading-relaxed mb-4">We process your personal data based on:</p>
             <ul className="list-disc pl-6 text-muted-foreground space-y-2">
-              <li><strong>Avtal:</strong> För att tillhandahålla tjänsten du registrerat dig för</li>
-              <li><strong>Samtycke:</strong> När du godkänner cookies eller viss databehandling</li>
-              <li><strong>Berättigat intresse:</strong> För att förbättra och säkra tjänsten</li>
+              <li><strong>Contract:</strong> To provide the service you registered for</li>
+              <li><strong>Consent:</strong> When you accept cookies or certain data processing</li>
+              <li><strong>Legitimate interest:</strong> To improve and secure the service</li>
             </ul>
           </section>
 
           <section>
-            <h2 className="text-xl font-serif font-medium mb-3">5. Hur vi använder dina uppgifter</h2>
+            <h2 className="text-xl font-serif font-medium mb-3">5. How We Use Your Data</h2>
             <ul className="list-disc pl-6 text-muted-foreground space-y-2">
-              <li>Tillhandahålla och förbättra tjänsten</li>
-              <li>Hantera ditt användarkonto</li>
-              <li>Möjliggöra sociala funktioner (vänner, delning)</li>
-              <li>Skicka viktiga meddelanden om tjänsten</li>
-              <li>Analysera användning för att förbättra upplevelsen</li>
+              <li>Provide and improve the service</li>
+              <li>Manage your user account</li>
+              <li>Enable social features (friends, sharing)</li>
+              <li>Send important messages about the service</li>
+              <li>Analyze usage to improve the experience</li>
             </ul>
           </section>
 
           <section>
-            <h2 className="text-xl font-serif font-medium mb-3">6. Delning av uppgifter</h2>
+            <h2 className="text-xl font-serif font-medium mb-3">6. Data Sharing</h2>
             <p className="text-muted-foreground leading-relaxed">
-              Vi säljer aldrig dina personuppgifter. Vi kan dela data med:
+              We never sell your personal data. We may share data with:
             </p>
             <ul className="list-disc pl-6 text-muted-foreground space-y-2 mt-4">
-              <li><strong>Tjänsteleverantörer:</strong> Som hjälper oss driva tjänsten (hosting, autentisering)</li>
-              <li><strong>Rättsliga krav:</strong> Om vi är skyldiga enligt lag</li>
+              <li><strong>Service providers:</strong> Who help us run the service (hosting, authentication)</li>
+              <li><strong>Legal requirements:</strong> If required by law</li>
             </ul>
           </section>
 
           <section>
-            <h2 className="text-xl font-serif font-medium mb-3">7. Lagring och säkerhet</h2>
+            <h2 className="text-xl font-serif font-medium mb-3">7. Storage and Security</h2>
             <p className="text-muted-foreground leading-relaxed">
-              Dina uppgifter lagras på säkra servrar inom EU/EES. Vi använder kryptering och 
-              andra tekniska åtgärder för att skydda din data. Vi behåller dina uppgifter 
-              så länge du har ett konto hos oss eller så länge det krävs enligt lag.
+              Your data is stored on secure servers within the EU/EEA. We use encryption and 
+              other technical measures to protect your data. We retain your data 
+              as long as you have an account with us or as required by law.
             </p>
           </section>
 
           <section>
-            <h2 className="text-xl font-serif font-medium mb-3">8. Dina rättigheter</h2>
+            <h2 className="text-xl font-serif font-medium mb-3">8. Your Rights</h2>
             <p className="text-muted-foreground leading-relaxed mb-4">
-              Enligt GDPR har du följande rättigheter:
+              Under GDPR, you have the following rights:
             </p>
             <ul className="list-disc pl-6 text-muted-foreground space-y-2">
-              <li><strong>Tillgång:</strong> Du kan begära en kopia av dina uppgifter</li>
-              <li><strong>Rättelse:</strong> Du kan korrigera felaktiga uppgifter</li>
-              <li><strong>Radering:</strong> Du kan begära att vi raderar dina uppgifter</li>
-              <li><strong>Begränsning:</strong> Du kan begränsa hur vi använder dina uppgifter</li>
-              <li><strong>Dataportabilitet:</strong> Du kan exportera dina uppgifter</li>
-              <li><strong>Invändning:</strong> Du kan invända mot viss behandling</li>
+              <li><strong>Access:</strong> You can request a copy of your data</li>
+              <li><strong>Correction:</strong> You can correct inaccurate data</li>
+              <li><strong>Deletion:</strong> You can request that we delete your data</li>
+              <li><strong>Restriction:</strong> You can limit how we use your data</li>
+              <li><strong>Data portability:</strong> You can export your data</li>
+              <li><strong>Objection:</strong> You can object to certain processing</li>
             </ul>
             <p className="text-muted-foreground leading-relaxed mt-4">
-              Du kan utöva dessa rättigheter via dina profilinställningar eller genom att kontakta oss.
+              You can exercise these rights via your profile settings or by contacting us.
             </p>
           </section>
 
           <section>
             <h2 className="text-xl font-serif font-medium mb-3">9. Cookies</h2>
             <p className="text-muted-foreground leading-relaxed">
-              Vi använder cookies för att tjänsten ska fungera korrekt. Se vår cookie-banner 
-              för mer information och för att hantera dina preferenser. Nödvändiga cookies 
-              krävs för autentisering och kan inte stängas av.
+              We use cookies for the service to function correctly. See our cookie banner 
+              for more information and to manage your preferences. Necessary cookies 
+              are required for authentication and cannot be turned off.
             </p>
           </section>
 
           <section>
-            <h2 className="text-xl font-serif font-medium mb-3">10. Ändringar i policyn</h2>
+            <h2 className="text-xl font-serif font-medium mb-3">10. Changes to Policy</h2>
             <p className="text-muted-foreground leading-relaxed">
-              Vi kan uppdatera denna policy vid behov. Vid väsentliga ändringar meddelar 
-              vi dig via e-post eller i tjänsten.
+              We may update this policy when needed. For significant changes, we will notify 
+              you via email or in the service.
             </p>
           </section>
 
           <section>
-            <h2 className="text-xl font-serif font-medium mb-3">11. Klagomål</h2>
+            <h2 className="text-xl font-serif font-medium mb-3">11. Complaints</h2>
             <p className="text-muted-foreground leading-relaxed">
-              Om du är missnöjd med hur vi hanterar dina personuppgifter har du rätt att 
-              lämna in ett klagomål till Integritetsskyddsmyndigheten (IMY) på{' '}
-              <a 
-                href="https://www.imy.se" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-primary hover:underline"
-              >
-                www.imy.se
-              </a>.
+              If you are dissatisfied with how we handle your personal data, you have the right to 
+              file a complaint with a data protection authority.
             </p>
           </section>
 
           <section>
-            <h2 className="text-xl font-serif font-medium mb-3">12. Kontakt</h2>
+            <h2 className="text-xl font-serif font-medium mb-3">12. Contact</h2>
             <p className="text-muted-foreground leading-relaxed">
-              För frågor om denna integritetspolicy eller hur vi behandlar dina uppgifter, 
-              kontakta oss via tjänstens kontaktfunktion.
+              For questions about this privacy policy or how we process your data, 
+              contact us via the service's contact function.
             </p>
           </section>
         </div>

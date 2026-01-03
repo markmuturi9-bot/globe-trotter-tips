@@ -8,14 +8,24 @@ import { useFriendships } from '@/hooks/useFriendships';
 import { useAuth } from '@/hooks/useAuth';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import type { Tip, Country, Profile } from '@/types';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuCheckboxItem,
+  DropdownMenuTrigger,
+  DropdownMenuLabel,
+} from '@/components/ui/dropdown-menu';
+import type { Tip, Country, Profile, TipCategory } from '@/types';
 import type { MapMarker } from '@/components/map/MapProvider';
+import { CATEGORY_LABELS, CATEGORY_ICONS } from '@/types';
 
 interface CountryWithTips extends Country {
   tipCount: number;
 }
 
 type FilterType = 'all' | 'friends' | 'me' | string; // string for specific friend ID
+
+const allCategories: TipCategory[] = ['general', 'food', 'attractions', 'activities', 'accommodation', 'other'];
 
 export function MapView() {
   const { user } = useAuth();
@@ -26,6 +36,7 @@ export function MapView() {
   const [selectedTip, setSelectedTip] = useState<Tip | null>(null);
   const [noLocationOpen, setNoLocationOpen] = useState(false);
   const [filter, setFilter] = useState<FilterType>('all');
+  const [selectedCategories, setSelectedCategories] = useState<Set<TipCategory>>(new Set(allCategories));
 
   // Get accepted friends
   const acceptedFriends = useMemo(() => {
@@ -41,22 +52,44 @@ export function MapView() {
 
   const friendIds = useMemo(() => acceptedFriends.map(f => f.id), [acceptedFriends]);
 
-  // Filter tips based on selected filter
+  const toggleCategory = (category: TipCategory) => {
+    setSelectedCategories(prev => {
+      const next = new Set(prev);
+      if (next.has(category)) {
+        next.delete(category);
+      } else {
+        next.add(category);
+      }
+      return next;
+    });
+  };
+
+  // Filter tips based on selected filter and categories
   const filteredTips = useMemo(() => {
     if (!allTips) return [];
     
+    let filtered = allTips;
+    
+    // Filter by user
     switch (filter) {
       case 'all':
-        return allTips;
+        break;
       case 'friends':
-        return allTips.filter(tip => friendIds.includes(tip.user_id));
+        filtered = filtered.filter(tip => friendIds.includes(tip.user_id));
+        break;
       case 'me':
-        return user ? allTips.filter(tip => tip.user_id === user.id) : [];
+        filtered = user ? filtered.filter(tip => tip.user_id === user.id) : [];
+        break;
       default:
         // Specific friend ID
-        return allTips.filter(tip => tip.user_id === filter);
+        filtered = filtered.filter(tip => tip.user_id === filter);
     }
-  }, [allTips, filter, friendIds, user]);
+    
+    // Filter by category
+    filtered = filtered.filter(tip => selectedCategories.has(tip.category));
+    
+    return filtered;
+  }, [allTips, filter, friendIds, user, selectedCategories]);
 
   // Recalculate countries with tips based on filtered tips
   const filteredCountriesWithTips = useMemo(() => {
@@ -172,11 +205,12 @@ export function MapView() {
 
   return (
     <div className="flex-1 flex flex-col h-full relative">
-      {/* Filter dropdown - top left */}
-      <div className="absolute top-4 left-4 z-10">
+      {/* Filter controls - top left */}
+      <div className="absolute top-4 left-4 z-10 flex gap-2">
+        {/* User filter */}
         <Select value={filter} onValueChange={(value) => setFilter(value)}>
-          <SelectTrigger className="w-[160px] bg-card shadow-lg">
-            <Filter className="w-4 h-4 mr-2" />
+          <SelectTrigger className="w-[140px] bg-card shadow-lg">
+            <Users className="w-4 h-4 mr-2" />
             <SelectValue>{getFilterLabel()}</SelectValue>
           </SelectTrigger>
           <SelectContent>
@@ -221,6 +255,34 @@ export function MapView() {
             )}
           </SelectContent>
         </Select>
+
+        {/* Category filter */}
+        <DropdownMenu modal={false}>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" className="bg-card shadow-lg">
+              <Filter className="w-4 h-4 mr-2" />
+              Categories
+              {selectedCategories.size < allCategories.length && (
+                <span className="ml-1 text-xs text-muted-foreground">
+                  ({selectedCategories.size})
+                </span>
+              )}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-48">
+            <DropdownMenuLabel>Categories</DropdownMenuLabel>
+            {allCategories.map(category => (
+              <DropdownMenuCheckboxItem
+                key={category}
+                checked={selectedCategories.has(category)}
+                onCheckedChange={() => toggleCategory(category)}
+                onSelect={(e) => e.preventDefault()}
+              >
+                {CATEGORY_ICONS[category]} {CATEGORY_LABELS[category]}
+              </DropdownMenuCheckboxItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* Back button when viewing a country - below filter */}

@@ -153,7 +153,7 @@ export function MapboxGlobe({
       style: 'mapbox://styles/mapbox/outdoors-v12',
       center: [mapConfig.center[1], mapConfig.center[0]], // Mapbox uses [lng, lat]
       zoom: mapConfig.zoom,
-      pitch: 20,
+      pitch: 0, // Set to 0 for better vertical centering
     });
 
     mapInstanceRef.current = map;
@@ -193,15 +193,15 @@ export function MapboxGlobe({
         url: 'mapbox://mapbox.country-boundaries-v1'
       });
 
-      // Add layer for all countries (semi-transparent gray overlay)
+      // Add layer for all countries (gray for countries without tips)
       map.addLayer({
         id: 'countries-gray',
         type: 'fill',
         source: 'country-boundaries',
         'source-layer': 'country_boundaries',
         paint: {
-          'fill-color': '#9ca3af',
-          'fill-opacity': 0.6
+          'fill-color': '#6b7280',
+          'fill-opacity': 0.4
         }
       });
 
@@ -212,7 +212,7 @@ export function MapboxGlobe({
         source: 'country-boundaries',
         'source-layer': 'country_boundaries',
         paint: {
-          'line-color': '#6b7280',
+          'line-color': '#4b5563',
           'line-width': 0.5
         }
       });
@@ -230,69 +230,31 @@ export function MapboxGlobe({
     };
   }, [apiKey, config, updateBoundsAndZoom]);
 
-  // Update highlighted countries with flag patterns
+  // Update highlighted countries with gold/yellow color
   useEffect(() => {
     const map = mapInstanceRef.current;
-    if (!map || !mapLoaded || highlightedIso3Codes.length === 0) return;
+    if (!map || !mapLoaded) return;
 
-    // Load flag images and apply patterns
-    const loadFlagsAndStyle = async () => {
-      const loadedFlags: string[] = [];
+    // Remove existing highlighted layer if it exists
+    if (map.getLayer('countries-highlighted')) {
+      map.removeLayer('countries-highlighted');
+    }
 
-      for (const code2 of highlightedCountryCodes) {
-        const code3 = iso2ToIso3[code2] || code2;
-        const flagUrl = `https://flagcdn.com/w160/${code2.toLowerCase()}.png`;
-        const imageId = `flag-${code3}`;
-
-        try {
-          // Check if image already loaded
-          if (!map.hasImage(imageId)) {
-            const response = await fetch(flagUrl);
-            const blob = await response.blob();
-            const imageBitmap = await createImageBitmap(blob);
-            
-            // Add the flag image to the map
-            map.addImage(imageId, imageBitmap);
-          }
-          loadedFlags.push(code3);
-        } catch (err) {
-          console.warn(`Failed to load flag for ${code2}:`, err);
+    if (highlightedIso3Codes.length > 0) {
+      // Add highlighted countries layer with gold/yellow color
+      map.addLayer({
+        id: 'countries-highlighted',
+        type: 'fill',
+        source: 'country-boundaries',
+        'source-layer': 'country_boundaries',
+        filter: ['in', ['get', 'iso_3166_1_alpha_3'], ['literal', highlightedIso3Codes]],
+        paint: {
+          'fill-color': '#fbbf24', // Gold/amber color
+          'fill-opacity': 0.7
         }
-      }
-
-      // Remove existing highlighted layer if it exists
-      if (map.getLayer('countries-highlighted')) {
-        map.removeLayer('countries-highlighted');
-      }
-
-      if (loadedFlags.length > 0) {
-        // Create a match expression for flag patterns
-        const matchExpression: any[] = ['match', ['get', 'iso_3166_1_alpha_3']];
-        
-        loadedFlags.forEach(code3 => {
-          matchExpression.push(code3, `flag-${code3}`);
-        });
-        
-        // Default fallback (shouldn't be visible due to filter)
-        matchExpression.push('flag-' + loadedFlags[0]);
-
-        // Add highlighted countries layer with flag patterns
-        map.addLayer({
-          id: 'countries-highlighted',
-          type: 'fill',
-          source: 'country-boundaries',
-          'source-layer': 'country_boundaries',
-          filter: ['in', ['get', 'iso_3166_1_alpha_3'], ['literal', loadedFlags]],
-          paint: {
-            'fill-pattern': matchExpression as any,
-            'fill-opacity': 0.9
-          }
-        }, 'country-borders');
-      }
-    };
-
-    loadFlagsAndStyle();
-  }, [highlightedCountryCodes, highlightedIso3Codes, mapLoaded]);
+      }, 'country-borders');
+    }
+  }, [highlightedIso3Codes, mapLoaded]);
 
   // Update markers when clusters change
   useEffect(() => {
