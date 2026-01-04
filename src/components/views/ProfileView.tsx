@@ -1,10 +1,12 @@
 import { useState } from 'react';
-import { Settings, LogOut, Calendar, FileText, Globe, Download, Trash2, AlertTriangle, Camera } from 'lucide-react';
+import { Settings, LogOut, Calendar, FileText, Globe, Download, Trash2, AlertTriangle, Camera, Mail, Lock, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
 import { useTipsByUser } from '@/hooks/useTips';
 import { useImageUpload } from '@/hooks/useImageUpload';
@@ -22,16 +24,67 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import appLogo from '@/assets/logo.png';
 
 export function ProfileView() {
-  const { user, profile, signOut, refreshProfile } = useAuth();
+  const { user, profile, signOut, signIn, signUp, loading, refreshProfile } = useAuth();
   const { data: userTips } = useTipsByUser(user?.id || null);
   const { toast } = useToast();
   const { uploadImage, uploading } = useImageUpload();
   const [isExporting, setIsExporting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   
+  // Auth form state
+  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState('');
+  const [authLoading, setAuthLoading] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
+  
   const uniqueCountries = new Set(userTips?.map(tip => tip.country_id) || []);
+
+  const handleAuthSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthLoading(true);
+    setAuthError(null);
+
+    try {
+      if (authMode === 'signup') {
+        if (!username.trim()) {
+          setAuthError('Username is required');
+          setAuthLoading(false);
+          return;
+        }
+        const { error } = await signUp(email, password, username);
+        if (error) {
+          if (error.message.includes('already registered')) {
+            setAuthError('This email is already registered. Please sign in instead.');
+          } else {
+            setAuthError(error.message);
+          }
+        } else {
+          toast({
+            title: 'Account created',
+            description: 'Welcome to TipTip! You can now start sharing tips.',
+          });
+        }
+      } else {
+        const { error } = await signIn(email, password);
+        if (error) {
+          if (error.message.includes('Invalid login credentials')) {
+            setAuthError('Invalid email or password. Please try again.');
+          } else {
+            setAuthError(error.message);
+          }
+        }
+      }
+    } catch (error: any) {
+      setAuthError(error.message || 'An error occurred');
+    } finally {
+      setAuthLoading(false);
+    }
+  };
   
   const handlePrivacyChange = async (isPublic: boolean) => {
     if (!user) return;
@@ -160,8 +213,114 @@ export function ProfileView() {
       setIsDeleting(false);
     }
   };
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
   
-  if (!user || !profile) {
+  // Show auth form when not logged in
+  if (!user) {
+    return (
+      <div className="flex-1 overflow-y-auto">
+        <div className="min-h-full flex flex-col items-center justify-center p-6">
+          <div className="w-full max-w-sm space-y-6">
+            {/* Logo */}
+            <div className="text-center">
+              <img src={appLogo} alt="TipTip" className="w-20 h-20 mx-auto mb-4 rounded-2xl shadow-lg" />
+              <h1 className="text-2xl font-display font-semibold">Welcome to TipTip</h1>
+              <p className="text-muted-foreground mt-1">Share and discover travel tips</p>
+            </div>
+
+            <Card>
+              <CardHeader className="pb-4">
+                <Tabs value={authMode} onValueChange={(v) => { setAuthMode(v as 'signin' | 'signup'); setAuthError(null); }}>
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="signin">Sign In</TabsTrigger>
+                    <TabsTrigger value="signup">Sign Up</TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleAuthSubmit} className="space-y-4">
+                  {authMode === 'signup' && (
+                    <div className="space-y-2">
+                      <Label htmlFor="username">Username</Label>
+                      <div className="relative">
+                        <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <Input
+                          id="username"
+                          type="text"
+                          placeholder="Choose a username"
+                          value={username}
+                          onChange={(e) => setUsername(e.target.value)}
+                          className="pl-10"
+                          required
+                        />
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="Enter your email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="pl-10"
+                        required
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="password">Password</Label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input
+                        id="password"
+                        type="password"
+                        placeholder="Enter your password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="pl-10"
+                        required
+                        minLength={6}
+                      />
+                    </div>
+                  </div>
+
+                  {authError && (
+                    <div className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
+                      {authError}
+                    </div>
+                  )}
+
+                  <Button type="submit" className="w-full" disabled={authLoading}>
+                    {authLoading ? 'Please wait...' : (authMode === 'signin' ? 'Sign In' : 'Create Account')}
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+  // Show loading for profile
+  if (!profile) {
     return (
       <div className="flex-1 flex items-center justify-center">
         <p className="text-muted-foreground">Loading profile...</p>

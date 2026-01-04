@@ -13,11 +13,14 @@ export default function Map() {
     <div className="min-h-screen flex flex-col bg-background">
       <Header onCreateTip={() => setShowCreateTip(true)} />
       
+      {/* Spacer for fixed header */}
+      <div className="h-16" style={{ paddingTop: 'env(safe-area-inset-top)' }} />
+      
       <div className="hidden md:block">
         <MainNav activeView="map" onViewChange={(view) => navigate(`/${view}`)} />
       </div>
       
-      <main className="flex-1 flex flex-col pb-16 md:pb-0">
+      <main className="flex-1 flex flex-col overflow-hidden" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 4rem)' }}>
         <MapView />
       </main>
       
