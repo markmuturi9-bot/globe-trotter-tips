@@ -194,6 +194,7 @@ export function MapboxGlobe({
       });
 
       // Add layer for all countries (gray for countries without tips)
+      // This layer will be hidden/shown via filter based on highlighted countries
       map.addLayer({
         id: 'countries-gray',
         type: 'fill',
@@ -201,8 +202,9 @@ export function MapboxGlobe({
         'source-layer': 'country_boundaries',
         paint: {
           'fill-color': '#6b7280',
-          'fill-opacity': 0.4
-        }
+          'fill-opacity': 0.5
+        },
+        filter: ['all'] // Initially show all countries in gray
       });
 
       // Add layer for country borders
@@ -230,7 +232,7 @@ export function MapboxGlobe({
     };
   }, [apiKey, config, updateBoundsAndZoom]);
 
-  // Update highlighted countries with gold/yellow color
+  // Update highlighted countries with gold/yellow color and gray for non-highlighted
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map || !mapLoaded) return;
@@ -241,6 +243,12 @@ export function MapboxGlobe({
     }
 
     if (highlightedIso3Codes.length > 0) {
+      // Update the gray layer to exclude highlighted countries
+      map.setFilter('countries-gray', [
+        '!',
+        ['in', ['get', 'iso_3166_1_alpha_3'], ['literal', highlightedIso3Codes]]
+      ]);
+
       // Add highlighted countries layer with gold/yellow color
       map.addLayer({
         id: 'countries-highlighted',
@@ -253,6 +261,9 @@ export function MapboxGlobe({
           'fill-opacity': 0.7
         }
       }, 'country-borders');
+    } else {
+      // If no countries are highlighted, show all in gray
+      map.setFilter('countries-gray', ['all']);
     }
   }, [highlightedIso3Codes, mapLoaded]);
 

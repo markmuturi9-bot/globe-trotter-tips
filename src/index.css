@@ -179,6 +179,15 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
+  /* Ensure root element fills safe area with background color */
+  html {
+    background-color: hsl(0 0% 99%);
+  }
+
+  html.dark {
+    background-color: hsl(240 10% 6%);
+  }
+
   h1, h2, h3, h4, h5, h6 {
     font-family: 'DM Sans', 'Inter', system-ui, sans-serif;
     @apply font-semibold tracking-tight;

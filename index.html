@@ -49,10 +49,12 @@
     <meta name="twitter:site" content="@TipTip" />
     <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
     
-    <!-- Prevent FOUC -->
+    <!-- Prevent FOUC and set notch area color -->
     <style>
-      html { background-color: #faf9f6; }
-      @media (prefers-color-scheme: dark) { html { background-color: #1a1a2e; } }
+      html { background-color: #fcfcfc; }
+      @media (prefers-color-scheme: dark) { html { background-color: #0f0f17; } }
+      /* Ensure the entire viewport including notch uses background color */
+      body { background-color: inherit; }
     </style>
   </head>
 

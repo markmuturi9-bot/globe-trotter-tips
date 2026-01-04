@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { X, MapPin, Clock, User, ExternalLink, Pencil, Trash2, Languages, Loader2 } from 'lucide-react';
+import { X, MapPin, Clock, User, ExternalLink, Pencil, Trash2, Languages, Loader2, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CategoryBadge } from './CategoryBadge';
 import { EditTipDialog } from './EditTipDialog';
 import { useAuth } from '@/hooks/useAuth';
+import { useAdmin } from '@/hooks/useAdmin';
 import { useDeleteTip } from '@/hooks/useTips';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -28,6 +29,7 @@ interface TipDetailProps {
 
 export function TipDetail({ tip, onClose }: TipDetailProps) {
   const { user } = useAuth();
+  const { isModerator, deleteTip: adminDeleteTip } = useAdmin();
   const deleteTip = useDeleteTip();
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
@@ -39,14 +41,26 @@ export function TipDetail({ tip, onClose }: TipDetailProps) {
   const countryName = tip.countries?.name || 'Unknown';
   const username = tip.profiles?.username || 'Anonymous';
   const isOwner = user?.id === tip.user_id;
+  const canDelete = isOwner || isModerator;
+  const canEdit = isOwner; // Only owners can edit
 
   const handleDelete = async () => {
     try {
-      await deleteTip.mutateAsync(tip.id);
-      toast({
-        title: 'Tip deleted',
-        description: 'Your tip has been deleted.',
-      });
+      if (isModerator && !isOwner) {
+        // Use admin delete for moderators deleting others' tips
+        const { error } = await adminDeleteTip(tip.id);
+        if (error) throw error;
+        toast({
+          title: 'Tip removed',
+          description: 'The tip has been removed by moderation.',
+        });
+      } else {
+        await deleteTip.mutateAsync(tip.id);
+        toast({
+          title: 'Tip deleted',
+          description: 'Your tip has been deleted.',
+        });
+      }
       onClose();
     } catch (error: any) {
       toast({
@@ -122,33 +136,42 @@ export function TipDetail({ tip, onClose }: TipDetailProps) {
                   <Languages className={`w-4 h-4 ${isShowingTranslation ? 'text-primary' : ''}`} />
                 )}
               </Button>
-              {isOwner && (
-                <>
-                  <Button variant="ghost" size="icon" onClick={() => setIsEditing(true)}>
-                    <Pencil className="w-4 h-4" />
-                  </Button>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button variant="ghost" size="icon">
+              {canEdit && (
+                <Button variant="ghost" size="icon" onClick={() => setIsEditing(true)}>
+                  <Pencil className="w-4 h-4" />
+                </Button>
+              )}
+              {canDelete && (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="ghost" size="icon" title={isModerator && !isOwner ? "Remove (Moderator)" : "Delete"}>
+                      {isModerator && !isOwner ? (
+                        <Shield className="w-4 h-4 text-destructive" />
+                      ) : (
                         <Trash2 className="w-4 h-4 text-destructive" />
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Delete tip?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          This action cannot be undone. This will permanently delete your tip.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                          Delete
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </>
+                      )}
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>
+                        {isModerator && !isOwner ? "Remove this tip?" : "Delete tip?"}
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>
+                        {isModerator && !isOwner 
+                          ? "As a moderator, you are removing this tip for policy violations. This action cannot be undone."
+                          : "This action cannot be undone. This will permanently delete your tip."
+                        }
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                        {isModerator && !isOwner ? "Remove" : "Delete"}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               )}
               <Button variant="ghost" size="icon" onClick={onClose}>
                 <X className="w-5 h-5" />
