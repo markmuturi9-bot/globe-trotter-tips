@@ -13,9 +13,9 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="TipTip" />
     <meta name="application-name" content="TipTip" />
-    <meta name="theme-color" content="#6366f1" />
-    <meta name="msapplication-TileColor" content="#6366f1" />
-    
+    <!-- Match browser UI / notch areas to the app background -->
+    <meta name="theme-color" content="#0b0b10" />
+    <meta name="msapplication-TileColor" content="#0b0b10" />
     <!-- iOS Splash Screens -->
     <link rel="apple-touch-startup-image" href="/splash/splash-640x1136.png" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)" />
     <link rel="apple-touch-startup-image" href="/splash/splash-750x1334.png" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)" />
@@ -49,18 +49,12 @@
     <meta name="twitter:site" content="@TipTip" />
     <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
     
-    <!-- Prevent FOUC and set notch area color -->
+    <!-- Prevent FOUC and set notch / browser chrome color -->
     <style>
-      html, body { 
-        background-color: hsl(0, 0%, 99%); 
+      html, body {
+        background-color: #0b0b10;
         margin: 0;
         padding: 0;
-      }
-      @media (prefers-color-scheme: dark) { 
-        html, body { background-color: hsl(240, 10%, 6%); } 
-      }
-      .dark html, .dark body, html.dark, body.dark { 
-        background-color: hsl(240, 10%, 6%); 
       }
     </style>
   </head>
