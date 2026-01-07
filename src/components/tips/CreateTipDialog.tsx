@@ -44,7 +44,7 @@ export function CreateTipDialog({ onClose }: CreateTipDialogProps) {
 
   // If showing bulk import, render the BulkTipImport component
   if (showBulkImport) {
-    return <BulkTipImport onClose={onClose} />;
+    return <BulkTipImport onClose={() => setShowBulkImport(false)} />;
   }
 
   // Get the selected country's code for address filtering
@@ -109,16 +109,17 @@ export function CreateTipDialog({ onClose }: CreateTipDialogProps) {
         <div className="flex items-center justify-between p-4 border-b border-border">
           <h2 className="font-serif text-xl font-semibold">Share a Tip</h2>
           <div className="flex items-center gap-2">
-            <Button 
-              variant="ghost" 
-              size="sm" 
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
               onClick={() => setShowBulkImport(true)}
               className="text-primary"
             >
               <Sparkles className="w-4 h-4 mr-1" />
               AI Import
             </Button>
-            <Button variant="ghost" size="icon" onClick={onClose}>
+            <Button type="button" variant="ghost" size="icon" onClick={onClose}>
               <X className="w-5 h-5" />
             </Button>
           </div>

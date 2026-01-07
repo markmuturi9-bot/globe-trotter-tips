@@ -1,36 +1,17 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Header } from '@/components/layout/Header';
-import { MainNav } from '@/components/layout/MainNav';
-import { FriendsView } from '@/components/views/FriendsView';
-import { CreateTipDialog } from '@/components/tips/CreateTipDialog';
+import { useState } from "react";
+import { AppShell } from "@/components/layout/AppShell";
+import { CreateTipDialog } from "@/components/tips/CreateTipDialog";
+import { FriendsView } from "@/components/views/FriendsView";
 
 export default function Friends() {
-  const navigate = useNavigate();
   const [showCreateTip, setShowCreateTip] = useState(false);
-  
+
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <Header onCreateTip={() => setShowCreateTip(true)} />
-      
-      {/* Spacer for fixed header */}
-      <div className="h-16" style={{ paddingTop: 'env(safe-area-inset-top)' }} />
-      
-      <div className="hidden md:block">
-        <MainNav activeView="friends" onViewChange={(view) => navigate(`/${view}`)} />
-      </div>
-      
-      <main className="flex-1 flex flex-col overflow-auto" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 4rem)' }}>
-        <FriendsView />
-      </main>
-      
-      <div className="md:hidden">
-        <MainNav activeView="friends" onViewChange={(view) => navigate(`/${view}`)} />
-      </div>
-      
-      {showCreateTip && (
-        <CreateTipDialog onClose={() => setShowCreateTip(false)} />
-      )}
-    </div>
+    <AppShell activeView="friends" onCreateTip={() => setShowCreateTip(true)}>
+      <FriendsView />
+
+      {showCreateTip && <CreateTipDialog onClose={() => setShowCreateTip(false)} />}
+    </AppShell>
   );
 }
+
