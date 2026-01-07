@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
+import { SystemChromeSync } from "@/components/theme/SystemChromeSync";
 import { CookieConsent } from "@/components/gdpr/CookieConsent";
 import Map from "./pages/Map";
 import List from "./pages/List";
@@ -18,7 +19,8 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 const App = () => (
-  <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} disableTransitionOnChange>
+  <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+    <SystemChromeSync />
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <TooltipProvider>

@@ -13,9 +13,11 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="TipTip" />
     <meta name="application-name" content="TipTip" />
-    <!-- Match browser UI / notch areas to the app background -->
-    <meta name="theme-color" content="#0b0b10" />
+    <!-- Match browser UI / notch areas to the app background (light/dark) -->
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#fcfcfc" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0b0b10" />
     <meta name="msapplication-TileColor" content="#0b0b10" />
+
     <!-- iOS Splash Screens -->
     <link rel="apple-touch-startup-image" href="/splash/splash-640x1136.png" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)" />
     <link rel="apple-touch-startup-image" href="/splash/splash-750x1334.png" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)" />
@@ -49,10 +51,12 @@
     <meta name="twitter:site" content="@TipTip" />
     <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
     
-    <!-- Prevent FOUC and set notch / browser chrome color -->
+    <!-- Prevent FOUC and set notch / browser chrome color (uses HSL, no hardcoded purple) -->
     <style>
+      :root { --boot-bg: 0 0% 99%; }
+      @media (prefers-color-scheme: dark) { :root { --boot-bg: 240 10% 6%; } }
       html, body {
-        background-color: #0b0b10;
+        background-color: hsl(var(--boot-bg));
         margin: 0;
         padding: 0;
       }
