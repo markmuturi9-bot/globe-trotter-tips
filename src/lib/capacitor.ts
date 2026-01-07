@@ -1,7 +1,7 @@
-import { Capacitor } from '@capacitor/core';
-import { StatusBar, Style } from '@capacitor/status-bar';
-import { SplashScreen } from '@capacitor/splash-screen';
-import { App } from '@capacitor/app';
+import { Capacitor } from "@capacitor/core";
+import { StatusBar, Style } from "@capacitor/status-bar";
+import { SplashScreen } from "@capacitor/splash-screen";
+import { App } from "@capacitor/app";
 
 /**
  * Initialize Capacitor plugins for native mobile experience
@@ -12,17 +12,32 @@ export async function initializeCapacitor() {
   }
 
   try {
-    // Configure status bar for native feel
-    await StatusBar.setStyle({ style: Style.Light });
-    
-    if (Capacitor.getPlatform() === 'android') {
-      await StatusBar.setBackgroundColor({ color: '#6366f1' });
-    }
+    // Set a safe default; we'll sync to the actual theme once React mounts.
+    await setNativeStatusBarTheme("dark");
 
     // Hide splash screen after app is ready
     await SplashScreen.hide();
   } catch (error) {
-    console.warn('Capacitor initialization error:', error);
+    console.warn("Capacitor initialization error:", error);
+  }
+}
+
+export async function setNativeStatusBarTheme(theme: "light" | "dark") {
+  if (!Capacitor.isNativePlatform()) return;
+
+  // Use these as defaults; actual page background is controlled by CSS tokens.
+  const bg = theme === "dark" ? "#0b0b10" : "#fcfcfc";
+
+  try {
+    // Icon/text color
+    await StatusBar.setStyle({ style: theme === "dark" ? Style.Light : Style.Dark });
+
+    // Android-only background behind status bar
+    if (Capacitor.getPlatform() === "android") {
+      await StatusBar.setBackgroundColor({ color: bg });
+    }
+  } catch {
+    // Some platforms/configurations may not support all calls.
   }
 }
 
@@ -36,19 +51,19 @@ export function isNative(): boolean {
 /**
  * Get current platform
  */
-export function getPlatform(): 'ios' | 'android' | 'web' {
-  return Capacitor.getPlatform() as 'ios' | 'android' | 'web';
+export function getPlatform(): "ios" | "android" | "web" {
+  return Capacitor.getPlatform() as "ios" | "android" | "web";
 }
 
 /**
  * Handle back button on Android
  */
 export function setupBackButton(callback: () => void) {
-  if (Capacitor.getPlatform() !== 'android') {
+  if (Capacitor.getPlatform() !== "android") {
     return () => {};
   }
 
-  const listener = App.addListener('backButton', ({ canGoBack }) => {
+  const listener = App.addListener("backButton", ({ canGoBack }) => {
     if (!canGoBack) {
       App.exitApp();
     } else {
@@ -57,7 +72,7 @@ export function setupBackButton(callback: () => void) {
   });
 
   return () => {
-    listener.then(l => l.remove());
+    listener.then((l) => l.remove());
   };
 }
 
@@ -69,11 +84,11 @@ export function onAppStateChange(callback: (isActive: boolean) => void) {
     return () => {};
   }
 
-  const listener = App.addListener('appStateChange', ({ isActive }) => {
+  const listener = App.addListener("appStateChange", ({ isActive }) => {
     callback(isActive);
   });
 
   return () => {
-    listener.then(l => l.remove());
+    listener.then((l) => l.remove());
   };
 }

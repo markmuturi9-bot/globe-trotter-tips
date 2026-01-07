@@ -12,17 +12,18 @@ const config: CapacitorConfig = {
     SplashScreen: {
       launchShowDuration: 2000,
       launchAutoHide: true,
-      backgroundColor: '#faf9f6',
-      androidSplashResourceName: 'splash',
-      androidScaleType: 'CENTER_CROP',
+      backgroundColor: "#faf9f6",
+      androidSplashResourceName: "splash",
+      androidScaleType: "CENTER_CROP",
       showSpinner: false,
       splashFullScreen: true,
-      splashImmersive: true
+      splashImmersive: true,
     },
     StatusBar: {
-      style: 'LIGHT',
-      backgroundColor: '#6366f1'
-    }
+      // Safe default; actual theme is synced at runtime.
+      style: "LIGHT",
+      backgroundColor: "#0b0b10",
+    },
   },
   ios: {
     contentInset: 'automatic',
