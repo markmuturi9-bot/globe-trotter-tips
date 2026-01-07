@@ -169,22 +169,25 @@ export function ListView() {
   
   return (
     <div className="flex-1 flex flex-col">
-      {/* Search and Filter Bar */}
-      <div className="p-4 border-b border-border bg-card sticky top-14 z-30">
+      {/* Search Bar - on top */}
+      <div className="p-4 pb-2 border-b border-border bg-card sticky top-0 z-30">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search countries or tips..."
+            className="pl-9"
+          />
+        </div>
+      </div>
+      
+      {/* Filter Bar - below search */}
+      <div className="px-4 py-2 border-b border-border bg-card sticky top-14 z-30">
         <div className="flex gap-2">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search countries or tips..."
-              className="pl-9"
-            />
-          </div>
-          
           {/* User filter */}
           <Select value={userFilter} onValueChange={(value) => setUserFilter(value)}>
-            <SelectTrigger className="w-[130px]">
+            <SelectTrigger className="flex-1 min-w-[120px]">
               <Users className="w-4 h-4 mr-2" />
               <SelectValue>{getUserFilterLabel()}</SelectValue>
             </SelectTrigger>

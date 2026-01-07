@@ -64,7 +64,6 @@ export function NewChatDialog({ onClose, onChatCreated }: NewChatDialogProps) {
                   </div>
                   <div>
                     <p className="font-medium">{friend.username}</p>
-                    <p className="text-xs text-muted-foreground">{friend.email}</p>
                   </div>
                 </button>
               ))}

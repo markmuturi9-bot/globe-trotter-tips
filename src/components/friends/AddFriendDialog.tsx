@@ -97,7 +97,6 @@ export function AddFriendDialog({ onClose }: AddFriendDialogProps) {
                 >
                   <div>
                     <p className="font-medium">{profile.username}</p>
-                    <p className="text-xs text-muted-foreground">{profile.email}</p>
                   </div>
                   
                   {status === 'friends' && (

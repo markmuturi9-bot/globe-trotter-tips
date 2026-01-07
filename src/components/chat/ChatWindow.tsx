@@ -53,7 +53,6 @@ export function ChatWindow({ chat, onBack }: ChatWindowProps) {
         </div>
         <div>
           <p className="font-medium">{chat.participant?.username}</p>
-          <p className="text-xs text-muted-foreground">{chat.participant?.email}</p>
         </div>
       </div>
 

@@ -16,7 +16,7 @@ const navItems: { view: ViewType; label: string; icon: React.ComponentType<{ cla
 
 export function MainNav({ activeView, onViewChange }: MainNavProps) {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 glass-panel border-t border-border/30 md:relative md:bottom-auto md:border-t-0 md:border-b md:border-border/30" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border md:relative md:bottom-auto md:border-t-0 md:border-b" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
       <div className="flex items-center justify-center gap-1 py-1 md:py-0">
         {navItems.map(({ view, label, icon: Icon }) => (
           <button

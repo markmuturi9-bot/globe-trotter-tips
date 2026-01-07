@@ -51,10 +51,17 @@
     
     <!-- Prevent FOUC and set notch area color -->
     <style>
-      html { background-color: #fcfcfc; }
-      @media (prefers-color-scheme: dark) { html { background-color: #0f0f17; } }
-      /* Ensure the entire viewport including notch uses background color */
-      body { background-color: inherit; }
+      html, body { 
+        background-color: hsl(0, 0%, 99%); 
+        margin: 0;
+        padding: 0;
+      }
+      @media (prefers-color-scheme: dark) { 
+        html, body { background-color: hsl(240, 10%, 6%); } 
+      }
+      .dark html, .dark body, html.dark, body.dark { 
+        background-color: hsl(240, 10%, 6%); 
+      }
     </style>
   </head>
 

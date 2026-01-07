@@ -3,10 +3,16 @@ import { Search, UserPlus, Users, Clock, Check, X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
 import { useAuth } from '@/hooks/useAuth';
 import { 
   useFriendships, 
@@ -88,129 +94,89 @@ export function FriendsView() {
   };
 
   return (
-    <div className="flex-1 container max-w-4xl mx-auto p-4 space-y-6">
-      {/* Search Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Search className="w-5 h-5" />
-            Search users
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder="Search by username..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          
-          {searchTerm.length >= 2 && (
-            <div className="mt-4 space-y-2">
-              {searchLoading ? (
-                <p className="text-sm text-muted-foreground">Searching...</p>
-              ) : searchResults && searchResults.length > 0 ? (
-                searchResults.map((profile) => (
-                  <div 
-                    key={profile.id} 
-                    className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
-                  >
-                    <div className="flex items-center gap-3">
-                      <Avatar>
-                        <AvatarFallback>
-                          {profile.username.substring(0, 2).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-medium">{profile.username}</p>
-                        <p className="text-sm text-muted-foreground">{profile.email}</p>
-                      </div>
-                    </div>
-                    {hasRelationship(profile.id) ? (
-                      <Badge variant="secondary">Already friend/requested</Badge>
-                    ) : (
-                      <Button 
-                        size="sm" 
-                        onClick={() => handleSendRequest(profile.id)}
-                        disabled={sendRequest.isPending}
-                      >
-                        <UserPlus className="w-4 h-4 mr-1" />
-                        Add
-                      </Button>
-                    )}
-                  </div>
-                ))
-              ) : (
-                <p className="text-sm text-muted-foreground">No users found</p>
-              )}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Tabs for Friends and Activity */}
-      <Tabs defaultValue="friends" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="friends" className="flex items-center gap-2">
-            <Users className="w-4 h-4" />
-            Friends ({acceptedFriends.length})
-          </TabsTrigger>
-          <TabsTrigger value="requests" className="flex items-center gap-2">
-            <UserPlus className="w-4 h-4" />
-            Requests
-            {pendingRequests && pendingRequests.length > 0 && (
-              <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 flex items-center justify-center text-xs">
-                {pendingRequests.length}
-              </Badge>
-            )}
-          </TabsTrigger>
-          <TabsTrigger value="activity" className="flex items-center gap-2">
-            <Clock className="w-4 h-4" />
-            Activity
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="friends" className="mt-4">
-          <Card>
-            <CardContent className="pt-6">
+    <div className="flex-1 container max-w-4xl mx-auto p-4 space-y-4">
+      {/* Top bar with search and action buttons */}
+      <div className="flex gap-2 items-center">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            placeholder="Search users..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 h-10"
+          />
+        </div>
+        
+        {/* Friends button with sheet */}
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button variant="outline" size="sm" className="h-10">
+              <Users className="w-4 h-4 mr-2" />
+              {acceptedFriends.length}
+            </Button>
+          </SheetTrigger>
+          <SheetContent>
+            <SheetHeader>
+              <SheetTitle className="flex items-center gap-2">
+                <Users className="w-5 h-5" />
+                Friends ({acceptedFriends.length})
+              </SheetTitle>
+            </SheetHeader>
+            <div className="mt-6">
               {friendshipsLoading ? (
                 <p className="text-muted-foreground text-center">Loading...</p>
               ) : acceptedFriends.length === 0 ? (
                 <div className="text-center py-8">
                   <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
                   <p className="text-muted-foreground">You don't have any friends yet.</p>
-                  <p className="text-sm text-muted-foreground">Search for users above to add friends!</p>
+                  <p className="text-sm text-muted-foreground">Search for users to add friends!</p>
                 </div>
               ) : (
-                <div className="grid gap-3">
-                  {acceptedFriends.map((friend) => (
-                    <div 
-                      key={friend.id} 
-                      className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg"
-                    >
-                      <Avatar>
-                        <AvatarFallback>
-                          {friend.username.substring(0, 2).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-medium">{friend.username}</p>
-                        <p className="text-sm text-muted-foreground">{friend.email}</p>
+                <ScrollArea className="h-[calc(100vh-200px)]">
+                  <div className="space-y-2 pr-4">
+                    {acceptedFriends.map((friend) => (
+                      <div 
+                        key={friend.id} 
+                        className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg"
+                      >
+                        <Avatar>
+                          <AvatarFallback>
+                            {friend.username.substring(0, 2).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="font-medium">{friend.username}</p>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                </ScrollArea>
               )}
-            </CardContent>
-          </Card>
-        </TabsContent>
+            </div>
+          </SheetContent>
+        </Sheet>
 
-        <TabsContent value="requests" className="mt-4">
-          <Card>
-            <CardContent className="pt-6">
+        {/* Requests button with sheet */}
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button variant="outline" size="sm" className="h-10 relative">
+              <UserPlus className="w-4 h-4 mr-2" />
+              Requests
+              {pendingRequests && pendingRequests.length > 0 && (
+                <Badge variant="destructive" className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs">
+                  {pendingRequests.length}
+                </Badge>
+              )}
+            </Button>
+          </SheetTrigger>
+          <SheetContent>
+            <SheetHeader>
+              <SheetTitle className="flex items-center gap-2">
+                <UserPlus className="w-5 h-5" />
+                Friend Requests
+              </SheetTitle>
+            </SheetHeader>
+            <div className="mt-6">
               {!pendingRequests || pendingRequests.length === 0 ? (
                 <div className="text-center py-8">
                   <UserPlus className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
@@ -231,7 +197,7 @@ export function FriendsView() {
                         </Avatar>
                         <div>
                           <p className="font-medium">{request.requester?.username}</p>
-                          <p className="text-sm text-muted-foreground">{request.requester?.email}</p>
+                          <p className="text-xs text-muted-foreground">Wants to be your friend</p>
                         </div>
                       </div>
                       <div className="flex gap-2">
@@ -256,37 +222,84 @@ export function FriendsView() {
                   ))}
                 </div>
               )}
-            </CardContent>
-          </Card>
-        </TabsContent>
+            </div>
+          </SheetContent>
+        </Sheet>
+      </div>
 
-        <TabsContent value="activity" className="mt-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Friends' latest tips</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {friendsTips.length === 0 ? (
-                <div className="text-center py-8">
-                  <Clock className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-muted-foreground">No tips from your friends yet.</p>
-                  {acceptedFriends.length === 0 && (
-                    <p className="text-sm text-muted-foreground">Add friends to see their activity!</p>
-                  )}
-                </div>
-              ) : (
-                <ScrollArea className="h-[500px] pr-4">
-                  <div className="space-y-4">
-                    {friendsTips.map((tip) => (
-                      <TipCard key={tip.id} tip={tip} />
-                    ))}
+      {/* Search results */}
+      {searchTerm.length >= 2 && (
+        <Card>
+          <CardContent className="p-4">
+            {searchLoading ? (
+              <p className="text-sm text-muted-foreground">Searching...</p>
+            ) : searchResults && searchResults.length > 0 ? (
+              <div className="space-y-2">
+                {searchResults.map((profile) => (
+                  <div 
+                    key={profile.id} 
+                    className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Avatar>
+                        <AvatarFallback>
+                          {profile.username.substring(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="font-medium">{profile.username}</p>
+                      </div>
+                    </div>
+                    {hasRelationship(profile.id) ? (
+                      <Badge variant="secondary">Already friend/requested</Badge>
+                    ) : (
+                      <Button 
+                        size="sm" 
+                        onClick={() => handleSendRequest(profile.id)}
+                        disabled={sendRequest.isPending}
+                      >
+                        <UserPlus className="w-4 h-4 mr-1" />
+                        Add
+                      </Button>
+                    )}
                   </div>
-                </ScrollArea>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">No users found</p>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Activity - main content */}
+      <Card className="flex-1">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Clock className="w-5 h-5" />
+            Friends' Activity
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {friendsTips.length === 0 ? (
+            <div className="text-center py-8">
+              <Clock className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground">No tips from your friends yet.</p>
+              {acceptedFriends.length === 0 && (
+                <p className="text-sm text-muted-foreground">Add friends to see their activity!</p>
               )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+            </div>
+          ) : (
+            <ScrollArea className="h-[calc(100vh-350px)] pr-4">
+              <div className="space-y-4">
+                {friendsTips.map((tip) => (
+                  <TipCard key={tip.id} tip={tip} />
+                ))}
+              </div>
+            </ScrollArea>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

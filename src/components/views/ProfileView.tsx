@@ -362,9 +362,7 @@ export function ProfileView() {
         </div>
         
         <h1 className="font-serif text-2xl font-semibold mb-1">@{profile.username}</h1>
-        <p className="text-sm text-muted-foreground mb-4">{profile.email}</p>
-        
-        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+        <div className="flex items-center gap-4 text-sm text-muted-foreground mt-4">
           <span className="flex items-center gap-1.5">
             <Calendar className="w-4 h-4" />
             Joined {format(new Date(profile.created_at), 'MMM yyyy')}
