@@ -16,15 +16,20 @@ const navItems: { view: ViewType; label: string; icon: React.ComponentType<{ cla
 
 export function MainNav({ activeView, onViewChange }: MainNavProps) {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border md:relative md:bottom-auto md:border-t-0 md:border-b" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+    <nav
+      className="bg-background border-t border-border md:border-t-0 md:border-b"
+      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+    >
       <div className="flex items-center justify-center gap-1 py-1 md:py-0">
         {navItems.map(({ view, label, icon: Icon }) => (
           <button
             key={view}
             onClick={() => onViewChange(view)}
             className={cn(
-              'nav-item flex flex-col md:flex-row items-center gap-1.5 md:gap-2 py-2.5 md:py-4 px-4 md:px-6 rounded-xl md:rounded-none mx-1 md:mx-0 transition-all duration-200',
-              activeView === view ? 'active bg-accent/50 md:bg-transparent' : 'hover:bg-accent/30 md:hover:bg-transparent'
+              "nav-item flex flex-col md:flex-row items-center gap-1.5 md:gap-2 py-2.5 md:py-4 px-4 md:px-6 rounded-xl md:rounded-none mx-1 md:mx-0 transition-all duration-200",
+              activeView === view
+                ? "active bg-accent/50 md:bg-transparent"
+                : "hover:bg-accent/30 md:hover:bg-transparent"
             )}
           >
             <Icon className={cn("w-5 h-5 transition-colors", activeView === view && "text-primary")} />

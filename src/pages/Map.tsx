@@ -1,36 +1,31 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Header } from '@/components/layout/Header';
-import { MainNav } from '@/components/layout/MainNav';
-import { MapView } from '@/components/views/MapView';
-import { CreateTipDialog } from '@/components/tips/CreateTipDialog';
+import { useEffect, useState } from "react";
+import { CreateTipDialog } from "@/components/tips/CreateTipDialog";
+import { MapView } from "@/components/views/MapView";
+import { AppShell } from "@/components/layout/AppShell";
 
 export default function Map() {
-  const navigate = useNavigate();
   const [showCreateTip, setShowCreateTip] = useState(false);
-  
+
+  // Hard lock scroll on the map screen (prevents the "scroll the whole page" issue)
+  useEffect(() => {
+    const prevHtmlOverflow = document.documentElement.style.overflow;
+    const prevBodyOverflow = document.body.style.overflow;
+
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.documentElement.style.overflow = prevHtmlOverflow;
+      document.body.style.overflow = prevBodyOverflow;
+    };
+  }, []);
+
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <Header onCreateTip={() => setShowCreateTip(true)} />
-      
-      {/* Spacer for fixed header */}
-      <div className="h-16" style={{ paddingTop: 'env(safe-area-inset-top)' }} />
-      
-      <div className="hidden md:block">
-        <MainNav activeView="map" onViewChange={(view) => navigate(`/${view}`)} />
-      </div>
-      
-      <main className="flex-1 flex flex-col overflow-hidden">
-        <MapView />
-      </main>
-      
-      <div className="md:hidden">
-        <MainNav activeView="map" onViewChange={(view) => navigate(`/${view}`)} />
-      </div>
-      
-      {showCreateTip && (
-        <CreateTipDialog onClose={() => setShowCreateTip(false)} />
-      )}
-    </div>
+    <AppShell activeView="map" onCreateTip={() => setShowCreateTip(true)} scrollContent={false}>
+      <MapView />
+
+      {showCreateTip && <CreateTipDialog onClose={() => setShowCreateTip(false)} />}
+    </AppShell>
   );
 }
+
