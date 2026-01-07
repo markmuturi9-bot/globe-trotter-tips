@@ -30,7 +30,7 @@ export function CreateTipDialog({ onClose }: CreateTipDialogProps) {
   const createTip = useCreateTip();
   const { toast } = useToast();
   const [showBulkImport, setShowBulkImport] = useState(false);
-  
+
   const [formData, setFormData] = useState({
     country_id: '',
     category: 'general' as TipCategory,
@@ -42,17 +42,17 @@ export function CreateTipDialog({ onClose }: CreateTipDialogProps) {
   });
   const [images, setImages] = useState<string[]>([]);
 
+  // Get the selected country's code for address filtering (MUST be before early return)
+  const selectedCountryCode = useMemo(() => {
+    if (!countries || !formData.country_id) return undefined;
+    const country = countries.find((c) => c.id === formData.country_id);
+    return country?.code;
+  }, [countries, formData.country_id]);
+
   // If showing bulk import, render the BulkTipImport component
   if (showBulkImport) {
     return <BulkTipImport onClose={() => setShowBulkImport(false)} />;
   }
-
-  // Get the selected country's code for address filtering
-  const selectedCountryCode = useMemo(() => {
-    if (!countries || !formData.country_id) return undefined;
-    const country = countries.find(c => c.id === formData.country_id);
-    return country?.code;
-  }, [countries, formData.country_id]);
   
   const handleAddressSelect = (result: { address: string; position: { lat: number; lng: number } }) => {
     setFormData(prev => ({
