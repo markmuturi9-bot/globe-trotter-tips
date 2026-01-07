@@ -12,7 +12,7 @@ export function Header({ onCreateTip }: HeaderProps) {
   const { user } = useAuth();
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-40 glass-panel border-b border-border/30" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+    <header className="fixed top-0 left-0 right-0 z-40 bg-background border-b border-border" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <img src={appLogo} alt="TipTip" className="w-9 h-9 rounded-xl shadow-sm" />

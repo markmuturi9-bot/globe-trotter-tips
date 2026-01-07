@@ -28,5 +28,5 @@ export function MapProvider({ children }: MapProviderProps) {
 
 export const MAP_DEFAULTS: MapConfig = {
   center: [20, 0],
-  zoom: 2,
+  zoom: 1.2, // More zoomed out to show full globe
 };

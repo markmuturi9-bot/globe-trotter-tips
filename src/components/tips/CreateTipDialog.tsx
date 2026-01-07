@@ -42,9 +42,9 @@ export function CreateTipDialog({ onClose }: CreateTipDialogProps) {
   });
   const [images, setImages] = useState<string[]>([]);
 
-  // If showing bulk import, render that instead
+  // If showing bulk import, render the BulkTipImport component
   if (showBulkImport) {
-    return <BulkTipImport onClose={() => setShowBulkImport(false)} />;
+    return <BulkTipImport onClose={onClose} />;
   }
 
   // Get the selected country's code for address filtering

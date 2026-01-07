@@ -194,17 +194,24 @@ export function MapboxGlobe({
       });
 
       // Add layer for all countries (gray for countries without tips)
-      // This layer will be hidden/shown via filter based on highlighted countries
+      // Using world-view filter for maximum country coverage
       map.addLayer({
         id: 'countries-gray',
         type: 'fill',
         source: 'country-boundaries',
         'source-layer': 'country_boundaries',
         paint: {
-          'fill-color': '#6b7280',
-          'fill-opacity': 0.5
+          'fill-color': '#9ca3af', // Gray color
+          'fill-opacity': 0.4
         },
-        filter: ['all'] // Initially show all countries in gray
+        filter: [
+          'all',
+          ['==', ['get', 'disputed'], 'false'],
+          ['any',
+            ['==', 'all', ['get', 'worldview']],
+            ['in', 'US', ['get', 'worldview']]
+          ]
+        ]
       });
 
       // Add layer for country borders
@@ -214,9 +221,17 @@ export function MapboxGlobe({
         source: 'country-boundaries',
         'source-layer': 'country_boundaries',
         paint: {
-          'line-color': '#4b5563',
+          'line-color': '#6b7280',
           'line-width': 0.5
-        }
+        },
+        filter: [
+          'all',
+          ['==', ['get', 'disputed'], 'false'],
+          ['any',
+            ['==', 'all', ['get', 'worldview']],
+            ['in', 'US', ['get', 'worldview']]
+          ]
+        ]
       });
 
       setMapLoaded(true);
@@ -245,8 +260,13 @@ export function MapboxGlobe({
     if (highlightedIso3Codes.length > 0) {
       // Update the gray layer to exclude highlighted countries
       map.setFilter('countries-gray', [
-        '!',
-        ['in', ['get', 'iso_3166_1_alpha_3'], ['literal', highlightedIso3Codes]]
+        'all',
+        ['==', ['get', 'disputed'], 'false'],
+        ['any',
+          ['==', 'all', ['get', 'worldview']],
+          ['in', 'US', ['get', 'worldview']]
+        ],
+        ['!', ['in', ['get', 'iso_3166_1_alpha_3'], ['literal', highlightedIso3Codes]]]
       ]);
 
       // Add highlighted countries layer with gold/yellow color
@@ -255,15 +275,30 @@ export function MapboxGlobe({
         type: 'fill',
         source: 'country-boundaries',
         'source-layer': 'country_boundaries',
-        filter: ['in', ['get', 'iso_3166_1_alpha_3'], ['literal', highlightedIso3Codes]],
+        filter: [
+          'all',
+          ['==', ['get', 'disputed'], 'false'],
+          ['any',
+            ['==', 'all', ['get', 'worldview']],
+            ['in', 'US', ['get', 'worldview']]
+          ],
+          ['in', ['get', 'iso_3166_1_alpha_3'], ['literal', highlightedIso3Codes]]
+        ],
         paint: {
-          'fill-color': '#fbbf24', // Gold/amber color
+          'fill-color': '#f59e0b', // Amber/gold color
           'fill-opacity': 0.7
         }
       }, 'country-borders');
     } else {
       // If no countries are highlighted, show all in gray
-      map.setFilter('countries-gray', ['all']);
+      map.setFilter('countries-gray', [
+        'all',
+        ['==', ['get', 'disputed'], 'false'],
+        ['any',
+          ['==', 'all', ['get', 'worldview']],
+          ['in', 'US', ['get', 'worldview']]
+        ]
+      ]);
     }
   }, [highlightedIso3Codes, mapLoaded]);
 

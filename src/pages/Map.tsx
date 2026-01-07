@@ -20,7 +20,7 @@ export default function Map() {
         <MainNav activeView="map" onViewChange={(view) => navigate(`/${view}`)} />
       </div>
       
-      <main className="flex-1 flex flex-col overflow-hidden" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 4rem)' }}>
+      <main className="flex-1 flex flex-col overflow-hidden">
         <MapView />
       </main>
       

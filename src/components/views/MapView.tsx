@@ -204,7 +204,7 @@ export function MapView() {
   }
 
   return (
-    <div className="flex-1 flex flex-col h-full relative">
+    <div className="flex-1 flex flex-col h-full relative overflow-hidden">
       {/* Filter controls - top left */}
       <div className="absolute top-4 left-4 z-10 flex gap-2">
         {/* User filter */}

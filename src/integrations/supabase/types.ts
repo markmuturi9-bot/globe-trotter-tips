@@ -226,6 +226,7 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          country_id: string | null
           created_at: string
           email: string
           id: string
@@ -235,6 +236,7 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          country_id?: string | null
           created_at?: string
           email: string
           id: string
@@ -244,6 +246,7 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          country_id?: string | null
           created_at?: string
           email?: string
           id?: string
@@ -251,7 +254,15 @@ export type Database = {
           updated_at?: string
           username?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       tips: {
         Row: {
