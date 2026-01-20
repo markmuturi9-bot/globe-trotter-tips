@@ -288,55 +288,57 @@ export function MapboxGlobe({
     const map = mapInstanceRef.current;
     if (!map || !mapLoaded) return;
 
-    // Ensure style is fully loaded before setting filters
+    // Ensure layers exist before setting filters
     const applyFilters = () => {
-      if (!map.isStyleLoaded()) return;
+      // Check if layers exist
+      if (!map.getLayer('countries-no-tips') || !map.getLayer('countries-clickable')) {
+        return;
+      }
       
-      if (highlightedIso3Codes.length > 0) {
-        // Gray overlay only on countries that are NOT highlighted (no tips)
-        map.setFilter('countries-no-tips', [
-          'all',
-          ['==', ['get', 'disputed'], 'false'],
-          ['any',
-            ['==', 'all', ['get', 'worldview']],
-            ['in', 'US', ['get', 'worldview']]
-          ],
-          ['!', ['in', ['get', 'iso_3166_1_alpha_3'], ['literal', highlightedIso3Codes]]]
-        ]);
+      try {
+        if (highlightedIso3Codes.length > 0) {
+          // Gray overlay only on countries that are NOT highlighted (no tips)
+          map.setFilter('countries-no-tips', [
+            'all',
+            ['==', ['get', 'disputed'], 'false'],
+            ['any',
+              ['==', 'all', ['get', 'worldview']],
+              ['in', 'US', ['get', 'worldview']]
+            ],
+            ['!', ['in', ['get', 'iso_3166_1_alpha_3'], ['literal', highlightedIso3Codes]]]
+          ]);
 
-        // Make only highlighted countries clickable
-        map.setFilter('countries-clickable', [
-          'all',
-          ['==', ['get', 'disputed'], 'false'],
-          ['any',
-            ['==', 'all', ['get', 'worldview']],
-            ['in', 'US', ['get', 'worldview']]
-          ],
-          ['in', ['get', 'iso_3166_1_alpha_3'], ['literal', highlightedIso3Codes]]
-        ]);
-      } else {
-        // If no countries have tips, show all with gray overlay
-        map.setFilter('countries-no-tips', [
-          'all',
-          ['==', ['get', 'disputed'], 'false'],
-          ['any',
-            ['==', 'all', ['get', 'worldview']],
-            ['in', 'US', ['get', 'worldview']]
-          ]
-        ]);
+          // Make only highlighted countries clickable
+          map.setFilter('countries-clickable', [
+            'all',
+            ['==', ['get', 'disputed'], 'false'],
+            ['any',
+              ['==', 'all', ['get', 'worldview']],
+              ['in', 'US', ['get', 'worldview']]
+            ],
+            ['in', ['get', 'iso_3166_1_alpha_3'], ['literal', highlightedIso3Codes]]
+          ]);
+        } else {
+          // If no countries have tips, show all with gray overlay
+          map.setFilter('countries-no-tips', [
+            'all',
+            ['==', ['get', 'disputed'], 'false'],
+            ['any',
+              ['==', 'all', ['get', 'worldview']],
+              ['in', 'US', ['get', 'worldview']]
+            ]
+          ]);
 
-        // No countries clickable
-        map.setFilter('countries-clickable', ['==', ['get', 'iso_3166_1_alpha_3'], '']);
+          // No countries clickable
+          map.setFilter('countries-clickable', ['==', ['get', 'iso_3166_1_alpha_3'], '']);
+        }
+      } catch (e) {
+        console.error('Error setting map filters:', e);
       }
     };
 
-    // If style is already loaded, apply immediately
-    if (map.isStyleLoaded()) {
-      applyFilters();
-    } else {
-      // Otherwise wait for style to load
-      map.once('style.load', applyFilters);
-    }
+    // Apply filters - use requestAnimationFrame to ensure DOM is ready
+    requestAnimationFrame(applyFilters);
   }, [highlightedIso3Codes, mapLoaded]);
 
   // Handle country clicks
