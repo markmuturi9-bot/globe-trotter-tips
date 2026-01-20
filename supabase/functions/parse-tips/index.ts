@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -11,6 +12,33 @@ serve(async (req) => {
   }
 
   try {
+    // Verify authentication
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      console.error('Missing or invalid authorization header');
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_ANON_KEY')!,
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: authData, error: authError } = await supabaseClient.auth.getClaims(token);
+    
+    if (authError || !authData?.claims) {
+      console.error('Authentication failed:', authError?.message);
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const { text, countries } = await req.json();
     
     if (!text) {
@@ -24,6 +52,8 @@ serve(async (req) => {
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY is not configured');
     }
+
+    console.log(`User ${authData.claims.sub} parsing tips`);
 
     const countriesList = countries?.map((c: { name: string; id: string }) => `${c.name} (id: ${c.id})`).join(', ') || '';
 
@@ -119,7 +149,7 @@ Only return valid JSON, no other text.`;
       throw new Error('Failed to parse tips from AI response');
     }
 
-    console.log('Parsed tips:', parsedTips);
+    console.log('Tips parsed successfully');
 
     return new Response(
       JSON.stringify(parsedTips),

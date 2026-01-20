@@ -2,15 +2,15 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
-import type { Chat, Message, Profile } from '@/types';
+import type { Chat, Message, PublicProfile } from '@/types';
 
 export interface ChatWithParticipant extends Chat {
-  participant?: Profile;
+  participant?: PublicProfile;
   lastMessage?: Message;
 }
 
 export interface MessageWithSender extends Message {
-  sender?: Profile;
+  sender?: PublicProfile;
 }
 
 export function useChats() {
@@ -25,8 +25,8 @@ export function useChats() {
         .from('chats')
         .select(`
           *,
-          participant_one_profile:participant_one(id, username, email),
-          participant_two_profile:participant_two(id, username, email)
+          participant_one_profile:profiles_public!chats_participant_one_fkey(id, username, avatar_url),
+          participant_two_profile:profiles_public!chats_participant_two_fkey(id, username, avatar_url)
         `)
         .or(`participant_one.eq.${user.id},participant_two.eq.${user.id}`)
         .order('created_at', { ascending: false });
@@ -57,7 +57,7 @@ export function useMessages(chatId: string | null) {
         .from('messages')
         .select(`
           *,
-          sender:sender_id(id, username, email)
+          sender:profiles_public!messages_sender_id_fkey(id, username, avatar_url)
         `)
         .eq('chat_id', chatId)
         .order('created_at', { ascending: true });

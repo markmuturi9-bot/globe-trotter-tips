@@ -10,7 +10,7 @@ export function useTips() {
         .from('tips')
         .select(`
           *,
-          profiles:user_id(id, username),
+          profiles:profiles_public!tips_user_id_fkey(id, username, avatar_url),
           countries:country_id(id, code, name, latitude, longitude)
         `)
         .order('created_at', { ascending: false });
@@ -31,7 +31,7 @@ export function useTipsByCountry(countryId: string | null) {
         .from('tips')
         .select(`
           *,
-          profiles:user_id(id, username),
+          profiles:profiles_public!tips_user_id_fkey(id, username, avatar_url),
           countries:country_id(id, code, name, latitude, longitude)
         `)
         .eq('country_id', countryId)
@@ -54,7 +54,7 @@ export function useTipsByUser(userId: string | null) {
         .from('tips')
         .select(`
           *,
-          profiles:user_id(id, username),
+          profiles:profiles_public!tips_user_id_fkey(id, username, avatar_url),
           countries:country_id(id, code, name, latitude, longitude)
         `)
         .eq('user_id', userId)
