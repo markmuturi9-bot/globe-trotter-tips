@@ -288,41 +288,54 @@ export function MapboxGlobe({
     const map = mapInstanceRef.current;
     if (!map || !mapLoaded) return;
 
-    if (highlightedIso3Codes.length > 0) {
-      // Gray overlay only on countries that are NOT highlighted (no tips)
-      map.setFilter('countries-no-tips', [
-        'all',
-        ['==', ['get', 'disputed'], 'false'],
-        ['any',
-          ['==', 'all', ['get', 'worldview']],
-          ['in', 'US', ['get', 'worldview']]
-        ],
-        ['!', ['in', ['get', 'iso_3166_1_alpha_3'], ['literal', highlightedIso3Codes]]]
-      ]);
+    // Ensure style is fully loaded before setting filters
+    const applyFilters = () => {
+      if (!map.isStyleLoaded()) return;
+      
+      if (highlightedIso3Codes.length > 0) {
+        // Gray overlay only on countries that are NOT highlighted (no tips)
+        map.setFilter('countries-no-tips', [
+          'all',
+          ['==', ['get', 'disputed'], 'false'],
+          ['any',
+            ['==', 'all', ['get', 'worldview']],
+            ['in', 'US', ['get', 'worldview']]
+          ],
+          ['!', ['in', ['get', 'iso_3166_1_alpha_3'], ['literal', highlightedIso3Codes]]]
+        ]);
 
-      // Make only highlighted countries clickable
-      map.setFilter('countries-clickable', [
-        'all',
-        ['==', ['get', 'disputed'], 'false'],
-        ['any',
-          ['==', 'all', ['get', 'worldview']],
-          ['in', 'US', ['get', 'worldview']]
-        ],
-        ['in', ['get', 'iso_3166_1_alpha_3'], ['literal', highlightedIso3Codes]]
-      ]);
+        // Make only highlighted countries clickable
+        map.setFilter('countries-clickable', [
+          'all',
+          ['==', ['get', 'disputed'], 'false'],
+          ['any',
+            ['==', 'all', ['get', 'worldview']],
+            ['in', 'US', ['get', 'worldview']]
+          ],
+          ['in', ['get', 'iso_3166_1_alpha_3'], ['literal', highlightedIso3Codes]]
+        ]);
+      } else {
+        // If no countries have tips, show all with gray overlay
+        map.setFilter('countries-no-tips', [
+          'all',
+          ['==', ['get', 'disputed'], 'false'],
+          ['any',
+            ['==', 'all', ['get', 'worldview']],
+            ['in', 'US', ['get', 'worldview']]
+          ]
+        ]);
+
+        // No countries clickable
+        map.setFilter('countries-clickable', ['==', ['get', 'iso_3166_1_alpha_3'], '']);
+      }
+    };
+
+    // If style is already loaded, apply immediately
+    if (map.isStyleLoaded()) {
+      applyFilters();
     } else {
-      // If no countries have tips, show all with gray overlay
-      map.setFilter('countries-no-tips', [
-        'all',
-        ['==', ['get', 'disputed'], 'false'],
-        ['any',
-          ['==', 'all', ['get', 'worldview']],
-          ['in', 'US', ['get', 'worldview']]
-        ]
-      ]);
-
-      // No countries clickable
-      map.setFilter('countries-clickable', ['==', ['get', 'iso_3166_1_alpha_3'], '']);
+      // Otherwise wait for style to load
+      map.once('style.load', applyFilters);
     }
   }, [highlightedIso3Codes, mapLoaded]);
 
