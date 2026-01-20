@@ -284,62 +284,79 @@ export function MapboxGlobe({
   }, [apiKey, config, updateBoundsAndZoom]);
 
   // Update country styling: gray overlay for countries WITHOUT tips, clickable for those WITH tips
+  // Use a ref to track the latest highlighted codes for async updates
+  const highlightedCodesRef = useRef(highlightedIso3Codes);
+  highlightedCodesRef.current = highlightedIso3Codes;
+
+  const applyCountryFilters = useCallback((map: mapboxgl.Map, codes: string[]) => {
+    // Check if layers exist
+    if (!map.getLayer('countries-no-tips') || !map.getLayer('countries-clickable')) {
+      return false;
+    }
+    
+    try {
+      if (codes.length > 0) {
+        // Gray overlay only on countries that are NOT highlighted (no tips)
+        map.setFilter('countries-no-tips', [
+          'all',
+          ['==', ['get', 'disputed'], 'false'],
+          ['any',
+            ['==', 'all', ['get', 'worldview']],
+            ['in', 'US', ['get', 'worldview']]
+          ],
+          ['!', ['in', ['get', 'iso_3166_1_alpha_3'], ['literal', codes]]]
+        ]);
+
+        // Make only highlighted countries clickable
+        map.setFilter('countries-clickable', [
+          'all',
+          ['==', ['get', 'disputed'], 'false'],
+          ['any',
+            ['==', 'all', ['get', 'worldview']],
+            ['in', 'US', ['get', 'worldview']]
+          ],
+          ['in', ['get', 'iso_3166_1_alpha_3'], ['literal', codes]]
+        ]);
+      } else {
+        // If no countries have tips, show all with gray overlay
+        map.setFilter('countries-no-tips', [
+          'all',
+          ['==', ['get', 'disputed'], 'false'],
+          ['any',
+            ['==', 'all', ['get', 'worldview']],
+            ['in', 'US', ['get', 'worldview']]
+          ]
+        ]);
+
+        // No countries clickable
+        map.setFilter('countries-clickable', ['==', ['get', 'iso_3166_1_alpha_3'], '']);
+      }
+      return true;
+    } catch (e) {
+      console.error('Error setting map filters:', e);
+      return false;
+    }
+  }, []);
+
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map || !mapLoaded) return;
 
-    // Ensure layers exist before setting filters
-    const applyFilters = () => {
-      // Check if layers exist
-      if (!map.getLayer('countries-no-tips') || !map.getLayer('countries-clickable')) {
-        return;
-      }
-      
-      try {
-        if (highlightedIso3Codes.length > 0) {
-          // Gray overlay only on countries that are NOT highlighted (no tips)
-          map.setFilter('countries-no-tips', [
-            'all',
-            ['==', ['get', 'disputed'], 'false'],
-            ['any',
-              ['==', 'all', ['get', 'worldview']],
-              ['in', 'US', ['get', 'worldview']]
-            ],
-            ['!', ['in', ['get', 'iso_3166_1_alpha_3'], ['literal', highlightedIso3Codes]]]
-          ]);
-
-          // Make only highlighted countries clickable
-          map.setFilter('countries-clickable', [
-            'all',
-            ['==', ['get', 'disputed'], 'false'],
-            ['any',
-              ['==', 'all', ['get', 'worldview']],
-              ['in', 'US', ['get', 'worldview']]
-            ],
-            ['in', ['get', 'iso_3166_1_alpha_3'], ['literal', highlightedIso3Codes]]
-          ]);
-        } else {
-          // If no countries have tips, show all with gray overlay
-          map.setFilter('countries-no-tips', [
-            'all',
-            ['==', ['get', 'disputed'], 'false'],
-            ['any',
-              ['==', 'all', ['get', 'worldview']],
-              ['in', 'US', ['get', 'worldview']]
-            ]
-          ]);
-
-          // No countries clickable
-          map.setFilter('countries-clickable', ['==', ['get', 'iso_3166_1_alpha_3'], '']);
+    // Apply filters immediately if layers exist
+    const success = applyCountryFilters(map, highlightedIso3Codes);
+    
+    // If layers don't exist yet, wait for them and retry
+    if (!success) {
+      const checkAndApply = () => {
+        if (applyCountryFilters(map, highlightedCodesRef.current)) {
+          return;
         }
-      } catch (e) {
-        console.error('Error setting map filters:', e);
-      }
-    };
-
-    // Apply filters - use requestAnimationFrame to ensure DOM is ready
-    requestAnimationFrame(applyFilters);
-  }, [highlightedIso3Codes, mapLoaded]);
+        // Retry with requestAnimationFrame
+        requestAnimationFrame(checkAndApply);
+      };
+      requestAnimationFrame(checkAndApply);
+    }
+  }, [highlightedIso3Codes, mapLoaded, applyCountryFilters]);
 
   // Handle country clicks
   useEffect(() => {
