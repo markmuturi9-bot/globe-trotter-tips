@@ -124,36 +124,21 @@ export function MapView() {
     [countryTips]
   );
 
-  // Create markers for the map - only show tip markers when a country is selected
+  // Create markers for the map - only show tips WITH location when a country is selected
+  // Tips without location are shown in the collapsible section only
   const mapMarkers: MapMarker[] = useMemo(() => {
     if (selectedCountry) {
-      const tipMarkers: MapMarker[] = [];
-
-      tipsWithLocation.forEach(tip => {
-        tipMarkers.push({
-          id: tip.id,
-          position: [tip.latitude!, tip.longitude!],
-          label: tip.title.length > 20 ? tip.title.substring(0, 20) + '...' : tip.title,
-          onClick: () => setSelectedTip(tip),
-        });
-      });
-
-      if (tipsWithoutLocation.length > 0 && selectedCountry.latitude && selectedCountry.longitude) {
-        tipMarkers.push({
-          id: `no-location-${selectedCountry.id}`,
-          position: [selectedCountry.latitude, selectedCountry.longitude],
-          count: tipsWithoutLocation.length,
-          label: 'General tips',
-          onClick: () => {},
-        });
-      }
-
-      return tipMarkers;
+      return tipsWithLocation.map(tip => ({
+        id: tip.id,
+        position: [tip.latitude!, tip.longitude!] as [number, number],
+        label: tip.title.length > 20 ? tip.title.substring(0, 20) + '...' : tip.title,
+        onClick: () => setSelectedTip(tip),
+      }));
     }
     
     // No markers on world view - users click directly on countries
     return [];
-  }, [selectedCountry, tipsWithLocation, tipsWithoutLocation]);
+  }, [selectedCountry, tipsWithLocation]);
 
   // Handle country click from the map
   const handleCountryClick = useCallback((countryCode: string) => {
@@ -328,7 +313,6 @@ export function MapView() {
       )}
 
       <MapboxGlobe 
-        key={`${selectedCountry?.id || 'world'}-${filter}`}
         config={mapConfig}
         markers={mapMarkers} 
         highlightedCountryCodes={highlightedCountryCodes}
