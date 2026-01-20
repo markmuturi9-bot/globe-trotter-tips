@@ -7,8 +7,21 @@ export interface Profile {
   username: string;
   email: string;
   privacy_setting: PrivacySetting;
+  avatar_url?: string | null;
+  country_id?: string | null;
   created_at: string;
   updated_at: string;
+}
+
+// Public profile data from profiles_public view (excludes email)
+export interface PublicProfile {
+  id: string;
+  username: string;
+  privacy_setting?: PrivacySetting;
+  avatar_url?: string | null;
+  country_id?: string | null;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface Country {
@@ -32,8 +45,8 @@ export interface Tip {
   images: string[];
   created_at: string;
   updated_at: string;
-  // Joined data
-  profiles?: Profile;
+  // Joined data (uses PublicProfile from view to avoid email exposure)
+  profiles?: PublicProfile;
   countries?: Country;
 }
 

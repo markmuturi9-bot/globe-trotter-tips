@@ -1,11 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
-import type { Friendship, Profile } from '@/types';
+import type { Friendship, PublicProfile } from '@/types';
 
 export interface FriendshipWithProfile extends Friendship {
-  requester?: Profile;
-  addressee?: Profile;
+  requester?: PublicProfile;
+  addressee?: PublicProfile;
 }
 
 export function useFriendships() {
@@ -20,8 +20,8 @@ export function useFriendships() {
         .from('friendships')
         .select(`
           *,
-          requester:profiles!friendships_requester_id_fkey(id, username, email, privacy_setting),
-          addressee:profiles!friendships_addressee_id_fkey(id, username, email, privacy_setting)
+          requester:profiles_public!friendships_requester_id_fkey(id, username, privacy_setting, avatar_url),
+          addressee:profiles_public!friendships_addressee_id_fkey(id, username, privacy_setting, avatar_url)
         `)
         .or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`);
 
@@ -44,7 +44,7 @@ export function usePendingFriendRequests() {
         .from('friendships')
         .select(`
           *,
-          requester:profiles!friendships_requester_id_fkey(id, username, email, privacy_setting)
+          requester:profiles_public!friendships_requester_id_fkey(id, username, privacy_setting, avatar_url)
         `)
         .eq('addressee_id', user.id)
         .eq('status', 'pending');
@@ -68,7 +68,7 @@ export function useAcceptedFriends() {
       const friend = f.requester_id === user.id ? f.addressee : f.requester;
       return friend;
     })
-    .filter(Boolean) as Profile[];
+    .filter(Boolean) as PublicProfile[];
 }
 
 export function useSendFriendRequest() {
@@ -134,14 +134,14 @@ export function useSearchUsers(searchTerm: string) {
       if (!searchTerm || searchTerm.length < 2) return [];
 
       const { data, error } = await supabase
-        .from('profiles')
+        .from('profiles_public')
         .select('*')
         .neq('id', user?.id || '')
         .ilike('username', `%${searchTerm}%`)
         .limit(10);
 
       if (error) throw error;
-      return data as Profile[];
+      return data as PublicProfile[];
     },
     enabled: searchTerm.length >= 2,
   });
