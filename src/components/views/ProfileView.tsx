@@ -24,7 +24,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import appLogo from '@/assets/logo.png';
+import appLogo from '@/assets/app-logo.png';
 
 export function ProfileView() {
   const { user, profile, signOut, signIn, signUp, loading, refreshProfile } = useAuth();

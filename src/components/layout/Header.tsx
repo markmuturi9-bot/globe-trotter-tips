@@ -2,7 +2,7 @@ import { Bell, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { useAuth } from "@/hooks/useAuth";
-import appLogo from "@/assets/logo.png";
+import appLogo from "@/assets/app-logo.png";
 
 interface HeaderProps {
   onCreateTip?: () => void;

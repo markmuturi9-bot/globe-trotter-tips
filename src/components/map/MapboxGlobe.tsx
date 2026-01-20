@@ -12,6 +12,7 @@ interface MapboxGlobeProps {
   highlightedCountryCodes?: string[];
   className?: string;
   onMarkerClick?: (markerId: string) => void;
+  onCountryClick?: (countryCode: string) => void;
 }
 
 type ClusterProperties = {
@@ -55,12 +56,18 @@ const iso2ToIso3: Record<string, string> = {
   'YE': 'YEM', 'ZM': 'ZMB', 'ZW': 'ZWE', 'XK': 'XKX', 'PS': 'PSE', 'EH': 'ESH', 'HK': 'HKG', 'MO': 'MAC'
 };
 
+// Reverse mapping from 3-letter to 2-letter codes
+const iso3ToIso2: Record<string, string> = Object.fromEntries(
+  Object.entries(iso2ToIso3).map(([k, v]) => [v, k])
+);
+
 export function MapboxGlobe({ 
   config, 
   markers = [], 
   highlightedCountryCodes = [],
   className = '',
-  onMarkerClick 
+  onMarkerClick,
+  onCountryClick
 }: MapboxGlobeProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<mapboxgl.Map | null>(null);
@@ -193,16 +200,36 @@ export function MapboxGlobe({
         url: 'mapbox://mapbox.country-boundaries-v1'
       });
 
-      // Add layer for all countries (gray for countries without tips)
-      // Using world-view filter for maximum country coverage
+      // Add layer for countries without tips (gray overlay)
+      // This layer will be filtered dynamically to only show countries NOT in the highlighted list
       map.addLayer({
-        id: 'countries-gray',
+        id: 'countries-no-tips',
         type: 'fill',
         source: 'country-boundaries',
         'source-layer': 'country_boundaries',
         paint: {
-          'fill-color': '#9ca3af', // Gray color
-          'fill-opacity': 0.4
+          'fill-color': '#6b7280', // Gray color
+          'fill-opacity': 0.5
+        },
+        filter: [
+          'all',
+          ['==', ['get', 'disputed'], 'false'],
+          ['any',
+            ['==', 'all', ['get', 'worldview']],
+            ['in', 'US', ['get', 'worldview']]
+          ]
+        ]
+      });
+
+      // Add invisible clickable layer for countries WITH tips
+      map.addLayer({
+        id: 'countries-clickable',
+        type: 'fill',
+        source: 'country-boundaries',
+        'source-layer': 'country_boundaries',
+        paint: {
+          'fill-color': 'transparent',
+          'fill-opacity': 0
         },
         filter: [
           'all',
@@ -234,6 +261,15 @@ export function MapboxGlobe({
         ]
       });
 
+      // Change cursor on hover over clickable countries
+      map.on('mouseenter', 'countries-clickable', () => {
+        map.getCanvas().style.cursor = 'pointer';
+      });
+
+      map.on('mouseleave', 'countries-clickable', () => {
+        map.getCanvas().style.cursor = '';
+      });
+
       setMapLoaded(true);
       updateBoundsAndZoom();
     });
@@ -247,19 +283,14 @@ export function MapboxGlobe({
     };
   }, [apiKey, config, updateBoundsAndZoom]);
 
-  // Update highlighted countries with gold/yellow color and gray for non-highlighted
+  // Update country styling: gray overlay for countries WITHOUT tips, clickable for those WITH tips
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map || !mapLoaded) return;
 
-    // Remove existing highlighted layer if it exists
-    if (map.getLayer('countries-highlighted')) {
-      map.removeLayer('countries-highlighted');
-    }
-
     if (highlightedIso3Codes.length > 0) {
-      // Update the gray layer to exclude highlighted countries
-      map.setFilter('countries-gray', [
+      // Gray overlay only on countries that are NOT highlighted (no tips)
+      map.setFilter('countries-no-tips', [
         'all',
         ['==', ['get', 'disputed'], 'false'],
         ['any',
@@ -269,29 +300,19 @@ export function MapboxGlobe({
         ['!', ['in', ['get', 'iso_3166_1_alpha_3'], ['literal', highlightedIso3Codes]]]
       ]);
 
-      // Add highlighted countries layer with gold/yellow color
-      map.addLayer({
-        id: 'countries-highlighted',
-        type: 'fill',
-        source: 'country-boundaries',
-        'source-layer': 'country_boundaries',
-        filter: [
-          'all',
-          ['==', ['get', 'disputed'], 'false'],
-          ['any',
-            ['==', 'all', ['get', 'worldview']],
-            ['in', 'US', ['get', 'worldview']]
-          ],
-          ['in', ['get', 'iso_3166_1_alpha_3'], ['literal', highlightedIso3Codes]]
+      // Make only highlighted countries clickable
+      map.setFilter('countries-clickable', [
+        'all',
+        ['==', ['get', 'disputed'], 'false'],
+        ['any',
+          ['==', 'all', ['get', 'worldview']],
+          ['in', 'US', ['get', 'worldview']]
         ],
-        paint: {
-          'fill-color': '#f59e0b', // Amber/gold color
-          'fill-opacity': 0.7
-        }
-      }, 'country-borders');
+        ['in', ['get', 'iso_3166_1_alpha_3'], ['literal', highlightedIso3Codes]]
+      ]);
     } else {
-      // If no countries are highlighted, show all in gray
-      map.setFilter('countries-gray', [
+      // If no countries have tips, show all with gray overlay
+      map.setFilter('countries-no-tips', [
         'all',
         ['==', ['get', 'disputed'], 'false'],
         ['any',
@@ -299,8 +320,33 @@ export function MapboxGlobe({
           ['in', 'US', ['get', 'worldview']]
         ]
       ]);
+
+      // No countries clickable
+      map.setFilter('countries-clickable', ['==', ['get', 'iso_3166_1_alpha_3'], '']);
     }
   }, [highlightedIso3Codes, mapLoaded]);
+
+  // Handle country clicks
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map || !mapLoaded || !onCountryClick) return;
+
+    const handleCountryClick = (e: mapboxgl.MapMouseEvent & { features?: mapboxgl.MapboxGeoJSONFeature[] }) => {
+      if (e.features && e.features.length > 0) {
+        const iso3Code = e.features[0].properties?.iso_3166_1_alpha_3;
+        if (iso3Code) {
+          const iso2Code = iso3ToIso2[iso3Code] || iso3Code;
+          onCountryClick(iso2Code);
+        }
+      }
+    };
+
+    map.on('click', 'countries-clickable', handleCountryClick);
+
+    return () => {
+      map.off('click', 'countries-clickable', handleCountryClick);
+    };
+  }, [mapLoaded, onCountryClick]);
 
   // Update markers when clusters change
   useEffect(() => {

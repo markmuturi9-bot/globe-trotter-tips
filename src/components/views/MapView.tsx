@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { Globe, ArrowLeft, ChevronDown, ChevronRight, Filter, Users, User, Globe2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { TipDetail } from '@/components/tips/TipDetail';
@@ -15,7 +15,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
-import type { Tip, Country, Profile, TipCategory } from '@/types';
+import type { Tip, Country, PublicProfile, TipCategory } from '@/types';
 import type { MapMarker } from '@/components/map/MapProvider';
 import { CATEGORY_LABELS, CATEGORY_ICONS } from '@/types';
 
@@ -47,7 +47,7 @@ export function MapView() {
         const friend = f.requester_id === user.id ? f.addressee : f.requester;
         return friend;
       })
-      .filter(Boolean) as Profile[];
+      .filter(Boolean) as PublicProfile[];
   }, [user, friendships]);
 
   const friendIds = useMemo(() => acceptedFriends.map(f => f.id), [acceptedFriends]);
@@ -124,7 +124,7 @@ export function MapView() {
     [countryTips]
   );
 
-  // Create markers for the map
+  // Create markers for the map - only show tip markers when a country is selected
   const mapMarkers: MapMarker[] = useMemo(() => {
     if (selectedCountry) {
       const tipMarkers: MapMarker[] = [];
@@ -149,19 +149,20 @@ export function MapView() {
       }
 
       return tipMarkers;
-    } else {
-      return filteredCountriesWithTips.map(country => ({
-        id: country.id,
-        position: [country.latitude || 0, country.longitude || 0] as [number, number],
-        label: country.code,
-        count: country.tipCount,
-        onClick: () => {
-          setSelectedCountry(country);
-          setNoLocationOpen(false);
-        },
-      }));
     }
-  }, [selectedCountry, filteredCountriesWithTips, tipsWithLocation, tipsWithoutLocation]);
+    
+    // No markers on world view - users click directly on countries
+    return [];
+  }, [selectedCountry, tipsWithLocation, tipsWithoutLocation]);
+
+  // Handle country click from the map
+  const handleCountryClick = useCallback((countryCode: string) => {
+    const country = filteredCountriesWithTips.find(c => c.code === countryCode);
+    if (country) {
+      setSelectedCountry(country);
+      setNoLocationOpen(false);
+    }
+  }, [filteredCountriesWithTips]);
 
   // Map config for country view
   const mapConfig = useMemo(() => {
@@ -338,6 +339,7 @@ export function MapView() {
             setSelectedTip(tip);
           }
         }}
+        onCountryClick={handleCountryClick}
       />
 
       {selectedTip && (
