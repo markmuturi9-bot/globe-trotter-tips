@@ -390,7 +390,8 @@ export function MapboxGlobe({
           </div>
         `;
         
-        el.addEventListener('click', () => {
+        el.addEventListener('click', (e) => {
+          e.stopPropagation();
           // Zoom into the cluster
           if (mapInstanceRef.current && props.cluster_id !== undefined) {
             const expansionZoom = Math.min(
@@ -417,7 +418,8 @@ export function MapboxGlobe({
           </div>
         `;
         
-        el.addEventListener('click', () => {
+        el.addEventListener('click', (e) => {
+          e.stopPropagation();
           marker?.onClick?.();
           onMarkerClick?.(markerId);
         });
