@@ -66,7 +66,7 @@ export function ProfileView() {
         } else {
           toast({
             title: 'Account created',
-            description: 'Welcome to TipTip! You can now start sharing tips.',
+            description: 'Welcome to TIPIT! You can now start sharing tips.',
           });
         }
       } else {
@@ -234,8 +234,8 @@ export function ProfileView() {
           <div className="w-full max-w-sm space-y-6">
             {/* Logo */}
             <div className="text-center">
-              <img src={appLogo} alt="TipTip" className="w-20 h-20 mx-auto mb-4 rounded-2xl shadow-lg" />
-              <h1 className="text-2xl font-display font-semibold">Welcome to TipTip</h1>
+              <img src={appLogo} alt="TIPIT" className="w-20 h-20 mx-auto mb-4 rounded-2xl shadow-lg" />
+              <h1 className="text-2xl font-display font-semibold">Welcome to TIPIT</h1>
               <p className="text-muted-foreground mt-1">Share and discover travel tips</p>
             </div>
 
