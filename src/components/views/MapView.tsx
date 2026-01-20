@@ -160,10 +160,15 @@ export function MapView() {
     return undefined;
   }, [selectedCountry]);
 
-  const highlightedCountryCodes = useMemo(() => 
-    filteredCountriesWithTips.map(country => country.code),
-    [filteredCountriesWithTips]
-  );
+  // Always include the selected country in highlighted codes (no gray filter)
+  // plus all countries with tips based on current filter
+  const highlightedCountryCodes = useMemo(() => {
+    const codes = filteredCountriesWithTips.map(country => country.code);
+    if (selectedCountry && !codes.includes(selectedCountry.code)) {
+      codes.push(selectedCountry.code);
+    }
+    return codes;
+  }, [filteredCountriesWithTips, selectedCountry]);
 
   const isLoading = countriesLoading || tipsLoading;
 
