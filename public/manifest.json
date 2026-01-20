@@ -1,6 +1,6 @@
 {
-  "name": "TipTip",
-  "short_name": "TipTip",
+  "name": "TIPIT",
+  "short_name": "TIPIT",
   "description": "Share and discover travel tips from around the world",
   "start_url": "/",
   "display": "standalone",
@@ -67,14 +67,14 @@
       "sizes": "1170x2532",
       "type": "image/png",
       "form_factor": "narrow",
-      "label": "TipTip Map View"
+      "label": "TIPIT Map View"
     },
     {
       "src": "/screenshots/screenshot-2.png",
       "sizes": "1170x2532",
       "type": "image/png",
       "form_factor": "narrow",
-      "label": "TipTip List View"
+      "label": "TIPIT List View"
     }
   ],
   "shortcuts": [

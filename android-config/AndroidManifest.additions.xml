@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Android Manifest additions for TipTip
+  Android Manifest additions for TIPIT
   
   Merge these permissions and features into your AndroidManifest.xml after running:
   npx cap add android
@@ -58,7 +58,7 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="tiptip" />
+                <data android:scheme="tipit" />
             </intent-filter>
             
         </activity>

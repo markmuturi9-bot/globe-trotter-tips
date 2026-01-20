@@ -1,8 +1,8 @@
-# TipTip - Komplett Publiceringsguide
+# TIPIT - Komplett Publiceringsguide
 
 ## Översikt
 
-Denna guide visar hur du arbetar med TipTip från redigering i Lovable till publicering i App Store och Google Play.
+Denna guide visar hur du arbetar med TIPIT från redigering i Lovable till publicering i App Store och Google Play.
 
 ```
 ┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
@@ -131,7 +131,7 @@ npx cap run android
 ```typescript
 const config: CapacitorConfig = {
   appId: 'app.lovable.8119531570f64ad1b5f9255d17b94d5e',
-  appName: 'TipTip',
+  appName: 'TIPIT',
   webDir: 'dist',
   // KOMMENTERA UT ELLER TA BORT DESSA RADER:
   // server: {
@@ -198,9 +198,9 @@ AAB-filen skapas i: `android/app/release/app-release.aab`
 1. **Skapa ny app:**
    - Klicka **+** → **New App**
    - Plattform: iOS
-   - Namn: TipTip
+   - Namn: TIPIT
    - Bundle ID: Välj den du konfigurerat
-   - SKU: tiptip-ios
+   - SKU: tipit-ios
 
 2. **Fyll i appinformation:**
    - Beskrivning (max 4000 tecken)
@@ -223,7 +223,7 @@ AAB-filen skapas i: `android/app/release/app-release.aab`
 
 1. **Skapa ny app:**
    - Klicka **Create app**
-   - Appnamn: TipTip
+   - Appnamn: TIPIT
    - Standardspråk: Svenska/Engelska
    - Apptyp: App
    - Gratis/Betald

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <!--
-  iOS Info.plist additions for TipTip
+  iOS Info.plist additions for TIPIT
   
   Copy these entries to your iOS project's Info.plist after running:
   npx cap add ios
@@ -31,18 +31,18 @@
     
     <!-- Location Permission (if using location features) -->
     <key>NSLocationWhenInUseUsageDescription</key>
-    <string>TipTip uses your location to show nearby travel tips and help you save tips with accurate locations.</string>
+    <string>TIPIT uses your location to show nearby travel tips and help you save tips with accurate locations.</string>
     
     <!-- Camera Permission (for uploading tip photos) -->
     <key>NSCameraUsageDescription</key>
-    <string>TipTip needs camera access to let you take photos for your travel tips.</string>
+    <string>TIPIT needs camera access to let you take photos for your travel tips.</string>
     
     <!-- Photo Library Permission -->
     <key>NSPhotoLibraryUsageDescription</key>
-    <string>TipTip needs access to your photos to let you add images to your travel tips.</string>
+    <string>TIPIT needs access to your photos to let you add images to your travel tips.</string>
     
     <key>NSPhotoLibraryAddUsageDescription</key>
-    <string>TipTip would like to save photos to your library.</string>
+    <string>TIPIT would like to save photos to your library.</string>
     
     <!-- Status Bar Style -->
     <key>UIStatusBarStyle</key>
@@ -81,7 +81,7 @@
         <dict>
             <key>CFBundleURLSchemes</key>
             <array>
-                <string>tiptip</string>
+                <string>tipit</string>
             </array>
             <key>CFBundleURLName</key>
             <string>app.lovable.8119531570f64ad1b5f9255d17b94d5e</string>

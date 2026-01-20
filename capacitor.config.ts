@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'app.lovable.8119531570f64ad1b5f9255d17b94d5e',
-  appName: 'TipTip',
+  appName: 'TIPIT',
   webDir: 'dist',
   server: {
     url: 'https://81195315-70f6-4ad1-b5f9-255d17b94d5e.lovableproject.com?forceHideBadge=true',
@@ -28,7 +28,7 @@ const config: CapacitorConfig = {
   ios: {
     contentInset: 'automatic',
     preferredContentMode: 'mobile',
-    scheme: 'TipTip'
+    scheme: 'TIPIT'
   },
   android: {
     allowMixedContent: true,

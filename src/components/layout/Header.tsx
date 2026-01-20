@@ -18,8 +18,8 @@ export function Header({ onCreateTip }: HeaderProps) {
     >
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <img src={appLogo} alt="TipTip" className="w-9 h-9 rounded-xl shadow-sm" />
-          <span className="font-display text-xl font-semibold tracking-tight">TipTip</span>
+          <img src={appLogo} alt="TIPIT" className="w-9 h-9 rounded-xl shadow-sm" />
+          <span className="font-display text-xl font-semibold tracking-tight">TIPIT</span>
         </div>
 
         <div className="flex items-center gap-1">

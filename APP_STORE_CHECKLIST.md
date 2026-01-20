@@ -1,4 +1,4 @@
-# TipTip App Store & Play Store Submission Checklist
+# TIPIT App Store & Play Store Submission Checklist
 
 ## App Store (iOS) Requirements
 
@@ -18,7 +18,7 @@
 - [ ] App Preview videos (optional, max 30 seconds)
 
 ### App Store Listing
-- [ ] App Name: TipTip (max 30 characters)
+- [ ] App Name: TIPIT (max 30 characters)
 - [ ] Subtitle: Share Travel Tips (max 30 characters)
 - [ ] Description: (max 4000 characters)
 - [ ] Keywords: travel, tips, explore, social, map, vacation, tourism
@@ -53,7 +53,7 @@
 - [ ] Promo Video (YouTube link, optional)
 
 ### Play Store Listing
-- [ ] Title: TipTip - Share Travel Tips (max 50 characters)
+- [ ] Title: TIPIT - Share Travel Tips (max 50 characters)
 - [ ] Short description: (max 80 characters)
 - [ ] Full description: (max 4000 characters)
 - [ ] Categories: Travel & Local
@@ -96,7 +96,7 @@
 - [x] Terms of Service page (/terms)
 - [x] Cookie consent (GDPR)
 - [ ] Age verification if needed
-- [ ] COPPA compliance (if targeting children - N/A for TipTip)
+- [ ] COPPA compliance (if targeting children - N/A for TIPIT)
 
 ### Accessibility
 - [ ] VoiceOver/TalkBack support

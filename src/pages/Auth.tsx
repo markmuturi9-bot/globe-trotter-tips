@@ -80,7 +80,7 @@ export default function Auth() {
           }
         } else {
           toast({
-            title: "Welcome to TipTip!",
+            title: "Welcome to TIPIT!",
             description: "Your account has been created successfully.",
           });
           navigate("/");
@@ -136,7 +136,7 @@ export default function Auth() {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-purple-500 mb-5 shadow-lg shadow-primary/25">
             <Globe className="w-8 h-8 text-white" />
           </div>
-          <h1 className="font-display text-3xl font-bold tracking-tight">TipTip</h1>
+          <h1 className="font-display text-3xl font-bold tracking-tight">TIPIT</h1>
           <p className="text-muted-foreground mt-2 flex items-center justify-center gap-1.5">
             <Sparkles className="w-4 h-4" />
             Share your travel tips with the world

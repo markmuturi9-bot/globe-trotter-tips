@@ -110,8 +110,8 @@ export default function Terms() {
             <h2 className="text-xl font-serif font-medium mb-3">11. Contact</h2>
             <p className="text-muted-foreground leading-relaxed">
               If you have questions about these terms, please contact us at{' '}
-              <a href="mailto:support@tiptip.app" className="text-primary hover:underline">
-                support@tiptip.app
+              <a href="mailto:support@tipit.app" className="text-primary hover:underline">
+                support@tipit.app
               </a>.
             </p>
           </section>
