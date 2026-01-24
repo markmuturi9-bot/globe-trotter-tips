@@ -1,10 +1,12 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Settings, LogOut, Calendar, FileText, Globe, Download, Trash2, AlertTriangle, Camera, Mail, Lock, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
@@ -39,6 +41,7 @@ export function ProfileView() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
   
@@ -53,6 +56,11 @@ export function ProfileView() {
       if (authMode === 'signup') {
         if (!username.trim()) {
           setAuthError('Username is required');
+          setAuthLoading(false);
+          return;
+        }
+        if (!acceptedTerms) {
+          setAuthError('You must accept the Terms of Service and Privacy Policy');
           setAuthLoading(false);
           return;
         }
@@ -300,6 +308,27 @@ export function ProfileView() {
                       />
                     </div>
                   </div>
+
+                  {authMode === 'signup' && (
+                    <div className="flex items-start space-x-3">
+                      <Checkbox 
+                        id="terms" 
+                        checked={acceptedTerms}
+                        onCheckedChange={(checked) => setAcceptedTerms(checked === true)}
+                        className="mt-0.5"
+                      />
+                      <Label htmlFor="terms" className="text-sm leading-relaxed cursor-pointer text-muted-foreground">
+                        I accept the{' '}
+                        <Link to="/terms" className="text-primary hover:underline font-medium" target="_blank">
+                          Terms of Service
+                        </Link>{' '}
+                        and{' '}
+                        <Link to="/privacy" className="text-primary hover:underline font-medium" target="_blank">
+                          Privacy Policy
+                        </Link>
+                      </Label>
+                    </div>
+                  )}
 
                   {authError && (
                     <div className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
