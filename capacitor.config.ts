@@ -1,13 +1,19 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
+// Determine if we're in development or production
+const isDevelopment = process.env.NODE_ENV === 'development';
+
 const config: CapacitorConfig = {
   appId: 'app.lovable.8119531570f64ad1b5f9255d17b94d5e',
   appName: 'TIPIT',
   webDir: 'dist',
-  server: {
-    url: 'https://81195315-70f6-4ad1-b5f9-255d17b94d5e.lovableproject.com?forceHideBadge=true',
-    cleartext: true
-  },
+  // Only use server config in development - production uses bundled assets
+  ...(isDevelopment ? {
+    server: {
+      url: 'https://81195315-70f6-4ad1-b5f9-255d17b94d5e.lovableproject.com?forceHideBadge=true',
+      cleartext: false // Always use HTTPS
+    }
+  } : {}),
   plugins: {
     SplashScreen: {
       launchShowDuration: 2000,
@@ -20,7 +26,6 @@ const config: CapacitorConfig = {
       splashImmersive: true,
     },
     StatusBar: {
-      // Safe default; actual theme is synced at runtime.
       style: "LIGHT",
       backgroundColor: "#0b0b10",
     },
@@ -31,7 +36,7 @@ const config: CapacitorConfig = {
     scheme: 'TIPIT'
   },
   android: {
-    allowMixedContent: true,
+    allowMixedContent: false, // Security: Disable mixed HTTP/HTTPS content
     captureInput: true,
     webContentsDebuggingEnabled: false
   }
