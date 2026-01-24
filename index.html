@@ -51,14 +51,41 @@
     <meta name="twitter:site" content="@TIPIT" />
     <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
     
-    <!-- Prevent FOUC and set notch / browser chrome color (uses HSL, no hardcoded purple) -->
+    <!-- 
+      Prevent FOUC (Flash of Unstyled Content) and theme flicker
+      Sets background color immediately based on system preference
+      Also applies the 'dark' class immediately if needed to prevent flicker
+    -->
+    <script>
+      (function() {
+        // Get stored theme or fall back to system preference
+        var stored = localStorage.getItem('theme');
+        var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        var isDark = stored === 'dark' || (!stored && prefersDark);
+        
+        // Apply dark class immediately before any content renders
+        if (isDark) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
     <style>
       :root { --boot-bg: 0 0% 99%; }
-      @media (prefers-color-scheme: dark) { :root { --boot-bg: 240 10% 6%; } }
+      .dark { --boot-bg: 240 10% 6%; }
+      @media (prefers-color-scheme: dark) { 
+        :root:not(.light) { --boot-bg: 240 10% 6%; } 
+      }
       html, body {
         background-color: hsl(var(--boot-bg));
         margin: 0;
         padding: 0;
+      }
+      /* Hide content until app loads to prevent FOUC */
+      #root:empty::before {
+        content: '';
+        display: block;
+        height: 100vh;
+        background-color: hsl(var(--boot-bg));
       }
     </style>
   </head>

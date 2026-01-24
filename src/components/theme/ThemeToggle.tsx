@@ -14,36 +14,44 @@ export function ThemeToggle() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="rounded-xl relative">
-          <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-          <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-          <span className="sr-only">Välj tema</span>
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="rounded-xl relative"
+          aria-label="Change theme"
+        >
+          <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" aria-hidden="true" />
+          <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" aria-hidden="true" />
+          <span className="sr-only">Change theme</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-[140px]">
         <DropdownMenuItem 
           onClick={() => setTheme("light")}
           className="gap-2 cursor-pointer"
+          aria-label="Use light theme"
         >
-          <Sun className="h-4 w-4" />
-          <span>Ljust</span>
-          {theme === "light" && <span className="ml-auto text-primary">✓</span>}
+          <Sun className="h-4 w-4" aria-hidden="true" />
+          <span>Light</span>
+          {theme === "light" && <span className="ml-auto text-primary" aria-hidden="true">✓</span>}
         </DropdownMenuItem>
         <DropdownMenuItem 
           onClick={() => setTheme("dark")}
           className="gap-2 cursor-pointer"
+          aria-label="Use dark theme"
         >
-          <Moon className="h-4 w-4" />
-          <span>Mörkt</span>
-          {theme === "dark" && <span className="ml-auto text-primary">✓</span>}
+          <Moon className="h-4 w-4" aria-hidden="true" />
+          <span>Dark</span>
+          {theme === "dark" && <span className="ml-auto text-primary" aria-hidden="true">✓</span>}
         </DropdownMenuItem>
         <DropdownMenuItem 
           onClick={() => setTheme("system")}
           className="gap-2 cursor-pointer"
+          aria-label="Use system theme"
         >
-          <Monitor className="h-4 w-4" />
-          <span>Automatiskt</span>
-          {theme === "system" && <span className="ml-auto text-primary">✓</span>}
+          <Monitor className="h-4 w-4" aria-hidden="true" />
+          <span>System</span>
+          {theme === "system" && <span className="ml-auto text-primary" aria-hidden="true">✓</span>}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

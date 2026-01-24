@@ -19,14 +19,15 @@ export function Header({ onCreateTip }: HeaderProps) {
     <header
       className="sticky top-0 z-40 bg-background border-b border-border"
       style={{ paddingTop: "env(safe-area-inset-top)" }}
+      role="banner"
     >
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <img src={appLogo} alt="TIPIT" className="w-9 h-9 rounded-xl shadow-sm" />
+          <img src={appLogo} alt="" className="w-9 h-9 rounded-xl shadow-sm" aria-hidden="true" />
           <span className="font-display text-xl font-semibold tracking-tight">TIPIT</span>
         </div>
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1" role="toolbar" aria-label="App actions">
           <ThemeToggle />
 
           {user && (
@@ -37,19 +38,29 @@ export function Header({ onCreateTip }: HeaderProps) {
                   size="icon" 
                   className="rounded-xl"
                   onClick={() => navigate('/admin')}
-                  title="Moderation Dashboard"
+                  aria-label="Open moderation dashboard"
                 >
-                  <Shield className="w-5 h-5" />
+                  <Shield className="w-5 h-5" aria-hidden="true" />
                 </Button>
               )}
 
-              <Button variant="ghost" size="icon" className="relative rounded-xl">
-                <Bell className="w-5 h-5" />
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="relative rounded-xl"
+                aria-label="Notifications"
+              >
+                <Bell className="w-5 h-5" aria-hidden="true" />
               </Button>
 
               {onCreateTip && (
-                <Button onClick={onCreateTip} size="sm" className="gap-2 shadow-sm ml-1">
-                  <Plus className="w-4 h-4" />
+                <Button 
+                  onClick={onCreateTip} 
+                  size="sm" 
+                  className="gap-2 shadow-sm ml-1"
+                  aria-label="Add new travel tip"
+                >
+                  <Plus className="w-4 h-4" aria-hidden="true" />
                   <span className="hidden sm:inline">Add Tip</span>
                 </Button>
               )}
