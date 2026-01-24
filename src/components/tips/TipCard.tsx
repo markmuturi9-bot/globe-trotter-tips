@@ -17,6 +17,15 @@ export function TipCard({ tip, onClick }: TipCardProps) {
     <Card 
       className="hover-lift cursor-pointer overflow-hidden animate-fade-in group border-border/50"
       onClick={onClick}
+      role="article"
+      aria-label={`Travel tip: ${tip.title} in ${countryName}`}
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick?.();
+        }
+      }}
     >
       <CardContent className="p-5">
         <div className="flex items-start justify-between gap-3 mb-3">
@@ -33,27 +42,29 @@ export function TipCard({ tip, onClick }: TipCardProps) {
         <div className="flex items-center justify-between text-xs text-muted-foreground">
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1.5 font-medium">
-              <MapPin className="w-3.5 h-3.5 text-primary/70" />
-              {countryName}
+              <MapPin className="w-3.5 h-3.5 text-primary/70" aria-hidden="true" />
+              <span aria-label={`Location: ${countryName}`}>{countryName}</span>
             </span>
             {tip.address && (
-              <span className="text-muted-foreground/60 truncate max-w-[120px]">
+              <span className="text-muted-foreground/60 truncate max-w-[120px]" title={tip.address}>
                 {tip.address}
               </span>
             )}
           </div>
           
           <div className="flex items-center gap-1.5">
-            <Clock className="w-3.5 h-3.5" />
-            {formatDistanceToNow(new Date(tip.created_at), { addSuffix: true })}
+            <Clock className="w-3.5 h-3.5" aria-hidden="true" />
+            <time dateTime={tip.created_at}>
+              {formatDistanceToNow(new Date(tip.created_at), { addSuffix: true })}
+            </time>
           </div>
         </div>
         
         <div className="mt-4 pt-4 border-t border-border/50 flex items-center gap-2">
-          <div className="w-6 h-6 rounded-full bg-gradient-to-br from-primary/20 to-purple-500/20 flex items-center justify-center">
+          <div className="w-6 h-6 rounded-full bg-gradient-to-br from-primary/20 to-purple-500/20 flex items-center justify-center" aria-hidden="true">
             <User className="w-3.5 h-3.5 text-primary" />
           </div>
-          <span className="text-xs text-muted-foreground">@{username}</span>
+          <span className="text-xs text-muted-foreground" aria-label={`Posted by ${username}`}>@{username}</span>
         </div>
       </CardContent>
     </Card>

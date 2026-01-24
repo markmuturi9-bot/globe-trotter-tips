@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
-
-// Allowed image types for security
-const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+import { 
+  IMAGE_ALLOWED_TYPES, 
+  IMAGE_MAX_SIZE_BYTES, 
+  IMAGE_MAX_SIZE_MB,
+  IMAGE_VALID_EXTENSIONS 
+} from '@/lib/constants';
 
 export interface ImageValidationError {
   type: 'invalid_type' | 'too_large' | 'auth_required';
@@ -13,7 +15,7 @@ export interface ImageValidationError {
 
 export function validateImage(file: File): ImageValidationError | null {
   // Validate file type by checking MIME type
-  if (!ALLOWED_TYPES.includes(file.type)) {
+  if (!IMAGE_ALLOWED_TYPES.includes(file.type as typeof IMAGE_ALLOWED_TYPES[number])) {
     return {
       type: 'invalid_type',
       message: `Invalid file type. Allowed: JPEG, PNG, GIF, WebP`,
@@ -21,10 +23,10 @@ export function validateImage(file: File): ImageValidationError | null {
   }
 
   // Validate file size
-  if (file.size > MAX_FILE_SIZE) {
+  if (file.size > IMAGE_MAX_SIZE_BYTES) {
     return {
       type: 'too_large',
-      message: `File too large. Maximum size: ${MAX_FILE_SIZE / 1024 / 1024}MB`,
+      message: `File too large. Maximum size: ${IMAGE_MAX_SIZE_MB}MB`,
     };
   }
 
@@ -70,7 +72,9 @@ export function useImageUpload() {
     try {
       // Create unique file path with sanitized extension
       const extension = file.name.split('.').pop()?.toLowerCase() || 'jpg';
-      const safeExtension = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(extension) ? extension : 'jpg';
+      const safeExtension = IMAGE_VALID_EXTENSIONS.includes(extension as typeof IMAGE_VALID_EXTENSIONS[number]) 
+        ? extension 
+        : 'jpg';
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${safeExtension}`;
       const filePath = `${user.id}/${fileName}`;
 
@@ -80,7 +84,7 @@ export function useImageUpload() {
         .upload(filePath, file, {
           cacheControl: '3600',
           upsert: false,
-          contentType: file.type, // Explicitly set content type
+          contentType: file.type,
         });
 
       if (error) throw error;
