@@ -1,7 +1,7 @@
-import { useState, useRef } from 'react';
+import { useRef } from 'react';
 import { Upload, X, Image as ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useImageUpload } from '@/hooks/useImageUpload';
+import { useImageUpload, validateImage } from '@/hooks/useImageUpload';
 import { useToast } from '@/hooks/use-toast';
 
 interface ImageUploadProps {
@@ -9,6 +9,9 @@ interface ImageUploadProps {
   onImagesChange: (images: string[]) => void;
   maxImages?: number;
 }
+
+// Accepted file types for the input
+const ACCEPTED_TYPES = 'image/jpeg,image/png,image/gif,image/webp';
 
 export function ImageUpload({ images, onImagesChange, maxImages = 5 }: ImageUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -23,21 +26,12 @@ export function ImageUpload({ images, onImagesChange, maxImages = 5 }: ImageUplo
     const filesToUpload = files.slice(0, remainingSlots);
 
     for (const file of filesToUpload) {
-      // Validate file type
-      if (!file.type.startsWith('image/')) {
+      // Use centralized validation
+      const validationError = validateImage(file);
+      if (validationError) {
         toast({
-          title: 'Invalid file',
-          description: 'Please select an image file.',
-          variant: 'destructive',
-        });
-        continue;
-      }
-
-      // Validate file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        toast({
-          title: 'File too large',
-          description: 'Image must be less than 5MB.',
+          title: validationError.type === 'invalid_type' ? 'Invalid file type' : 'File too large',
+          description: validationError.message,
           variant: 'destructive',
         });
         continue;
@@ -98,7 +92,7 @@ export function ImageUpload({ images, onImagesChange, maxImages = 5 }: ImageUplo
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/*"
+            accept={ACCEPTED_TYPES}
             multiple
             onChange={handleFileSelect}
             className="hidden"
