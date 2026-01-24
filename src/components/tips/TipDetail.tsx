@@ -1,8 +1,10 @@
 import { useState } from 'react';
-import { X, MapPin, Clock, User, ExternalLink, Pencil, Trash2, Languages, Loader2, Shield } from 'lucide-react';
+import { X, MapPin, Clock, User, ExternalLink, Pencil, Trash2, Languages, Loader2, Shield, Flag, Ban } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { CategoryBadge } from './CategoryBadge';
 import { EditTipDialog } from './EditTipDialog';
+import { ReportDialog } from '@/components/moderation/ReportDialog';
+import { BlockUserDialog } from '@/components/moderation/BlockUserDialog';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdmin } from '@/hooks/useAdmin';
 import { useDeleteTip } from '@/hooks/useTips';
@@ -21,6 +23,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { MoreVertical } from 'lucide-react';
 
 interface TipDetailProps {
   tip: Tip;
@@ -37,17 +47,19 @@ export function TipDetail({ tip, onClose }: TipDetailProps) {
   const [translatedTitle, setTranslatedTitle] = useState<string | null>(null);
   const [translatedDescription, setTranslatedDescription] = useState<string | null>(null);
   const [isShowingTranslation, setIsShowingTranslation] = useState(false);
+  const [showReportDialog, setShowReportDialog] = useState(false);
+  const [showBlockDialog, setShowBlockDialog] = useState(false);
   
   const countryName = tip.countries?.name || 'Unknown';
   const username = tip.profiles?.username || 'Anonymous';
   const isOwner = user?.id === tip.user_id;
   const canDelete = isOwner || isModerator;
-  const canEdit = isOwner; // Only owners can edit
+  const canEdit = isOwner;
+  const canReport = user && !isOwner;
 
   const handleDelete = async () => {
     try {
       if (isModerator && !isOwner) {
-        // Use admin delete for moderators deleting others' tips
         const { error } = await adminDeleteTip(tip.id);
         if (error) throw error;
         toast({
@@ -84,7 +96,6 @@ export function TipDetail({ tip, onClose }: TipDetailProps) {
 
     setIsTranslating(true);
     try {
-      // Get user's browser language
       const userLang = navigator.language.split('-')[0] || 'en';
       
       const [titleResult, descResult] = await Promise.all([
@@ -136,11 +147,13 @@ export function TipDetail({ tip, onClose }: TipDetailProps) {
                   <Languages className={`w-4 h-4 ${isShowingTranslation ? 'text-primary' : ''}`} />
                 )}
               </Button>
+              
               {canEdit && (
                 <Button variant="ghost" size="icon" onClick={() => setIsEditing(true)}>
                   <Pencil className="w-4 h-4" />
                 </Button>
               )}
+              
               {canDelete && (
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
@@ -173,6 +186,29 @@ export function TipDetail({ tip, onClose }: TipDetailProps) {
                   </AlertDialogContent>
                 </AlertDialog>
               )}
+
+              {/* Report/Block Menu for non-owners */}
+              {canReport && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                      <MoreVertical className="w-4 h-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => setShowReportDialog(true)}>
+                      <Flag className="w-4 h-4 mr-2" />
+                      Report Tip
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => setShowBlockDialog(true)} className="text-destructive">
+                      <Ban className="w-4 h-4 mr-2" />
+                      Block @{username}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+
               <Button variant="ghost" size="icon" onClick={onClose}>
                 <X className="w-5 h-5" />
               </Button>
@@ -251,6 +287,21 @@ export function TipDetail({ tip, onClose }: TipDetailProps) {
           onSuccess={onClose}
         />
       )}
+
+      <ReportDialog
+        open={showReportDialog}
+        onOpenChange={setShowReportDialog}
+        reportType="tip"
+        targetId={tip.id}
+        targetName={tip.title}
+      />
+
+      <BlockUserDialog
+        open={showBlockDialog}
+        onOpenChange={setShowBlockDialog}
+        userId={tip.user_id}
+        username={username}
+      />
     </>
   );
 }

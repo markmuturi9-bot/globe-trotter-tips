@@ -1,10 +1,19 @@
 import { useState, useRef, useEffect } from 'react';
-import { Send, ArrowLeft } from 'lucide-react';
+import { Send, ArrowLeft, MoreVertical, Flag, Ban } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useMessages, useSendMessage, ChatWithParticipant } from '@/hooks/useChat';
 import { useAuth } from '@/hooks/useAuth';
 import { formatDistanceToNow } from 'date-fns';
+import { ReportDialog } from '@/components/moderation/ReportDialog';
+import { BlockUserDialog } from '@/components/moderation/BlockUserDialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface ChatWindowProps {
   chat: ChatWithParticipant;
@@ -17,6 +26,8 @@ export function ChatWindow({ chat, onBack }: ChatWindowProps) {
   const { user } = useAuth();
   const [newMessage, setNewMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [showReportDialog, setShowReportDialog] = useState(false);
+  const [showBlockDialog, setShowBlockDialog] = useState(false);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -41,6 +52,9 @@ export function ChatWindow({ chat, onBack }: ChatWindowProps) {
     }
   };
 
+  const participantId = chat.participant?.id;
+  const participantUsername = chat.participant?.username || 'Unknown';
+
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
@@ -49,11 +63,33 @@ export function ChatWindow({ chat, onBack }: ChatWindowProps) {
           <ArrowLeft className="w-5 h-5" />
         </Button>
         <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-sm font-medium">
-          {chat.participant?.username?.charAt(0).toUpperCase() || '?'}
+          {participantUsername.charAt(0).toUpperCase()}
         </div>
-        <div>
-          <p className="font-medium">{chat.participant?.username}</p>
+        <div className="flex-1">
+          <p className="font-medium">{participantUsername}</p>
         </div>
+        
+        {/* Report/Block Menu */}
+        {participantId && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <MoreVertical className="w-4 h-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => setShowReportDialog(true)}>
+                <Flag className="w-4 h-4 mr-2" />
+                Report User
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => setShowBlockDialog(true)} className="text-destructive">
+                <Ban className="w-4 h-4 mr-2" />
+                Block User
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </div>
 
       {/* Messages */}
@@ -102,6 +138,26 @@ export function ChatWindow({ chat, onBack }: ChatWindowProps) {
           </Button>
         </div>
       </form>
+
+      {/* Dialogs */}
+      {participantId && (
+        <>
+          <ReportDialog
+            open={showReportDialog}
+            onOpenChange={setShowReportDialog}
+            reportType="user"
+            targetId={participantId}
+            targetName={`@${participantUsername}`}
+          />
+
+          <BlockUserDialog
+            open={showBlockDialog}
+            onOpenChange={setShowBlockDialog}
+            userId={participantId}
+            username={participantUsername}
+          />
+        </>
+      )}
     </div>
   );
 }

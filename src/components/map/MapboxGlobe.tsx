@@ -123,17 +123,29 @@ export function MapboxGlobe({
         const { data, error } = await supabase.functions.invoke('get-mapbox-key');
         if (error) {
           console.error('Failed to fetch Mapbox API key:', error);
-          setError('Failed to fetch API key');
+          // Check if it's an auth error (FunctionInvokeError with 401 status)
+          const errorMessage = error.message || 'Failed to fetch API key';
+          if (errorMessage.includes('401') || errorMessage.includes('Unauthorized')) {
+            setError('Please log in to access the map');
+          } else {
+            setError(errorMessage);
+          }
           return;
         }
         if (data?.apiKey) {
           setApiKey(data.apiKey);
         } else if (data?.error) {
+          // Error message from edge function response body
           setError(data.error);
         }
-      } catch (e) {
+      } catch (e: any) {
         console.error('Error connecting to server:', e);
-        setError('Failed to connect to server');
+        const errorMessage = e?.message || 'Failed to connect to server';
+        if (errorMessage.includes('401') || errorMessage.includes('Unauthorized')) {
+          setError('Please log in to access the map');
+        } else {
+          setError(errorMessage);
+        }
       }
     }
     fetchApiKey();
@@ -463,9 +475,35 @@ export function MapboxGlobe({
   }, [config, mapLoaded]);
 
   if (error) {
+    const isAuthError = error.includes('log in') || error.includes('Unauthorized') || error.includes('Please');
     return (
       <div className={`w-full h-full flex items-center justify-center bg-muted ${className}`}>
-        <p className="text-muted-foreground">{error}</p>
+        <div className="text-center p-6 max-w-sm">
+          {isAuthError ? (
+            <>
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold mb-2">Sign in to explore the map</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Create a free account to discover travel tips from around the world.
+              </p>
+              <a 
+                href="/auth" 
+                className="inline-flex items-center justify-center px-4 py-2 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors"
+              >
+                Sign In
+              </a>
+            </>
+          ) : (
+            <>
+              <p className="text-destructive font-medium mb-2">Map unavailable</p>
+              <p className="text-sm text-muted-foreground">{error}</p>
+            </>
+          )}
+        </div>
       </div>
     );
   }
