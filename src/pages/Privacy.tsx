@@ -72,40 +72,67 @@ export default function Privacy() {
               We never sell your personal data. We may share data with:
             </p>
             <ul className="list-disc pl-6 text-muted-foreground space-y-2 mt-4">
-              <li><strong>Service providers:</strong> Who help us run the service (hosting, authentication)</li>
-              <li><strong>Legal requirements:</strong> If required by law</li>
+              <li><strong>Service providers:</strong> Who help us run the service (cloud hosting, authentication, map services)</li>
+              <li><strong>Map services:</strong> We use Mapbox for map functionality. When you use the map, your approximate location may be shared to display relevant content</li>
+              <li><strong>Legal requirements:</strong> If required by law or to protect our rights</li>
             </ul>
           </section>
 
           <section>
-            <h2 className="text-xl font-serif font-medium mb-3">7. Storage and Security</h2>
-            <p className="text-muted-foreground leading-relaxed">
-              Your data is stored on secure servers within the EU/EEA. We use encryption and 
-              other technical measures to protect your data. We retain your data 
-              as long as you have an account with us or as required by law.
+            <h2 className="text-xl font-serif font-medium mb-3">7. User-Generated Content</h2>
+            <p className="text-muted-foreground leading-relaxed mb-4">
+              Content you create (tips, images, messages) is stored on our servers and may be visible to:
+            </p>
+            <ul className="list-disc pl-6 text-muted-foreground space-y-2">
+              <li><strong>Public content:</strong> Travel tips are publicly visible to all users</li>
+              <li><strong>Private messages:</strong> Only visible to you and the recipient</li>
+              <li><strong>Profile information:</strong> Visibility depends on your privacy settings</li>
+            </ul>
+            <p className="text-muted-foreground leading-relaxed mt-4">
+              We implement moderation features to ensure community safety. Users can report 
+              inappropriate content and block other users.
             </p>
           </section>
 
           <section>
-            <h2 className="text-xl font-serif font-medium mb-3">8. Your Rights</h2>
+            <h2 className="text-xl font-serif font-medium mb-3">8. Storage and Security</h2>
+            <p className="text-muted-foreground leading-relaxed">
+              Your data is stored on secure servers within the EU/EEA. We use encryption and 
+              other technical measures to protect your data, including:
+            </p>
+            <ul className="list-disc pl-6 text-muted-foreground space-y-2 mt-4">
+              <li>HTTPS encryption for all data in transit</li>
+              <li>Encrypted storage for sensitive data at rest</li>
+              <li>Row-level security policies to ensure data isolation</li>
+              <li>Regular security audits and updates</li>
+            </ul>
+            <p className="text-muted-foreground leading-relaxed mt-4">
+              We retain your data as long as you have an account with us or as required by law.
+              When you delete your account, your data is permanently removed within 30 days.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-serif font-medium mb-3">9. Your Rights</h2>
             <p className="text-muted-foreground leading-relaxed mb-4">
               Under GDPR, you have the following rights:
             </p>
             <ul className="list-disc pl-6 text-muted-foreground space-y-2">
               <li><strong>Access:</strong> You can request a copy of your data</li>
-              <li><strong>Correction:</strong> You can correct inaccurate data</li>
-              <li><strong>Deletion:</strong> You can request that we delete your data</li>
+              <li><strong>Correction:</strong> You can correct inaccurate data via your profile</li>
+              <li><strong>Deletion:</strong> You can delete your account and all associated data via profile settings</li>
               <li><strong>Restriction:</strong> You can limit how we use your data</li>
-              <li><strong>Data portability:</strong> You can export your data</li>
-              <li><strong>Objection:</strong> You can object to certain processing</li>
+              <li><strong>Data portability:</strong> You can export your data as JSON via profile settings</li>
+              <li><strong>Objection:</strong> You can object to certain processing by contacting us</li>
             </ul>
             <p className="text-muted-foreground leading-relaxed mt-4">
-              You can exercise these rights via your profile settings or by contacting us.
+              <strong>How to exercise your rights:</strong> Go to Profile → Settings to access data export, 
+              privacy controls, and account deletion. For other requests, contact us via the app.
             </p>
           </section>
 
           <section>
-            <h2 className="text-xl font-serif font-medium mb-3">9. Cookies</h2>
+            <h2 className="text-xl font-serif font-medium mb-3">10. Cookies</h2>
             <p className="text-muted-foreground leading-relaxed">
               We use cookies for the service to function correctly. See our cookie banner 
               for more information and to manage your preferences. Necessary cookies 
@@ -114,7 +141,7 @@ export default function Privacy() {
           </section>
 
           <section>
-            <h2 className="text-xl font-serif font-medium mb-3">10. Changes to Policy</h2>
+            <h2 className="text-xl font-serif font-medium mb-3">11. Changes to Policy</h2>
             <p className="text-muted-foreground leading-relaxed">
               We may update this policy when needed. For significant changes, we will notify 
               you via email or in the service.
@@ -122,18 +149,22 @@ export default function Privacy() {
           </section>
 
           <section>
-            <h2 className="text-xl font-serif font-medium mb-3">11. Complaints</h2>
+            <h2 className="text-xl font-serif font-medium mb-3">12. Complaints</h2>
             <p className="text-muted-foreground leading-relaxed">
               If you are dissatisfied with how we handle your personal data, you have the right to 
-              file a complaint with a data protection authority.
+              file a complaint with a data protection authority. In Sweden, this is 
+              Integritetsskyddsmyndigheten (IMY).
             </p>
           </section>
 
           <section>
-            <h2 className="text-xl font-serif font-medium mb-3">12. Contact</h2>
+            <h2 className="text-xl font-serif font-medium mb-3">13. Contact</h2>
             <p className="text-muted-foreground leading-relaxed">
               For questions about this privacy policy or how we process your data, 
-              contact us via the service's contact function.
+              contact us at{' '}
+              <a href="mailto:privacy@tipit.app" className="text-primary hover:underline">
+                privacy@tipit.app
+              </a>.
             </p>
           </section>
         </div>

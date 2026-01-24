@@ -214,11 +214,15 @@ export default function Auth() {
                     <Label htmlFor="terms" className="text-sm leading-relaxed cursor-pointer text-muted-foreground">
                       I accept the{' '}
                       <Link to="/terms" className="text-primary hover:underline font-medium" target="_blank">
-                        terms of service
+                        Terms of Service
                       </Link>{' '}
-                      and{' '}
+                      (including{' '}
+                      <Link to="/terms#ugc" className="text-primary hover:underline font-medium" target="_blank">
+                        UGC Policy
+                      </Link>
+                      ) and{' '}
                       <Link to="/privacy" className="text-primary hover:underline font-medium" target="_blank">
-                        privacy policy
+                        Privacy Policy
                       </Link>
                     </Label>
                   </div>

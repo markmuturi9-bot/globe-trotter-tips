@@ -1,7 +1,9 @@
-import { Bell, Plus } from "lucide-react";
+import { Bell, Plus, Shield } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { useAuth } from "@/hooks/useAuth";
+import { useAdmin } from "@/hooks/useAdmin";
 import appLogo from "@/assets/app-logo.png";
 
 interface HeaderProps {
@@ -10,6 +12,8 @@ interface HeaderProps {
 
 export function Header({ onCreateTip }: HeaderProps) {
   const { user } = useAuth();
+  const { isModerator } = useAdmin();
+  const navigate = useNavigate();
 
   return (
     <header
@@ -27,6 +31,18 @@ export function Header({ onCreateTip }: HeaderProps) {
 
           {user && (
             <>
+              {isModerator && (
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="rounded-xl"
+                  onClick={() => navigate('/admin')}
+                  title="Moderation Dashboard"
+                >
+                  <Shield className="w-5 h-5" />
+                </Button>
+              )}
+
               <Button variant="ghost" size="icon" className="relative rounded-xl">
                 <Bell className="w-5 h-5" />
               </Button>
