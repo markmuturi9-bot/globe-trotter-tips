@@ -105,15 +105,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     // Check if identifier is not an email (i.e., it's a username)
     if (!identifier.includes('@')) {
-      // Look up the email by username using RPC function
-      const { data: email, error: lookupError } = await supabase
-        .rpc('get_email_by_username', { _username: identifier });
-      
-      if (lookupError || !email) {
-        return { error: new Error('User not found. Please check your username.') };
+      // Look up the email by username using secure edge function with rate limiting
+      try {
+        const { data, error: lookupError } = await supabase.functions.invoke('login-username', {
+          body: { username: identifier }
+        });
+        
+        if (lookupError) {
+          console.error('Username lookup error:', lookupError);
+          return { error: new Error('Login service temporarily unavailable. Try using your email address.') };
+        }
+        
+        if (data?.error) {
+          return { error: new Error(data.error) };
+        }
+        
+        if (!data?.email) {
+          return { error: new Error('User not found. Please check your username.') };
+        }
+        
+        emailToUse = data.email;
+      } catch (e) {
+        console.error('Username lookup failed:', e);
+        return { error: new Error('Login service temporarily unavailable. Try using your email address.') };
       }
-      
-      emailToUse = email;
     }
     
     const { error } = await supabase.auth.signInWithPassword({

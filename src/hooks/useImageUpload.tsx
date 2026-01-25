@@ -89,13 +89,15 @@ export function useImageUpload() {
 
       if (error) throw error;
 
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
+      // Get signed URL (bucket is now private for security)
+      const { data: signedUrlData, error: signedUrlError } = await supabase.storage
         .from('tip-images')
-        .getPublicUrl(filePath);
+        .createSignedUrl(filePath, 60 * 60 * 24 * 365); // 1 year expiry
+
+      if (signedUrlError) throw signedUrlError;
 
       setProgress(100);
-      return publicUrl;
+      return signedUrlData.signedUrl;
     } catch (error) {
       console.error('Upload error:', error);
       throw error;
