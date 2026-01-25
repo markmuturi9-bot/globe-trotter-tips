@@ -17,7 +17,7 @@ const signUpSchema = z.object({
 });
 
 const signInSchema = z.object({
-  email: z.string().email("Invalid email address"),
+  email: z.string().min(1, "Email or username is required"),
   password: z.string().min(1, "Password is required"),
 });
 
@@ -179,13 +179,13 @@ export default function Auth() {
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{isSignUp ? 'Email' : 'Email or Username'}</Label>
                 <Input
                   id="email"
-                  type="email"
+                  type={isSignUp ? 'email' : 'text'}
                   value={formData.email}
                   onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
-                  placeholder="you@example.com"
+                  placeholder={isSignUp ? 'you@example.com' : 'Email or username'}
                 />
                 {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
               </div>

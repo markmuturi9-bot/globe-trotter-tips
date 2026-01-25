@@ -277,13 +277,13 @@ export function ProfileView() {
                   )}
                   
                   <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
+                    <Label htmlFor="email">{authMode === 'signin' ? 'Email or Username' : 'Email'}</Label>
                     <div className="relative">
                       <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                       <Input
                         id="email"
-                        type="email"
-                        placeholder="Enter your email"
+                        type={authMode === 'signin' ? 'text' : 'email'}
+                        placeholder={authMode === 'signin' ? 'Email or username' : 'Enter your email'}
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         className="pl-10"
