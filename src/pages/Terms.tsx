@@ -36,7 +36,7 @@ export default function Terms() {
           <section>
             <h2 className="text-xl font-serif font-medium mb-3">3. User Account</h2>
             <ul className="list-disc pl-6 text-muted-foreground space-y-2">
-              <li>You must be at least 16 years old to use the service</li>
+              <li>You must be at least 13 years old to use the service</li>
               <li>You are responsible for keeping your login credentials secure</li>
               <li>You are responsible for all activity on your account</li>
               <li>You must provide accurate information when registering</li>
@@ -143,10 +143,10 @@ export default function Terms() {
           <section>
             <h2 className="text-xl font-serif font-medium mb-3">11. Contact</h2>
             <p className="text-muted-foreground leading-relaxed">
-              If you have questions about these terms, please contact us at{' '}
-              <a href="mailto:support@tipit.app" className="text-primary hover:underline">
-                support@tipit.app
-              </a>.
+              If you have questions about these terms, please contact us through our{' '}
+              <Link to="/support" className="text-primary hover:underline">
+                support page
+              </Link>.
             </p>
           </section>
         </div>
