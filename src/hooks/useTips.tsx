@@ -234,7 +234,7 @@ export function useCreateTip() {
         throw new Error('Not authenticated - please sign in again');
       }
       
-      console.log('Creating tip for user:', user.id, 'with data:', input);
+      // Tip creation in progress
       
       const { data, error } = await supabase
         .from('tips')
@@ -257,7 +257,7 @@ export function useCreateTip() {
         throw new Error(error.message);
       }
       
-      console.log('Tip created successfully:', data);
+      // Tip created successfully
       return data;
     },
     onSuccess: () => {
@@ -297,7 +297,7 @@ export function useUpdateTip() {
         throw new Error(error.message);
       }
       
-      console.log('Tip updated successfully:', data);
+      // Tip updated successfully
       return data;
     },
     onSuccess: () => {
