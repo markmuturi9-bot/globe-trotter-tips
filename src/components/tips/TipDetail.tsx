@@ -3,6 +3,7 @@ import { X, MapPin, Clock, User, ExternalLink, Pencil, Trash2, Languages, Loader
 import { Button } from '@/components/ui/button';
 import { CategoryBadge } from './CategoryBadge';
 import { EditTipDialog } from './EditTipDialog';
+import { TipImage } from './TipImage';
 import { ReportDialog } from '@/components/moderation/ReportDialog';
 import { BlockUserDialog } from '@/components/moderation/BlockUserDialog';
 import { useAuth } from '@/hooks/useAuth';
@@ -267,7 +268,7 @@ export function TipDetail({ tip, onClose }: TipDetailProps) {
             {tip.images && tip.images.length > 0 && (
               <div className="grid grid-cols-2 gap-2">
                 {tip.images.map((image, index) => (
-                  <img
+                  <TipImage
                     key={index}
                     src={image}
                     alt={`${tip.title} - Image ${index + 1}`}
