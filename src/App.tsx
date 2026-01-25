@@ -36,13 +36,51 @@ const queryClient = new QueryClient({
   },
 });
 
+// Hook to determine if app routes should be shown
+function useShowAppRoutes(): boolean {
+  // Check on every render to ensure correct detection
+  return isNativeApp();
+}
+
 // Component that uses the online status hook
 function OnlineStatusMonitor() {
   useOnlineStatus();
   return null;
 }
 
-const isNative = isNativeApp();
+// Main app routes component
+function AppRoutes() {
+  const showAppRoutes = useShowAppRoutes();
+  
+  return (
+    <Routes>
+      {/* Public pages - always accessible */}
+      <Route path="/privacy" element={<Privacy />} />
+      <Route path="/terms" element={<Terms />} />
+      <Route path="/support" element={<Support />} />
+      
+      {showAppRoutes ? (
+        <>
+          {/* Native app routes - full app functionality */}
+          <Route path="/" element={<Navigate to="/map" replace />} />
+          <Route path="/map" element={<Map />} />
+          <Route path="/list" element={<List />} />
+          <Route path="/friends" element={<Friends />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/admin" element={<Admin />} />
+          <Route path="*" element={<NotFound />} />
+        </>
+      ) : (
+        <>
+          {/* Web browser routes - landing page only */}
+          <Route path="/" element={<Landing />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </>
+      )}
+    </Routes>
+  );
+}
 
 const App = () => (
   <ErrorBoundary>
@@ -55,32 +93,7 @@ const App = () => (
             <Toaster />
             <Sonner />
             <BrowserRouter>
-              <Routes>
-                {/* Public pages - always accessible */}
-                <Route path="/privacy" element={<Privacy />} />
-                <Route path="/terms" element={<Terms />} />
-                <Route path="/support" element={<Support />} />
-                
-                {isNative ? (
-                  <>
-                    {/* Native app routes - full app functionality */}
-                    <Route path="/" element={<Navigate to="/map" replace />} />
-                    <Route path="/map" element={<Map />} />
-                    <Route path="/list" element={<List />} />
-                    <Route path="/friends" element={<Friends />} />
-                    <Route path="/profile" element={<Profile />} />
-                    <Route path="/auth" element={<Auth />} />
-                    <Route path="/admin" element={<Admin />} />
-                    <Route path="*" element={<NotFound />} />
-                  </>
-                ) : (
-                  <>
-                    {/* Web browser routes - landing page only */}
-                    <Route path="/" element={<Landing />} />
-                    <Route path="*" element={<Navigate to="/" replace />} />
-                  </>
-                )}
-              </Routes>
+              <AppRoutes />
               <CookieConsent />
             </BrowserRouter>
           </TooltipProvider>
