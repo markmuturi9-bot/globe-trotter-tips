@@ -10,13 +10,38 @@ export function useTips() {
         .from('tips')
         .select(`
           *,
-          profiles:profiles_public!tips_user_id_fkey(id, username, avatar_url),
-          countries:country_id(id, code, name, latitude, longitude)
+          countries!tips_country_id_fkey(id, code, name, latitude, longitude)
         `)
         .order('created_at', { ascending: false });
       
       if (error) throw error;
-      return data as Tip[];
+      
+      // Fetch profiles separately since profiles_public is a view (not a table with FK)
+      const userIds = [...new Set((data || []).map(tip => tip.user_id))];
+      
+      let profilesMap: Record<string, { id: string; username: string; avatar_url: string | null }> = {};
+      
+      if (userIds.length > 0) {
+        const { data: profiles, error: profilesError } = await supabase
+          .from('profiles_public')
+          .select('id, username, avatar_url')
+          .in('id', userIds);
+        
+        if (!profilesError && profiles) {
+          profilesMap = profiles.reduce((acc, p) => {
+            acc[p.id] = p;
+            return acc;
+          }, {} as typeof profilesMap);
+        }
+      }
+      
+      // Merge profiles into tips
+      const tipsWithProfiles = (data || []).map(tip => ({
+        ...tip,
+        profiles: profilesMap[tip.user_id] || null,
+      }));
+      
+      return tipsWithProfiles as Tip[];
     },
   });
 }
@@ -31,14 +56,39 @@ export function useTipsByCountry(countryId: string | null) {
         .from('tips')
         .select(`
           *,
-          profiles:profiles_public!tips_user_id_fkey(id, username, avatar_url),
-          countries:country_id(id, code, name, latitude, longitude)
+          countries!tips_country_id_fkey(id, code, name, latitude, longitude)
         `)
         .eq('country_id', countryId)
         .order('created_at', { ascending: false });
       
       if (error) throw error;
-      return data as Tip[];
+      
+      // Fetch profiles separately since profiles_public is a view
+      const userIds = [...new Set((data || []).map(tip => tip.user_id))];
+      
+      let profilesMap: Record<string, { id: string; username: string; avatar_url: string | null }> = {};
+      
+      if (userIds.length > 0) {
+        const { data: profiles, error: profilesError } = await supabase
+          .from('profiles_public')
+          .select('id, username, avatar_url')
+          .in('id', userIds);
+        
+        if (!profilesError && profiles) {
+          profilesMap = profiles.reduce((acc, p) => {
+            acc[p.id] = p;
+            return acc;
+          }, {} as typeof profilesMap);
+        }
+      }
+      
+      // Merge profiles into tips
+      const tipsWithProfiles = (data || []).map(tip => ({
+        ...tip,
+        profiles: profilesMap[tip.user_id] || null,
+      }));
+      
+      return tipsWithProfiles as Tip[];
     },
     enabled: !!countryId,
   });
@@ -54,14 +104,39 @@ export function useTipsByUser(userId: string | null) {
         .from('tips')
         .select(`
           *,
-          profiles:profiles_public!tips_user_id_fkey(id, username, avatar_url),
-          countries:country_id(id, code, name, latitude, longitude)
+          countries!tips_country_id_fkey(id, code, name, latitude, longitude)
         `)
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
       
       if (error) throw error;
-      return data as Tip[];
+      
+      // Fetch profiles separately since profiles_public is a view
+      const userIds = [...new Set((data || []).map(tip => tip.user_id))];
+      
+      let profilesMap: Record<string, { id: string; username: string; avatar_url: string | null }> = {};
+      
+      if (userIds.length > 0) {
+        const { data: profiles, error: profilesError } = await supabase
+          .from('profiles_public')
+          .select('id, username, avatar_url')
+          .in('id', userIds);
+        
+        if (!profilesError && profiles) {
+          profilesMap = profiles.reduce((acc, p) => {
+            acc[p.id] = p;
+            return acc;
+          }, {} as typeof profilesMap);
+        }
+      }
+      
+      // Merge profiles into tips
+      const tipsWithProfiles = (data || []).map(tip => ({
+        ...tip,
+        profiles: profilesMap[tip.user_id] || null,
+      }));
+      
+      return tipsWithProfiles as Tip[];
     },
     enabled: !!userId,
   });
