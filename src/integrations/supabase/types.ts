@@ -506,6 +506,17 @@ export type Database = {
       }
     }
     Functions: {
+      admin_get_all_profiles: {
+        Args: never
+        Returns: {
+          avatar_url: string
+          created_at: string
+          email: string
+          id: string
+          privacy_setting: string
+          username: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
