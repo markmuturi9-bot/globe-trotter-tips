@@ -32,34 +32,20 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Verify authentication
-  const authHeader = req.headers.get('Authorization');
-  if (!authHeader?.startsWith('Bearer ')) {
-    console.error('Missing or invalid authorization header');
+  // Validate origin for security (CORS headers alone don't prevent server-side requests)
+  const isValidOrigin = origin && ALLOWED_ORIGINS.some(allowed => 
+    origin === allowed || origin.endsWith('.lovable.app') || origin.endsWith('.lovableproject.com')
+  );
+  
+  if (!isValidOrigin) {
+    console.error('Invalid origin:', origin);
     return new Response(
-      JSON.stringify({ error: 'Please log in to access the map' }),
-      { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      JSON.stringify({ error: 'Unauthorized origin' }),
+      { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_ANON_KEY')!,
-      { global: { headers: { Authorization: authHeader } } }
-    );
-
-    const token = authHeader.replace('Bearer ', '');
-    const { data: authData, error: authError } = await supabaseClient.auth.getClaims(token);
-    
-    if (authError || !authData?.claims) {
-      console.error('Authentication failed:', authError?.message);
-      return new Response(
-        JSON.stringify({ error: 'Please log in to access the map' }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
     const apiKey = Deno.env.get('MAPBOX_PUBLIC_TOKEN');
     
     if (!apiKey) {
@@ -73,7 +59,24 @@ serve(async (req) => {
       );
     }
 
-    console.log(`Mapbox API key retrieved successfully for user ${authData.claims.sub}`);
+    // Log access (authenticated or guest)
+    const authHeader = req.headers.get('Authorization');
+    if (authHeader?.startsWith('Bearer ')) {
+      const supabaseClient = createClient(
+        Deno.env.get('SUPABASE_URL')!,
+        Deno.env.get('SUPABASE_ANON_KEY')!,
+        { global: { headers: { Authorization: authHeader } } }
+      );
+      const token = authHeader.replace('Bearer ', '');
+      const { data: authData } = await supabaseClient.auth.getClaims(token);
+      if (authData?.claims?.sub) {
+        console.log(`Mapbox API key retrieved for authenticated user ${authData.claims.sub}`);
+      } else {
+        console.log('Mapbox API key retrieved for guest user');
+      }
+    } else {
+      console.log('Mapbox API key retrieved for guest user');
+    }
     
     return new Response(
       JSON.stringify({ apiKey }),
