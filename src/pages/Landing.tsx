@@ -52,6 +52,11 @@ export default function Landing() {
           </nav>
 
           <div className="text-center max-w-3xl mx-auto space-y-6">
+            <img 
+              src={appLogo} 
+              alt={APP_NAME} 
+              className="w-24 h-24 md:w-32 md:h-32 rounded-3xl mx-auto shadow-xl"
+            />
             <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
               Discover the World Through
               <span className="text-primary block mt-2">Local Eyes</span>
