@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { 
   Shield, Flag, CheckCircle, XCircle, Clock, AlertTriangle, User, MessageSquare, 
-  MapPin, Users, FileText, Activity, Crown, UserX, Trash2, Eye, BarChart3
+  MapPin, Users, FileText, Activity, Crown, UserX, Trash2, Eye, BarChart3, Headphones, Mail
 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -77,6 +77,19 @@ interface Tip {
   created_at: string;
   username?: string;
   country_name?: string;
+}
+
+interface SupportRequest {
+  id: string;
+  name: string;
+  email: string | null;
+  subject: string;
+  message: string;
+  status: 'pending' | 'in_progress' | 'resolved';
+  user_id: string | null;
+  created_at: string;
+  resolved_at: string | null;
+  resolved_by: string | null;
 }
 
 // ==================== HOOKS ====================
@@ -173,11 +186,12 @@ function useAdminStats() {
   return useQuery({
     queryKey: ['admin-stats'],
     queryFn: async () => {
-      const [usersRes, tipsRes, reportsRes, rolesRes] = await Promise.all([
+      const [usersRes, tipsRes, reportsRes, rolesRes, supportRes] = await Promise.all([
         supabase.from('profiles').select('id', { count: 'exact', head: true }),
         supabase.from('tips').select('id', { count: 'exact', head: true }),
         supabase.from('reports').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
         supabase.from('user_roles').select('id', { count: 'exact', head: true }),
+        supabase.from('support_requests').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
       ]);
 
       return {
@@ -185,6 +199,7 @@ function useAdminStats() {
         totalTips: tipsRes.count || 0,
         pendingReports: reportsRes.count || 0,
         usersWithRoles: rolesRes.count || 0,
+        pendingSupport: supportRes.count || 0,
       };
     },
   });
@@ -297,6 +312,65 @@ function useManageRole() {
     onError: (error: Error) => {
       toast({
         title: 'Failed to update role',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+}
+
+function useSupportRequests(status: 'pending' | 'in_progress' | 'resolved' | 'all') {
+  return useQuery({
+    queryKey: ['admin-support', status],
+    queryFn: async () => {
+      let query = supabase
+        .from('support_requests')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (status !== 'all') {
+        query = query.eq('status', status);
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+      return data as SupportRequest[];
+    },
+  });
+}
+
+function useUpdateSupportStatus() {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({ requestId, status }: { requestId: string; status: 'pending' | 'in_progress' | 'resolved' }) => {
+      const updateData: Record<string, unknown> = { status };
+      
+      if (status === 'resolved') {
+        updateData.resolved_at = new Date().toISOString();
+        updateData.resolved_by = user?.id;
+      }
+
+      const { error } = await supabase
+        .from('support_requests')
+        .update(updateData)
+        .eq('id', requestId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-support'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-stats'] });
+      toast({
+        title: 'Support request updated',
+        description: 'The support request status has been updated.',
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Update failed',
         description: error.message,
         variant: 'destructive',
       });
@@ -764,6 +838,129 @@ function TipsManagement() {
   );
 }
 
+function SupportManagement() {
+  const [statusFilter, setStatusFilter] = useState<'pending' | 'in_progress' | 'resolved' | 'all'>('pending');
+  const { data: requests, isLoading, error } = useSupportRequests(statusFilter);
+  const updateStatus = useUpdateSupportStatus();
+
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-64 w-full" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="border-destructive">
+        <CardContent className="pt-6">
+          <p className="text-destructive">Error loading support requests: {(error as Error).message}</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return <Badge variant="destructive"><Clock className="w-3 h-3 mr-1" />Pending</Badge>;
+      case 'in_progress':
+        return <Badge variant="secondary"><Activity className="w-3 h-3 mr-1" />In Progress</Badge>;
+      case 'resolved':
+        return <Badge variant="default"><CheckCircle className="w-3 h-3 mr-1" />Resolved</Badge>;
+      default:
+        return <Badge variant="outline">{status}</Badge>;
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <Tabs value={statusFilter} onValueChange={(v) => setStatusFilter(v as typeof statusFilter)}>
+        <TabsList className="mb-4">
+          <TabsTrigger value="pending">
+            <Clock className="w-4 h-4 mr-1" />
+            Pending
+          </TabsTrigger>
+          <TabsTrigger value="in_progress">In Progress</TabsTrigger>
+          <TabsTrigger value="resolved">Resolved</TabsTrigger>
+          <TabsTrigger value="all">All</TabsTrigger>
+        </TabsList>
+      </Tabs>
+
+      {!requests?.length ? (
+        <Card>
+          <CardContent className="pt-6 text-center">
+            <Headphones className="w-12 h-12 mx-auto text-muted-foreground/50 mb-3" />
+            <p className="text-muted-foreground">No support requests found</p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="space-y-4">
+          {requests.map((request) => (
+            <Card key={request.id}>
+              <CardHeader className="pb-3">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <CardTitle className="text-base font-medium">{request.subject}</CardTitle>
+                    <CardDescription className="text-xs mt-1">
+                      From: {request.name} {request.email && `(${request.email})`} • {formatDistanceToNow(new Date(request.created_at), { addSuffix: true })}
+                    </CardDescription>
+                  </div>
+                  {getStatusBadge(request.status)}
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="bg-muted/50 rounded-lg p-3">
+                  <p className="text-sm whitespace-pre-wrap">{request.message}</p>
+                </div>
+
+                {request.status !== 'resolved' && (
+                  <div className="flex gap-2 pt-2">
+                    {request.status === 'pending' && (
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => updateStatus.mutate({ requestId: request.id, status: 'in_progress' })}
+                        disabled={updateStatus.isPending}
+                      >
+                        <Activity className="w-4 h-4 mr-1" />
+                        Mark In Progress
+                      </Button>
+                    )}
+                    <Button
+                      size="sm"
+                      variant="default"
+                      onClick={() => updateStatus.mutate({ requestId: request.id, status: 'resolved' })}
+                      disabled={updateStatus.isPending}
+                    >
+                      <CheckCircle className="w-4 h-4 mr-1" />
+                      Mark Resolved
+                    </Button>
+                    {request.email && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        asChild
+                      >
+                        <a href={`mailto:${request.email}?subject=Re: ${request.subject}`}>
+                          <Mail className="w-4 h-4 mr-1" />
+                          Reply via Email
+                        </a>
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ==================== MAIN PAGE ====================
 
 export default function Admin() {
@@ -803,7 +1000,7 @@ export default function Admin() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-4 mb-6">
+          <TabsList className="grid w-full grid-cols-5 mb-6">
             <TabsTrigger value="overview" className="flex items-center gap-1">
               <BarChart3 className="w-4 h-4" />
               <span className="hidden sm:inline">Overview</span>
@@ -811,6 +1008,10 @@ export default function Admin() {
             <TabsTrigger value="reports" className="flex items-center gap-1">
               <Flag className="w-4 h-4" />
               <span className="hidden sm:inline">Reports</span>
+            </TabsTrigger>
+            <TabsTrigger value="support" className="flex items-center gap-1">
+              <Headphones className="w-4 h-4" />
+              <span className="hidden sm:inline">Support</span>
             </TabsTrigger>
             {isAdmin && (
               <TabsTrigger value="users" className="flex items-center gap-1">
@@ -846,6 +1047,10 @@ export default function Admin() {
                     Manage User Roles
                   </Button>
                 )}
+                <Button variant="outline" onClick={() => setActiveTab('support')} className="justify-start">
+                  <Headphones className="w-4 h-4 mr-2" />
+                  Handle Support Requests
+                </Button>
               </CardContent>
             </Card>
           </TabsContent>
@@ -875,6 +1080,10 @@ export default function Admin() {
                 <ReportsList status="all" />
               </TabsContent>
             </Tabs>
+          </TabsContent>
+
+          <TabsContent value="support">
+            <SupportManagement />
           </TabsContent>
 
           {isAdmin && (
