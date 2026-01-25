@@ -9,6 +9,10 @@ import { SystemChromeSync } from "@/components/theme/SystemChromeSync";
 import { CookieConsent } from "@/components/gdpr/CookieConsent";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
+import { isNativeApp } from "@/lib/platform";
+
+// Pages
+import Landing from "./pages/Landing";
 import Map from "./pages/Map";
 import List from "./pages/List";
 import Profile from "./pages/Profile";
@@ -38,6 +42,8 @@ function OnlineStatusMonitor() {
   return null;
 }
 
+const isNative = isNativeApp();
+
 const App = () => (
   <ErrorBoundary>
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
@@ -50,17 +56,30 @@ const App = () => (
             <Sonner />
             <BrowserRouter>
               <Routes>
-                <Route path="/" element={<Navigate to="/map" replace />} />
-                <Route path="/map" element={<Map />} />
-                <Route path="/list" element={<List />} />
-                <Route path="/friends" element={<Friends />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/admin" element={<Admin />} />
+                {/* Public pages - always accessible */}
                 <Route path="/privacy" element={<Privacy />} />
                 <Route path="/terms" element={<Terms />} />
                 <Route path="/support" element={<Support />} />
-                <Route path="*" element={<NotFound />} />
+                
+                {isNative ? (
+                  <>
+                    {/* Native app routes - full app functionality */}
+                    <Route path="/" element={<Navigate to="/map" replace />} />
+                    <Route path="/map" element={<Map />} />
+                    <Route path="/list" element={<List />} />
+                    <Route path="/friends" element={<Friends />} />
+                    <Route path="/profile" element={<Profile />} />
+                    <Route path="/auth" element={<Auth />} />
+                    <Route path="/admin" element={<Admin />} />
+                    <Route path="*" element={<NotFound />} />
+                  </>
+                ) : (
+                  <>
+                    {/* Web browser routes - landing page only */}
+                    <Route path="/" element={<Landing />} />
+                    <Route path="*" element={<Navigate to="/" replace />} />
+                  </>
+                )}
               </Routes>
               <CookieConsent />
             </BrowserRouter>
