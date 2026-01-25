@@ -2,8 +2,12 @@ import { Capacitor } from '@capacitor/core';
 
 /**
  * Check if we're in a Lovable preview/development environment
- * This specifically checks for preview URLs (containing "preview" in hostname)
- * and local development, NOT published URLs like "myapp.lovable.app"
+ * This checks for:
+ * - Local development (localhost, 127.0.0.1)
+ * - Lovable preview URLs (containing "preview" in hostname like "id-preview--*.lovable.app")
+ * - Lovable sandbox URLs (*.lovableproject.com - always development, never published)
+ * 
+ * NOT included: Published URLs like "myapp.lovable.app" (no "preview" in hostname)
  */
 export function isLovablePreview(): boolean {
   if (typeof window === 'undefined') return false;
@@ -14,9 +18,15 @@ export function isLovablePreview(): boolean {
     return true;
   }
   
+  // Lovable sandbox URLs are always development environments
+  // These are the embedded preview iframes
+  if (hostname.endsWith('.lovableproject.com')) {
+    return true;
+  }
+  
   // Lovable preview URLs contain "preview" in the hostname
-  // e.g., "id-preview--xyz.lovable.app" or similar patterns
-  if (hostname.includes('preview') && (hostname.includes('lovable.app') || hostname.includes('lovableproject.com'))) {
+  // e.g., "id-preview--xyz.lovable.app"
+  if (hostname.includes('preview') && hostname.endsWith('.lovable.app')) {
     return true;
   }
   
