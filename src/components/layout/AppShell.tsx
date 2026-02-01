@@ -24,20 +24,24 @@ export function AppShell({
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-dvh bg-background flex flex-col">
-      <Header onCreateTip={onCreateTip} />
+    <div className="h-dvh bg-background flex flex-col overflow-hidden">
+      {/* Fixed header - touch-action: none prevents scroll on touch */}
+      <div className="flex-shrink-0 touch-none">
+        <Header onCreateTip={onCreateTip} />
+      </div>
 
       {/* Desktop nav below header */}
-      <div className="hidden md:block">
+      <div className="hidden md:block flex-shrink-0 touch-none">
         <MainNav activeView={activeView} onViewChange={(view) => navigate(`/${view}`)} />
       </div>
 
-      <main className={scrollContent ? "flex-1 overflow-y-auto" : "flex-1 overflow-hidden"}>
+      {/* Main content area - this is the only scrollable region */}
+      <main className={scrollContent ? "flex-1 overflow-y-auto overscroll-contain" : "flex-1 overflow-hidden"}>
         {children}
       </main>
 
-      {/* Mobile nav at bottom */}
-      <div className="md:hidden">
+      {/* Fixed mobile nav at bottom - touch-action: none prevents scroll on touch */}
+      <div className="md:hidden flex-shrink-0 touch-none">
         <MainNav activeView={activeView} onViewChange={(view) => navigate(`/${view}`)} />
       </div>
     </div>

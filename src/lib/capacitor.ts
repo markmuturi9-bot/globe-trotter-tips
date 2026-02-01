@@ -25,19 +25,27 @@ export async function initializeCapacitor() {
 export async function setNativeStatusBarTheme(theme: "light" | "dark") {
   if (!Capacitor.isNativePlatform()) return;
 
-  // Use these as defaults; actual page background is controlled by CSS tokens.
+  // Background colors matching our CSS design tokens
   const bg = theme === "dark" ? "#0b0b10" : "#fcfcfc";
 
   try {
-    // Icon/text color
-    await StatusBar.setStyle({ style: theme === "dark" ? Style.Light : Style.Dark });
+    // StatusBar.Style controls the STATUS BAR CONTENT (time, battery, signal) color:
+    // - Style.Dark = dark/black icons (use on LIGHT backgrounds)
+    // - Style.Light = light/white icons (use on DARK backgrounds)
+    const iconStyle = theme === "dark" ? Style.Light : Style.Dark;
+    await StatusBar.setStyle({ style: iconStyle });
 
-    // Android-only background behind status bar
+    // Android: set the actual background color of the status bar area
     if (Capacitor.getPlatform() === "android") {
       await StatusBar.setBackgroundColor({ color: bg });
     }
-  } catch {
-    // Some platforms/configurations may not support all calls.
+
+    // iOS: The status bar background is transparent by default with edge-to-edge.
+    // The "notch" area color comes from the app's root background color.
+    // We ensure this via CSS (html background-color) which is set in SystemChromeSync.
+
+  } catch (error) {
+    console.warn("StatusBar configuration failed:", error);
   }
 }
 
