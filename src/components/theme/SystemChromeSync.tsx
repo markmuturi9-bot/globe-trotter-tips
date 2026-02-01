@@ -1,39 +1,43 @@
-import { useEffect } from "react";
+import { useEffect, useLayoutEffect } from "react";
 import { useTheme } from "next-themes";
 import { isNative, getPlatform, setNativeStatusBarTheme } from "@/lib/capacitor";
 
 // Keep these in sync with our design tokens in src/index.css
-// (We keep explicit hex here because theme-color + native status bar APIs require hex colors.)
-const LIGHT_CHROME = "#fcfcfc"; // close to hsl(0 0% 99%)
-const DARK_CHROME = "#0b0b10"; // close to hsl(240 10% 6%)
+// These MUST match the CSS --background values for light/dark themes
+const LIGHT_CHROME = "#fcfcfc"; // hsl(0 0% 99%) - light theme background
+const DARK_CHROME = "#0b0b10"; // hsl(240 10% 6%) - dark theme background
 
 function setMetaThemeColor(color: string) {
+  // Update all theme-color meta tags (both media-query variants)
   const metas = document.querySelectorAll<HTMLMetaElement>("meta[name='theme-color']");
   metas.forEach((m) => m.setAttribute("content", color));
+}
+
+function setRootBackgroundColor(color: string) {
+  // Set background on html element - this is what iOS uses for the "notch" area
+  document.documentElement.style.backgroundColor = color;
+  document.body.style.backgroundColor = color;
 }
 
 export function SystemChromeSync() {
   const { resolvedTheme } = useTheme();
 
-  useEffect(() => {
+  // Use useLayoutEffect to apply colors before paint, reducing flicker
+  useLayoutEffect(() => {
     const theme = resolvedTheme === "dark" ? "dark" : "light";
     const color = theme === "dark" ? DARK_CHROME : LIGHT_CHROME;
 
-    // Browser UI / notch fill
+    // 1. Set the root background color (affects iOS notch area)
+    setRootBackgroundColor(color);
+
+    // 2. Update meta theme-color tags (affects browser chrome)
     setMetaThemeColor(color);
 
-    // Native status bar (Android background + icon color)
+    // 3. Native status bar configuration (affects icon colors on native apps)
     if (isNative()) {
-      setNativeStatusBarTheme(theme).catch(() => {
-        // no-op; we don't want theme sync to crash the app
+      setNativeStatusBarTheme(theme).catch((err) => {
+        console.warn("Failed to sync status bar theme:", err);
       });
-
-      // Android overscroll glow color is influenced by theme on some devices.
-      // Ensuring root background is correct is the important part.
-      if (getPlatform() === "android") {
-        document.documentElement.style.backgroundColor = color;
-        document.body.style.backgroundColor = color;
-      }
     }
   }, [resolvedTheme]);
 

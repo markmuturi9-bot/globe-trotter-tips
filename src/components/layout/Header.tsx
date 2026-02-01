@@ -17,7 +17,7 @@ export function Header({ onCreateTip }: HeaderProps) {
 
   return (
     <header
-      className="sticky top-0 z-40 bg-background border-b border-border"
+      className="z-40 bg-background border-b border-border select-none"
       style={{ paddingTop: "env(safe-area-inset-top)" }}
       role="banner"
     >

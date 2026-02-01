@@ -17,7 +17,7 @@ const navItems: { view: ViewType; label: string; icon: React.ComponentType<{ cla
 export function MainNav({ activeView, onViewChange }: MainNavProps) {
   return (
     <nav
-      className="bg-background border-t border-border md:border-t-0 md:border-b"
+      className="bg-background border-t border-border md:border-t-0 md:border-b select-none"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       role="navigation"
       aria-label="Main navigation"
