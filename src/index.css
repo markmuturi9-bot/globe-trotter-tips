@@ -181,7 +181,7 @@
   }
 
   /* Native app scroll container - CRITICAL for iOS */
-  html.native-app .app-scroll-container {
+  .app-scroll-container {
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
     overscroll-behavior-y: contain;
@@ -189,6 +189,13 @@
     touch-action: pan-y;
     /* Contain scroll within this element only */
     overflow-anchor: none;
+  }
+
+  /* When AppShell is mounted we must NEVER allow viewport scroll. */
+  html.app-shell-mounted,
+  body.app-shell-mounted {
+    overflow: hidden;
+    overscroll-behavior: none;
   }
 
   body {
