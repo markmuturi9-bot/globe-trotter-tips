@@ -29,10 +29,10 @@ export async function setNativeStatusBarTheme(theme: "light" | "dark") {
   const bg = theme === "dark" ? "#0b0b10" : "#fcfcfc";
 
   try {
-    // StatusBar.Style controls the STATUS BAR CONTENT (time, battery, signal) color:
-    // - Style.Dark = dark/black icons (use on LIGHT backgrounds)
-    // - Style.Light = light/white icons (use on DARK backgrounds)
-    const iconStyle = theme === "dark" ? Style.Light : Style.Dark;
+    // Capacitor StatusBar.Style enum (counterintuitive naming!):
+    // - Style.Dark  = LIGHT/WHITE text (intended for DARK backgrounds)
+    // - Style.Light = DARK/BLACK text (intended for LIGHT backgrounds)
+    const iconStyle = theme === "dark" ? Style.Dark : Style.Light;
     await StatusBar.setStyle({ style: iconStyle });
 
     // Android: set the actual background color of the status bar area
