@@ -13,7 +13,7 @@ interface HeaderProps {
 
 export function Header({ onCreateTip }: HeaderProps) {
   const { user } = useAuth();
-  const { isModerator } = useAdmin();
+  const { isAdmin, isModerator } = useAdmin();
   const navigate = useNavigate();
 
   return (
@@ -29,7 +29,7 @@ export function Header({ onCreateTip }: HeaderProps) {
         </div>
 
         <div className="flex items-center gap-1" role="toolbar" aria-label="App actions">
-          <DesignToggle />
+          {isAdmin && <DesignToggle />}
           <ThemeToggle />
 
           {user && (
