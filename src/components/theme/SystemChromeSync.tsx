@@ -6,6 +6,7 @@ import { isNative, getPlatform, setNativeStatusBarTheme } from "@/lib/capacitor"
 // These MUST match the CSS --background values for light/dark themes
 const LIGHT_CHROME = "#fcfcfc"; // hsl(0 0% 99%) - light theme background
 const DARK_CHROME = "#0b0b10"; // hsl(240 10% 6%) - dark theme background
+const BRIK_CHROME = "#0f1f1d"; // hsl(170 20% 7%) - BRIK theme background
 
 function setMetaThemeColor(color: string) {
   // Update all theme-color meta tags (both media-query variants)
@@ -24,8 +25,9 @@ export function SystemChromeSync() {
 
   // Use useLayoutEffect to apply colors before paint, reducing flicker
   useLayoutEffect(() => {
+    const isBrik = document.documentElement.classList.contains("theme-brik");
     const theme = resolvedTheme === "dark" ? "dark" : "light";
-    const color = theme === "dark" ? DARK_CHROME : LIGHT_CHROME;
+    const color = isBrik ? BRIK_CHROME : theme === "dark" ? DARK_CHROME : LIGHT_CHROME;
 
     // 1. Set the root background color (affects iOS notch area)
     setRootBackgroundColor(color);
