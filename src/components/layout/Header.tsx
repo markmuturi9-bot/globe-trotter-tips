@@ -2,6 +2,7 @@ import { Bell, Plus, Shield } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { DesignToggle } from "@/components/theme/DesignToggle";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
 import appLogo from "@/assets/app-logo.png";
@@ -28,6 +29,7 @@ export function Header({ onCreateTip }: HeaderProps) {
         </div>
 
         <div className="flex items-center gap-1" role="toolbar" aria-label="App actions">
+          <DesignToggle />
           <ThemeToggle />
 
           {user && (
