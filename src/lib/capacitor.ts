@@ -32,7 +32,7 @@ export async function setNativeStatusBarTheme(theme: "light" | "dark") {
     // StatusBar.Style controls the STATUS BAR CONTENT (time, battery, signal) color:
     // - Style.Dark = dark/black icons (use on LIGHT backgrounds)
     // - Style.Light = light/white icons (use on DARK backgrounds)
-    const iconStyle = theme === "dark" ? Style.Dark : Style.Light;
+    const iconStyle = theme === "dark" ? Style.Light : Style.Dark;
     await StatusBar.setStyle({ style: iconStyle });
 
     // Android: set the actual background color of the status bar area
