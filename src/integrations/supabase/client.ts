@@ -2,8 +2,11 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+// These are public values (URL + publishable/anon key), safe to ship in
+// the client bundle — access to data is controlled by RLS policies and
+// GRANTs in the database, not by keeping these secret.
+const SUPABASE_URL = 'https://psecehkkyghiugbizbse.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_-z7id1qXYXvqnNAWnoZ4Pw_811mxkg9';
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";

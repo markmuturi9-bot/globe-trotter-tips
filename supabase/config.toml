@@ -1,7 +1,4 @@
-project_id = "insxcvkeicnizwfksmxz"
-
-[functions.get-tomtom-key]
-verify_jwt = false
+project_id = "psecehkkyghiugbizbse"
 
 [functions.search-address]
 verify_jwt = false

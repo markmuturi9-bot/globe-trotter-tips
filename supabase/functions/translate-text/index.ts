@@ -1,12 +1,12 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { getCorsHeaders } from "../_shared/cors.ts";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+const GEMINI_MODEL = "gemini-2.5-flash";
 
 serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req.headers.get('origin'));
+
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -30,7 +30,7 @@ serve(async (req) => {
 
     const token = authHeader.replace('Bearer ', '');
     const { data: authData, error: authError } = await supabaseClient.auth.getClaims(token);
-    
+
     if (authError || !authData?.claims) {
       console.error('Authentication failed:', authError?.message);
       return new Response(
@@ -40,7 +40,7 @@ serve(async (req) => {
     }
 
     const { text, targetLanguage = 'en' } = await req.json();
-    
+
     if (!text) {
       return new Response(
         JSON.stringify({ error: 'No text provided' }),
@@ -48,9 +48,9 @@ serve(async (req) => {
       );
     }
 
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY is not configured');
+    const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
+    if (!GEMINI_API_KEY) {
+      throw new Error('GEMINI_API_KEY is not configured');
     }
 
     console.log(`User ${authData.claims.sub} translating text to ${targetLanguage}`);
@@ -71,48 +71,42 @@ serve(async (req) => {
 
     const targetLangName = languageNames[targetLanguage] || targetLanguage;
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          { 
-            role: "system", 
-            content: `You are a translator. Translate the given text to ${targetLangName}. 
-Only return the translated text, nothing else. Preserve the formatting and line breaks.` 
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`,
+      {
+        method: "POST",
+        headers: {
+          "x-goog-api-key": GEMINI_API_KEY,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          systemInstruction: {
+            parts: [{
+              text: `You are a translator. Translate the given text to ${targetLangName}. Only return the translated text, nothing else. Preserve the formatting and line breaks.`,
+            }],
           },
-          { role: "user", content: text }
-        ],
-      }),
-    });
+          contents: [{ role: "user", parts: [{ text }] }],
+        }),
+      }
+    );
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("AI gateway error:", response.status, errorText);
-      
+      console.error("Gemini API error:", response.status, errorText);
+
       if (response.status === 429) {
         return new Response(
           JSON.stringify({ error: "Rate limit exceeded. Please try again later." }),
           { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-      if (response.status === 402) {
-        return new Response(
-          JSON.stringify({ error: "AI credits exhausted. Please add credits to continue." }),
-          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-      
-      throw new Error(`AI gateway error: ${response.status}`);
+
+      throw new Error(`Gemini API error: ${response.status}`);
     }
 
     const aiResponse = await response.json();
-    const translatedText = aiResponse.choices?.[0]?.message?.content;
-    
+    const translatedText = aiResponse.candidates?.[0]?.content?.parts?.[0]?.text;
+
     if (!translatedText) {
       throw new Error('No content in AI response');
     }
