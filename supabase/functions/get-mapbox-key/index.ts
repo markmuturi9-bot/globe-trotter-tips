@@ -1,27 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-// Restrict CORS to app domains only
-const ALLOWED_ORIGINS = [
-  'https://81195315-70f6-4ad1-b5f9-255d17b94d5e.lovableproject.com',
-  'https://id-preview--81195315-70f6-4ad1-b5f9-255d17b94d5e.lovable.app',
-  'capacitor://localhost',
-  'http://localhost',
-  'http://localhost:8100',
-  'http://localhost:5173',
-];
-
-function getCorsHeaders(origin: string | null) {
-  const allowedOrigin = origin && ALLOWED_ORIGINS.some(allowed => 
-    origin === allowed || origin.endsWith('.lovable.app') || origin.endsWith('.lovableproject.com')
-  ) ? origin : ALLOWED_ORIGINS[0];
-  
-  return {
-    'Access-Control-Allow-Origin': allowedOrigin,
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  };
-}
+import { getCorsHeaders } from "../_shared/cors.ts";
 
 serve(async (req) => {
   const origin = req.headers.get('origin');
@@ -30,19 +9,6 @@ serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
-  }
-
-  // Validate origin for security (CORS headers alone don't prevent server-side requests)
-  const isValidOrigin = origin && ALLOWED_ORIGINS.some(allowed => 
-    origin === allowed || origin.endsWith('.lovable.app') || origin.endsWith('.lovableproject.com')
-  );
-  
-  if (!isValidOrigin) {
-    console.error('Invalid origin:', origin);
-    return new Response(
-      JSON.stringify({ error: 'Unauthorized origin' }),
-      { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
   }
 
   try {
