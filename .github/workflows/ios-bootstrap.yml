@@ -99,9 +99,17 @@ jobs:
             exit 1
           fi
 
-      - name: Restore TIPIT's real app icon and splash screens
+      - name: Restore TIPIT's real app icon, splash screens, and fastlane config
         if: steps.check.outputs.exists == 'false'
-        run: git checkout -- ios/App/App/Assets.xcassets
+        run: |
+          # `rm -rf ios` above also removed the fastlane/Gemfile config
+          # committed earlier — restore everything tracked in git that
+          # cap add ios doesn't know about, then drop any extra files
+          # Capacitor generated in the asset folders that our restored
+          # Contents.json files don't reference (e.g. its own default
+          # AppIcon/Splash variants), so they don't linger as clutter.
+          git checkout -- ios/App/App/Assets.xcassets ios/App/fastlane ios/App/Gemfile
+          git clean -fd ios/App/App/Assets.xcassets
 
       - name: Add camera/photo-library permission text (Swedish + English)
         if: steps.check.outputs.exists == 'false'
