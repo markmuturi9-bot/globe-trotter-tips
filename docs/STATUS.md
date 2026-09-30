@@ -1,9 +1,50 @@
 # TIPIT — nuläge
 
-Senast uppdaterad: 2026-09-24, i samband med bytet från Lovable Cloud till
-en egen Supabase-databas.
+Senast uppdaterad: 2026-09-30. Backend-bytet (Supabase) är klart och
+mergat. Just nu pågår uppsättning av automatisk iOS-byggkedja till
+TestFlight.
 
-## Vad som gjorts
+## iOS-status (pågående)
+
+- `ios/App` finns **inte** i repot ännu. Det ska genereras av workflowet
+  **"Bootstrap iOS project"** (`.github/workflows/ios-bootstrap.yml`,
+  körs manuellt på macOS i Actions) — inte checkas in från en Mac, och
+  inte genereras i den här (Linux-baserade) sessionen, eftersom
+  `npx cap add ios` kräver macOS/CocoaPods.
+- **Kör bootstrap-workflowet på den här PR-grenen innan den mergas**, så
+  det genererade projektet kan granskas som en del av samma PR, istället
+  för att pusha direkt mot main efteråt.
+- Appens riktiga `appId` (`app.lovable.8119531570f64ad1b5f9255d17b94d5e`)
+  klarar inte Capacitors egen validering (ett segment börjar med en
+  siffra) — bootstrap-workflowet genererar därför projektet under ett
+  tillfälligt platshållar-id och byter tillbaka det riktiga innan commit.
+  `capacitor.config.ts` lämnas aldrig ändrat i slutresultatet.
+- Behörighetstexter: appen har idag ingen platsfunktion i koden (ingen
+  GPS/geolocation någonstans), bara bilduppladdning via vanlig filväljare
+  (tips-bilder + profilbild). Bootstrap-workflowet lägger därför bara in
+  kamera- och bibliotek-texter (svenska + engelska i samma sträng, inte
+  separata `.lproj`-filer — se motivering nedan), inte platsbehörighet.
+- **Om appen senare får fler native-funktioner** (kamera direkt via
+  Capacitor, platsdata, push-notiser osv.): lägg till motsvarande
+  `NSxxxUsageDescription`-nyckel i bootstrap-workflowets
+  PlistBuddy-steg och kör om det (med "force").
+- TestFlight-bygget (`.github/workflows/testflight-deploy.yml`) hämtar
+  byggnumret automatiskt från TestFlight och räknar upp — senast kända
+  nummer var 6, så nästa bygge blir 7 utan att någon behöver skriva in
+  det manuellt.
+- Signering sker automatiskt via App Store Connect-nyckeln. **Nyckeln
+  behöver Admin-rollen** i App Store Connect (Users and Access →
+  Integrations) för att få skapa certifikat/profiler automatiskt — annars
+  misslyckas byggsteget med ett signeringsfel.
+- Inte verifierat live än (kräver körning på riktig macOS-runner, som
+  inte finns tillgänglig i den här sessionen): exakt hur CocoaPods/Xcode
+  beter sig, om `GITHUB_TOKEN` har push-rättighet för bootstrap-commiten
+  (Settings → Actions → General → Workflow permissions måste tillåta
+  "Read and write"), och om ASC-nyckelns behörighet räcker för
+  signeringen. Räkna med att detta kan behöva ett par körningar/fixar
+  innan det går igenom helt, precis som Supabase-workflowet gjorde.
+
+## Vad som gjorts (Supabase-bytet)
 
 - **Ny databas**: appen pekar nu på det nya Supabase-projektet
   (`psecehkkyghiugbizbse`). Den gamla databasen (Lovable Cloud) är
@@ -67,12 +108,16 @@ en egen Supabase-databas.
 
 ## Nästa steg (prioritetsordning)
 
-1. Mark: kör de manuella Supabase-dashboard-stegen (se PR-rapporten) så
-   att inloggning fungerar mot den nya databasen.
-2. Mark: granska och godkänn/mergea pull requesten.
-3. Testa hela flödet i appen mot den nya databasen: registrera konto,
+1. Mark: kör workflowet **"Bootstrap iOS project"** på den här PR-grenen
+   (Actions-fliken → välj workflowet → Run workflow → välj grenen).
+2. Granska resultatet (committen med `ios/`-mappen), kör **"Deploy to
+   TestFlight"** manuellt och se om den går igenom.
+3. Om något av stegen felar: skicka felmeddelandet, så felsöker vi det
+   tillsammans (samma mönster som med Supabase-workflowet).
+4. När TestFlight-bygget fungerar: granska och mergea PR:en.
+5. Testa hela flödet i appen mot den nya databasen: registrera konto,
    skapa tips, vänförfrågan, chatt, rapportera/blockera, admin-panelen.
-4. Bestäm om kontoradering ska göras komplett (kräver en ny edge
+6. Bestäm om kontoradering ska göras komplett (kräver en ny edge
    function med service-role).
-5. Bestäm om notiser ska kopplas ihop (skrivs t.ex. vid ny vänförfrågan,
+7. Bestäm om notiser ska kopplas ihop (skrivs t.ex. vid ny vänförfrågan,
    nytt meddelande) eller om tabellen ska tas bort om den inte behövs.
