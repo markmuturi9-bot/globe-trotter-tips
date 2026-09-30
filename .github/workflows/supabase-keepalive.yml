@@ -1,0 +1,40 @@
+name: Supabase keep-alive
+
+# Supabase's free plan pauses a project after 7 days without activity.
+# This runs a tiny read query against the database every third day (and
+# can be started manually from the Actions tab) so the project stays
+# awake. The URL and publishable key are the same public values as in
+# src/integrations/supabase/client.ts.
+
+on:
+  schedule:
+    - cron: "17 6 */3 * *"
+  workflow_dispatch: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Query the database through the Data API
+        env:
+          SUPABASE_URL: https://psecehkkyghiugbizbse.supabase.co
+          SUPABASE_PUBLISHABLE_KEY: sb_publishable_-z7id1qXYXvqnNAWnoZ4Pw_811mxkg9
+        run: |
+          # Reads one row from the seeded, publicly readable countries table.
+          # A 200 response with a non-empty row list can only come from
+          # PostgREST actually querying Postgres, so a gateway/auth error
+          # or an empty result fails the job.
+          status=$(curl -sS -o response.json -w "%{http_code}" \
+            "$SUPABASE_URL/rest/v1/countries?select=id&limit=1" \
+            -H "apikey: $SUPABASE_PUBLISHABLE_KEY")
+          echo "HTTP status: $status"
+          cat response.json; echo
+          if [ "$status" != "200" ]; then
+            echo "::error::Data API returned HTTP $status"
+            exit 1
+          fi
+          if [ "$(jq 'length' response.json)" -lt 1 ]; then
+            echo "::error::Query succeeded but returned no rows"
+            exit 1
+          fi
+          echo "Database reached and returned data."
