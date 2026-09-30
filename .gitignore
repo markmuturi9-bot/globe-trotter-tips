@@ -12,6 +12,11 @@ dist
 dist-ssr
 *.local
 
+# Environment files (public Supabase values live directly in the code;
+# this is only here in case a local .env is used for something else)
+.env
+.env.*
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

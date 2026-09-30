@@ -1,73 +1,49 @@
-# Welcome to your Lovable project
+# TIPIT
 
-## Project info
+TIPIT is an app for saving and sharing travel tips on a map. Frontend is
+React + Vite + TypeScript, packaged for iOS with Capacitor, backed by
+Supabase (Postgres, Auth, Storage, Edge Functions).
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+See `CLAUDE.md` for the working rules this project follows, and
+`docs/STATUS.md` for current status and known issues.
 
-## How can I edit this code?
-
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+## Local development
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+# Install dependencies
+npm install
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start the dev server
 npm run dev
+
+# Type-check / lint
+npm run lint
+
+# Production build
+npm run build
 ```
 
-**Edit a file directly in GitHub**
+The public Supabase URL and publishable key are hardcoded in
+`src/integrations/supabase/client.ts` — they're not secrets, so no `.env`
+file is required to run the app locally.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Backend (Supabase)
 
-**Use GitHub Codespaces**
+- Database schema lives in `supabase/migrations/` — see `supabase db
+  push` (Supabase CLI) to apply migrations to a linked project.
+- Edge Functions live in `supabase/functions/`.
+- Pushing changes under `supabase/` to `main` runs
+  `.github/workflows/supabase-deploy.yml`, which applies migrations,
+  updates Edge Function secrets, and deploys all functions. It can also
+  be run manually from the Actions tab.
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Mobile (Capacitor)
 
-## What technologies are used for this project?
+```sh
+npm run build
+npx cap sync ios       # after adding the ios/ project
+npx cap open ios
+```
 
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+The iOS project (`ios/App`) is managed separately and is not always
+present in this repository.
