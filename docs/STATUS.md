@@ -32,6 +32,9 @@ en egen Supabase-databas.
   kör migreringar, sätter Edge Function-secrets och driftsätter alla
   funktioner när något i `supabase/` mergas till main (eller körs
   manuellt).
+- **Håll Supabase vaken**: `.github/workflows/supabase-keepalive.yml`
+  gör en liten läsfråga mot databasen var tredje dag (och kan köras
+  manuellt), så gratisprojektet inte pausas efter 7 dagars inaktivitet.
 - **Lovable-städning**: `lovable-tagger`, dev-server-URL:en i
   `capacitor.config.ts`, den föråldrade README-texten och en
   config.toml-post för en funktion som inte längre finns
