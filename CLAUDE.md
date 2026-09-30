@@ -55,5 +55,23 @@ görs.
 
 ## iOS
 
-- Xcode-projektet (`ios/App`) hanteras av Mark själv på en lånad Mac.
-  Bygg inget för iOS här om inte annat sägs uttryckligen.
+- `ios/App` är ett genererat Capacitor-projekt, incheckat i repot. Det
+  skapas/uppdateras av workflowet **"Bootstrap iOS project"**
+  (`.github/workflows/ios-bootstrap.yml`), som körs manuellt på macOS i
+  GitHub Actions — inte av Mark på en egen Mac.
+- Ändra aldrig `appId` i `capacitor.config.ts` eller bundle-id:t i
+  Xcode-projektet — då slutar TestFlight att känna igen appen.
+  `app_identifier` i `ios/App/fastlane/Appfile` måste alltid matcha
+  `capacitor.config.ts`s `appId`.
+- Nya TestFlight-byggen görs via workflowet **"Deploy to TestFlight"**
+  (`.github/workflows/testflight-deploy.yml`), som körs manuellt. Det
+  hämtar senaste byggnumret från TestFlight automatiskt och räknar upp —
+  Mark ska aldrig behöva hålla reda på byggnumret själv.
+- Signering sker automatiskt via App Store Connect-nyckeln
+  (`ASC_KEY_ID`/`ASC_ISSUER_ID`/`ASC_KEY_P8`), inte via manuellt
+  exporterade certifikat. Nyckeln behöver **Admin**-rollen i App Store
+  Connect för att få skapa/hantera certifikat och profiler — annars
+  misslyckas signeringssteget.
+- Efter större ändringar i `ios/`: bygg inget lokalt (ingen Xcode/Mac att
+  testa på här), utan förlita dig på att GitHub Actions-workflowen
+  faktiskt går igenom som verifiering.

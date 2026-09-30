@@ -1,0 +1,135 @@
+name: Bootstrap iOS project
+
+# One-off (re-runnable) job: generates the native ios/ Xcode project from
+# Capacitor, restores TIPIT's real icons/splash screens over Capacitor's
+# defaults, adds the camera/photo-library permission texts, and commits
+# the result to whichever branch this is run on.
+#
+# Run this manually from the Actions tab, on the branch you want the
+# ios/ project added to (e.g. run it on this feature branch before
+# merging, so you can review it as part of the same PR).
+#
+# Capacitor's CLI refuses this app's real appId
+# (app.lovable.8119531570f64ad1b5f9255d17b94d5e) because one of its
+# segments starts with a digit, which fails Capacitor's (Android-driven)
+# validation regex — even though Apple itself has no problem with it and
+# TestFlight already has builds under this exact id. So this workflow
+# generates the project under a temporary placeholder id, then rewrites
+# every occurrence back to the real id before committing. capacitor.config.ts
+# itself is never left changed.
+
+on:
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Regenerate even if ios/App/App.xcodeproj already exists (overwrites the existing native project)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+env:
+  REAL_APP_ID: app.lovable.8119531570f64ad1b5f9255d17b94d5e
+  PLACEHOLDER_APP_ID: app.tipit.bootstrap.placeholder
+
+jobs:
+  bootstrap:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Check whether ios/ already has a real Xcode project
+        id: check
+        run: |
+          if [ -f "ios/App/App.xcodeproj/project.pbxproj" ] && [ "${{ inputs.force }}" != "true" ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "ios/App/App.xcodeproj already exists. Re-run with 'force' checked to regenerate it."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install dependencies
+        if: steps.check.outputs.exists == 'false'
+        run: npm ci
+
+      - name: Build web app
+        if: steps.check.outputs.exists == 'false'
+        run: npm run build
+
+      - name: Remove placeholder ios/ folder
+        if: steps.check.outputs.exists == 'false'
+        run: rm -rf ios
+
+      - name: Swap in a temporary valid appId
+        if: steps.check.outputs.exists == 'false'
+        run: sed -i '' "s/${REAL_APP_ID}/${PLACEHOLDER_APP_ID}/" capacitor.config.ts
+
+      - name: Generate iOS project (npx cap add ios)
+        if: steps.check.outputs.exists == 'false'
+        run: npx cap add ios
+
+      - name: Restore the real appId everywhere
+        if: steps.check.outputs.exists == 'false'
+        run: |
+          # capacitor.config.ts itself
+          sed -i '' "s/${PLACEHOLDER_APP_ID}/${REAL_APP_ID}/" capacitor.config.ts
+          # every file the CLI templated the placeholder into (mainly project.pbxproj)
+          grep -rl "$PLACEHOLDER_APP_ID" ios 2>/dev/null | while read -r f; do
+            sed -i '' "s/${PLACEHOLDER_APP_ID}/${REAL_APP_ID}/g" "$f"
+          done
+
+      - name: Verify no placeholder id remains
+        if: steps.check.outputs.exists == 'false'
+        run: |
+          if grep -rq "$PLACEHOLDER_APP_ID" ios capacitor.config.ts 2>/dev/null; then
+            echo "::error::Placeholder appId is still present — refusing to commit a broken project."
+            grep -rn "$PLACEHOLDER_APP_ID" ios capacitor.config.ts
+            exit 1
+          fi
+
+      - name: Restore TIPIT's real app icon and splash screens
+        if: steps.check.outputs.exists == 'false'
+        run: git checkout -- ios/App/App/Assets.xcassets
+
+      - name: Add camera/photo-library permission text (Swedish + English)
+        if: steps.check.outputs.exists == 'false'
+        run: |
+          PLIST="ios/App/App/Info.plist"
+          PB="/usr/libexec/PlistBuddy"
+          CAMERA_TEXT="TIPIT behöver kameran för att du ska kunna ta bilder till dina resetips. / TIPIT needs camera access so you can take photos for your travel tips."
+          PHOTOS_TEXT="TIPIT behöver tillgång till dina bilder för att du ska kunna lägga till dem i dina resetips. / TIPIT needs access to your photos so you can add them to your travel tips."
+
+          "$PB" -c "Add :NSCameraUsageDescription string" "$PLIST" 2>/dev/null || true
+          "$PB" -c "Set :NSCameraUsageDescription '$CAMERA_TEXT'" "$PLIST"
+
+          "$PB" -c "Add :NSPhotoLibraryUsageDescription string" "$PLIST" 2>/dev/null || true
+          "$PB" -c "Set :NSPhotoLibraryUsageDescription '$PHOTOS_TEXT'" "$PLIST"
+
+          # The app has no location or microphone/etc. features today, so no
+          # other Info.plist permission keys are added. If that changes,
+          # add the matching NSxxxUsageDescription key here.
+
+      - name: Show what changed
+        if: steps.check.outputs.exists == 'false'
+        run: git status
+
+      - name: Commit and push the generated iOS project
+        if: steps.check.outputs.exists == 'false'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add ios capacitor.config.ts
+          git commit -m "Generate native iOS project via Capacitor"
+          git push origin HEAD:"${GITHUB_REF_NAME}"
