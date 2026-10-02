@@ -1,3 +1,5 @@
+require "tempfile"
+
 default_platform(:ios)
 
 platform :ios do
@@ -34,34 +36,45 @@ platform :ios do
       xcodeproj: "App.xcodeproj"
     )
 
-    # This project uses Swift Package Manager (Capacitor 7+ default), not
-    # CocoaPods — there's no .xcworkspace, just the plain .xcodeproj.
-    #
-    # Signing is automatic via the App Store Connect API key — no
-    # exported certificates/provisioning profiles stored anywhere. The
-    # key needs the Admin role in App Store Connect for this to be
-    # allowed to create/manage certificates and profiles on its own.
-    # DEVELOPMENT_TEAM has to be passed explicitly: the generated Xcode
-    # project doesn't have one set, and automatic signing can't pick a
-    # team on its own even with -allowProvisioningUpdates.
-    #
-    # Passing api_key: here (not just to the other actions above) is
-    # what makes gym hand the key to xcodebuild itself
-    # (-authenticationKeyPath/-authenticationKeyID/-authenticationKeyIssuerID)
-    # so -allowProvisioningUpdates has something to authenticate with.
-    # Without it, xcodebuild has no account at all, hence "No Accounts"
-    # and "No profiles found".
-    build_app(
-      scheme: "App",
-      project: "App.xcodeproj",
-      export_method: "app-store",
-      export_options: {
-        signingStyle: "automatic",
-        teamID: team_id
-      },
-      xcargs: "-allowProvisioningUpdates DEVELOPMENT_TEAM=#{team_id}",
-      api_key: api_key
-    )
+    # gym (build_app) has no api_key: option — that was wrong in an
+    # earlier version of this file. The actual way to let xcodebuild's
+    # own -allowProvisioningUpdates authenticate non-interactively (no
+    # Apple ID session on the runner, hence the earlier "No Accounts"
+    # error) is to write the key to a file and pass Apple's own
+    # -authenticationKey* xcodebuild flags via xcargs.
+    key_file = Tempfile.new(["asc_key", ".p8"])
+    key_file.write(ENV["ASC_KEY_P8"])
+    key_file.close
+
+    begin
+      # This project uses Swift Package Manager (Capacitor 7+ default),
+      # not CocoaPods — there's no .xcworkspace, just the plain
+      # .xcodeproj.
+      #
+      # Signing is automatic via the App Store Connect API key — no
+      # exported certificates/provisioning profiles stored anywhere.
+      # The key needs the Admin role in App Store Connect to be allowed
+      # to create/manage certificates and profiles on its own.
+      # DEVELOPMENT_TEAM has to be passed explicitly: the generated
+      # Xcode project doesn't have one set, and automatic signing can't
+      # pick a team on its own even with -allowProvisioningUpdates.
+      build_app(
+        scheme: "App",
+        project: "App.xcodeproj",
+        export_method: "app-store",
+        export_options: {
+          signingStyle: "automatic",
+          teamID: team_id
+        },
+        xcargs: "-allowProvisioningUpdates " \
+                "-authenticationKeyPath #{key_file.path} " \
+                "-authenticationKeyID #{ENV['ASC_KEY_ID']} " \
+                "-authenticationKeyIssuerID #{ENV['ASC_ISSUER_ID']} " \
+                "DEVELOPMENT_TEAM=#{team_id}"
+      )
+    ensure
+      key_file.unlink
+    end
 
     upload_to_testflight(
       api_key: api_key,
