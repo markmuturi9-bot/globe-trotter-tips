@@ -1,9 +1,10 @@
 # TIPIT — nuläge
 
 Senast uppdaterad: 2026-10-29. Backend-bytet (Supabase) är klart och
-mergat. iOS/TestFlight-byggkedjan är uppsatt och körs — bygge, signering
-och export fungerar. Sista kända blockeraren (fel bundle-ID) är fixad,
-väntar på en ny testkörning.
+mergat. iOS/TestFlight-byggkedjan är **klar och bekräftat fungerande**
+— ett nytt bygge laddades upp till TestFlight framgångsrikt efter
+bundle-ID-fixen. Kvarstår: granska och mergea PR:en för iOS-kedjan, och
+fullständig test av appen mot den nya databasen.
 
 ## iOS-status
 
@@ -34,13 +35,11 @@ väntar på en ny testkörning.
   byggnumret automatiskt från TestFlight och räknar upp.
 - Signering sker automatiskt via App Store Connect-nyckeln
   (Admin-rollen, `-authenticationKeyPath`/`-authenticationKeyID`/
-  `-authenticationKeyIssuerID` i `ios/App/fastlane/Fastfile`) — bekräftat
-  fungerande: arkivering, signering och export lyckades i den senaste
-  körningen. Enda som stoppade uppladdningen var bundle-ID-felet ovan.
-- **Nästa körning av "Deploy to TestFlight" bör gå hela vägen igenom.**
-  Om den fortfarande failar: skicka exakt felrad, så felsöker vi den
-  specifika orsaken (inget rollbyte eller annan gissning utan ett
-  konkret fel som pekar dit).
+  `-authenticationKeyIssuerID` i `ios/App/fastlane/Fastfile`).
+- **Bekräftat fungerande end-to-end 2026-10-29**: "Deploy to TestFlight"
+  kördes efter bundle-ID-fixen och laddade upp ett bygge till TestFlight
+  utan fel. Hela kedjan (bootstrap → bygge → signering → export →
+  uppladdning) är nu verifierad.
 
 ## Vad som gjorts (Supabase-bytet)
 
@@ -106,13 +105,12 @@ väntar på en ny testkörning.
 
 ## Nästa steg (prioritetsordning)
 
-1. Mark: kör **"Deploy to TestFlight"** igen nu att bundle-ID:t är rätt.
-2. Om den felar: skicka exakt felrad, så felsöker vi den specifika
-   orsaken.
-3. När TestFlight-bygget fungerar: granska och mergea PR:en.
-4. Testa hela flödet i appen mot den nya databasen: registrera konto,
+1. Mark: kolla i TestFlight-appen (eller App Store Connect) att det nya
+   bygget dykt upp, och installera/testa det på din telefon.
+2. Granska och mergea PR:en för iOS-byggkedjan.
+3. Testa hela flödet i appen mot den nya databasen: registrera konto,
    skapa tips, vänförfrågan, chatt, rapportera/blockera, admin-panelen.
-5. Bestäm om kontoradering ska göras komplett (kräver en ny edge
+4. Bestäm om kontoradering ska göras komplett (kräver en ny edge
    function med service-role).
-6. Bestäm om notiser ska kopplas ihop (skrivs t.ex. vid ny vänförfrågan,
+5. Bestäm om notiser ska kopplas ihop (skrivs t.ex. vid ny vänförfrågan,
    nytt meddelande) eller om tabellen ska tas bort om den inte behövs.
