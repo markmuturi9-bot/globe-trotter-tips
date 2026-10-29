@@ -78,7 +78,7 @@ jobs:
           git checkout -- ios/App/App/Assets.xcassets ios/App/fastlane ios/App/Gemfile
           git clean -fd ios/App/App/Assets.xcassets
 
-      - name: Add camera/photo-library permission text (Swedish + English)
+      - name: Add Info.plist permissions and export compliance declaration
         if: steps.check.outputs.exists == 'false'
         run: |
           PLIST="ios/App/App/Info.plist"
@@ -91,6 +91,14 @@ jobs:
 
           "$PB" -c "Add :NSPhotoLibraryUsageDescription string" "$PLIST" 2>/dev/null || true
           "$PB" -c "Set :NSPhotoLibraryUsageDescription '$PHOTOS_TEXT'" "$PLIST"
+
+          # The app only talks to Supabase/Mapbox/Gemini over standard
+          # HTTPS (no custom/proprietary encryption anywhere in the
+          # code), which is exempt from export compliance review. This
+          # declares that up front so App Store Connect stops asking
+          # "Manage Compliance" on every single TestFlight upload.
+          "$PB" -c "Add :ITSAppUsesNonExemptEncryption bool false" "$PLIST" 2>/dev/null || true
+          "$PB" -c "Set :ITSAppUsesNonExemptEncryption false" "$PLIST"
 
           # The app has no location or microphone/etc. features today, so no
           # other Info.plist permission keys are added. If that changes,

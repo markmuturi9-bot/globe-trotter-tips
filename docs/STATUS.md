@@ -31,6 +31,13 @@ fullständig test av appen mot den nya databasen.
 - **Om appen senare får fler native-funktioner**: lägg till motsvarande
   `NSxxxUsageDescription`-nyckel i bootstrap-workflowets
   PlistBuddy-steg och kör om det (med "force").
+- **Export compliance (krypteringsfrågan i App Store Connect)**:
+  `Info.plist` deklarerar nu `ITSAppUsesNonExemptEncryption = false`
+  (appen använder bara vanlig HTTPS, ingen egen krypteringskod), så
+  "Manage Compliance"-frågan ska inte dyka upp längre för nya byggen.
+  Deklarationen ligger både i det redan genererade `Info.plist` och i
+  bootstrap-workflowets PlistBuddy-steg, så den överlever även en
+  ommkörning med "force".
 - TestFlight-bygget (`.github/workflows/testflight-deploy.yml`) hämtar
   byggnumret automatiskt från TestFlight och räknar upp.
 - Signering sker automatiskt via App Store Connect-nyckeln

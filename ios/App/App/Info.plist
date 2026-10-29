@@ -24,6 +24,8 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>NSCameraUsageDescription</key>
 	<string>TIPIT behöver kameran för att du ska kunna ta bilder till dina resetips. / TIPIT needs camera access so you can take photos for your travel tips.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
