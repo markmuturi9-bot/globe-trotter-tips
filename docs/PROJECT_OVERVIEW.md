@@ -260,8 +260,8 @@ android: {
 ```
 
 ### App Identifiers
-- **Bundle ID (iOS):** `app.lovable.8119531570f64ad1b5f9255d17b94d5e`
-- **Package Name (Android):** `app.lovable.8119531570f64ad1b5f9255d17b94d5e`
+- **Bundle ID (iOS):** `com.tipit.app`
+- **Package Name (Android):** `com.tipit.app`
 
 ---
 

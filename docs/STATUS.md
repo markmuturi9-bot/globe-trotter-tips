@@ -1,48 +1,52 @@
 # TIPIT — nuläge
 
-Senast uppdaterad: 2026-09-30. Backend-bytet (Supabase) är klart och
-mergat. Just nu pågår uppsättning av automatisk iOS-byggkedja till
-TestFlight.
+Senast uppdaterad: 2026-10-29. Backend-bytet (Supabase) är klart och
+mergat. iOS/TestFlight-byggkedjan är **klar och bekräftat fungerande**
+— ett nytt bygge laddades upp till TestFlight framgångsrikt efter
+bundle-ID-fixen. Kvarstår: granska och mergea PR:en för iOS-kedjan, och
+fullständig test av appen mot den nya databasen.
 
-## iOS-status (pågående)
+## iOS-status
 
-- `ios/App` finns **inte** i repot ännu. Det ska genereras av workflowet
-  **"Bootstrap iOS project"** (`.github/workflows/ios-bootstrap.yml`,
-  körs manuellt på macOS i Actions) — inte checkas in från en Mac, och
-  inte genereras i den här (Linux-baserade) sessionen, eftersom
-  `npx cap add ios` kräver macOS/CocoaPods.
-- **Kör bootstrap-workflowet på den här PR-grenen innan den mergas**, så
-  det genererade projektet kan granskas som en del av samma PR, istället
-  för att pusha direkt mot main efteråt.
-- Appens riktiga `appId` (`app.lovable.8119531570f64ad1b5f9255d17b94d5e`)
-  klarar inte Capacitors egen validering (ett segment börjar med en
-  siffra) — bootstrap-workflowet genererar därför projektet under ett
-  tillfälligt platshållar-id och byter tillbaka det riktiga innan commit.
-  `capacitor.config.ts` lämnas aldrig ändrat i slutresultatet.
-- Behörighetstexter: appen har idag ingen platsfunktion i koden (ingen
-  GPS/geolocation någonstans), bara bilduppladdning via vanlig filväljare
-  (tips-bilder + profilbild). Bootstrap-workflowet lägger därför bara in
-  kamera- och bibliotek-texter (svenska + engelska i samma sträng, inte
-  separata `.lproj`-filer — se motivering nedan), inte platsbehörighet.
-- **Om appen senare får fler native-funktioner** (kamera direkt via
-  Capacitor, platsdata, push-notiser osv.): lägg till motsvarande
+- `ios/App` är genererat och incheckat (via workflowet **"Bootstrap iOS
+  project"**, körs manuellt på macOS i Actions — behövs normalt bara en
+  gång, projektet är redan committat).
+- **Bundle-ID rättat 2026-10-29**: koden använde hela tiden
+  `app.lovable.8119531570f64ad1b5f9255d17b94d5e` (det gamla
+  Lovable-genererade värdet), men appen i App Store Connect ("Tipit
+  travel") är registrerad med `com.tipit.app`. Det var hela orsaken till
+  att TestFlight-uppladdningen inte kunde hitta appen — inte
+  nyckelbehörighet, inte team-ID. Ändrat till `com.tipit.app` i
+  `capacitor.config.ts`, `ios/App/App.xcodeproj/project.pbxproj` och
+  `ios/App/fastlane/Appfile`, plus i de kvarvarande dokumenten som
+  nämnde det gamla värdet. `com.tipit.app` klarar Capacitors egen
+  appId-validering rakt av, så platshållar-logiken som bootstrap-workflowet
+  behövde för det gamla (ogiltiga) ID:t är borttagen — `cap add ios`
+  körs nu direkt.
+- Behörighetstexter: appen har ingen platsfunktion i koden (ingen
+  GPS/geolocation), bara bilduppladdning via vanlig filväljare
+  (tips-bilder + profilbild). Bootstrap-workflowet lägger därför in
+  kamera- och bibliotek-texter (svenska + engelska i samma sträng),
+  inte platsbehörighet.
+- **Om appen senare får fler native-funktioner**: lägg till motsvarande
   `NSxxxUsageDescription`-nyckel i bootstrap-workflowets
   PlistBuddy-steg och kör om det (med "force").
+- **Export compliance (krypteringsfrågan i App Store Connect)**:
+  `Info.plist` deklarerar nu `ITSAppUsesNonExemptEncryption = false`
+  (appen använder bara vanlig HTTPS, ingen egen krypteringskod), så
+  "Manage Compliance"-frågan ska inte dyka upp längre för nya byggen.
+  Deklarationen ligger både i det redan genererade `Info.plist` och i
+  bootstrap-workflowets PlistBuddy-steg, så den överlever även en
+  ommkörning med "force".
 - TestFlight-bygget (`.github/workflows/testflight-deploy.yml`) hämtar
-  byggnumret automatiskt från TestFlight och räknar upp — senast kända
-  nummer var 6, så nästa bygge blir 7 utan att någon behöver skriva in
-  det manuellt.
-- Signering sker automatiskt via App Store Connect-nyckeln. **Nyckeln
-  behöver Admin-rollen** i App Store Connect (Users and Access →
-  Integrations) för att få skapa certifikat/profiler automatiskt — annars
-  misslyckas byggsteget med ett signeringsfel.
-- Inte verifierat live än (kräver körning på riktig macOS-runner, som
-  inte finns tillgänglig i den här sessionen): exakt hur CocoaPods/Xcode
-  beter sig, om `GITHUB_TOKEN` har push-rättighet för bootstrap-commiten
-  (Settings → Actions → General → Workflow permissions måste tillåta
-  "Read and write"), och om ASC-nyckelns behörighet räcker för
-  signeringen. Räkna med att detta kan behöva ett par körningar/fixar
-  innan det går igenom helt, precis som Supabase-workflowet gjorde.
+  byggnumret automatiskt från TestFlight och räknar upp.
+- Signering sker automatiskt via App Store Connect-nyckeln
+  (Admin-rollen, `-authenticationKeyPath`/`-authenticationKeyID`/
+  `-authenticationKeyIssuerID` i `ios/App/fastlane/Fastfile`).
+- **Bekräftat fungerande end-to-end 2026-10-29**: "Deploy to TestFlight"
+  kördes efter bundle-ID-fixen och laddade upp ett bygge till TestFlight
+  utan fel. Hela kedjan (bootstrap → bygge → signering → export →
+  uppladdning) är nu verifierad.
 
 ## Vad som gjorts (Supabase-bytet)
 
@@ -105,22 +109,18 @@ TestFlight.
 - Övriga dokument (`DEPLOYMENT.md`, `PUBLISHING_GUIDE.md`,
   `APP_STORE_CHECKLIST.md`, `docs/PROJECT_OVERVIEW.md`,
   `docs/METADATA.md`, `docs/FULL_CODEBASE.md`) nämner fortfarande Lovable
-  på flera ställen. De rördes inte i den här uppgiften (bara README.md
-  var uttryckligen efterfrågad) men är kandidater för nästa
+  på flera ställen (bundle-ID:t i dem är nu rättat till `com.tipit.app`,
+  men övrig Lovable-text är inte städad) — kandidater för nästa
   städomgång.
 
 ## Nästa steg (prioritetsordning)
 
-1. Mark: kör workflowet **"Bootstrap iOS project"** på den här PR-grenen
-   (Actions-fliken → välj workflowet → Run workflow → välj grenen).
-2. Granska resultatet (committen med `ios/`-mappen), kör **"Deploy to
-   TestFlight"** manuellt och se om den går igenom.
-3. Om något av stegen felar: skicka felmeddelandet, så felsöker vi det
-   tillsammans (samma mönster som med Supabase-workflowet).
-4. När TestFlight-bygget fungerar: granska och mergea PR:en.
-5. Testa hela flödet i appen mot den nya databasen: registrera konto,
+1. Mark: kolla i TestFlight-appen (eller App Store Connect) att det nya
+   bygget dykt upp, och installera/testa det på din telefon.
+2. Granska och mergea PR:en för iOS-byggkedjan.
+3. Testa hela flödet i appen mot den nya databasen: registrera konto,
    skapa tips, vänförfrågan, chatt, rapportera/blockera, admin-panelen.
-6. Bestäm om kontoradering ska göras komplett (kräver en ny edge
+4. Bestäm om kontoradering ska göras komplett (kräver en ny edge
    function med service-role).
-7. Bestäm om notiser ska kopplas ihop (skrivs t.ex. vid ny vänförfrågan,
+5. Bestäm om notiser ska kopplas ihop (skrivs t.ex. vid ny vänförfrågan,
    nytt meddelande) eller om tabellen ska tas bort om den inte behövs.

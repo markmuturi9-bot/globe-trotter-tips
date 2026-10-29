@@ -31,7 +31,7 @@ This document contains the complete source code for the TIPIT application, organ
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'app.lovable.8119531570f64ad1b5f9255d17b94d5e',
+  appId: 'com.tipit.app',
   appName: 'TIPIT',
   webDir: 'dist',
   server: {

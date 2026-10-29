@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   // Do not change this — TestFlight/App Store Connect identify the app by it.
-  appId: 'app.lovable.8119531570f64ad1b5f9255d17b94d5e',
+  appId: 'com.tipit.app',
   appName: 'TIPIT',
   webDir: 'dist',
   plugins: {
