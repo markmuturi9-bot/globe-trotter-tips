@@ -26,8 +26,12 @@ görs.
 - Jobba i en egen branch per uppgift. Öppna en pull request. Ingenting
   når `main` utan Marks godkännande.
 - Dela upp stora uppgifter i mindre steg och committa löpande.
-- Ändra aldrig `appId` i `capacitor.config.ts` — då slutar TestFlight att
-  känna igen appen.
+- Appens bundle-ID är `com.tipit.app`. Ändra det aldrig i
+  `capacitor.config.ts` (`appId`), Xcode-projektet eller
+  `ios/App/fastlane/Appfile` — då slutar TestFlight/App Store Connect att
+  känna igen appen. (Tidigare stod det felaktigt `app.lovable...` här —
+  det var aldrig det riktiga bundle-ID:t i App Store Connect, bara det
+  gamla Lovable-genererade värdet i koden. Rättat 2026-10-29.)
 - Innan en uppgift rapporteras som klar: kontrollera att build (`npm run
   build`) och lint (`npm run lint`) går igenom, och att ändringen fungerar
   som avsett.
@@ -59,10 +63,11 @@ görs.
   skapas/uppdateras av workflowet **"Bootstrap iOS project"**
   (`.github/workflows/ios-bootstrap.yml`), som körs manuellt på macOS i
   GitHub Actions — inte av Mark på en egen Mac.
-- Ändra aldrig `appId` i `capacitor.config.ts` eller bundle-id:t i
-  Xcode-projektet — då slutar TestFlight att känna igen appen.
-  `app_identifier` i `ios/App/fastlane/Appfile` måste alltid matcha
-  `capacitor.config.ts`s `appId`.
+- Bundle-ID:t är `com.tipit.app` — detta är det som faktiskt är
+  registrerat i App Store Connect (appen heter "Tipit travel" där).
+  Ändra det aldrig i `capacitor.config.ts` (`appId`), Xcode-projektet
+  eller `ios/App/fastlane/Appfile` — då slutar TestFlight att känna igen
+  appen. Alla tre måste alltid ha samma värde.
 - Nya TestFlight-byggen görs via workflowet **"Deploy to TestFlight"**
   (`.github/workflows/testflight-deploy.yml`), som körs manuellt. Det
   hämtar senaste byggnumret från TestFlight automatiskt och räknar upp —

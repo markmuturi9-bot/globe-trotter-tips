@@ -130,7 +130,7 @@ npx cap run android
 1. **Ta bort live reload** - Redigera `capacitor.config.ts`:
 ```typescript
 const config: CapacitorConfig = {
-  appId: 'app.lovable.8119531570f64ad1b5f9255d17b94d5e',
+  appId: 'com.tipit.app',
   appName: 'TIPIT',
   webDir: 'dist',
   // KOMMENTERA UT ELLER TA BORT DESSA RADER:

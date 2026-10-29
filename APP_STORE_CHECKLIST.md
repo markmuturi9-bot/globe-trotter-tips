@@ -132,8 +132,8 @@ npx cap open android
 
 ## Bundle IDs
 
-- **iOS Bundle ID**: app.lovable.8119531570f64ad1b5f9255d17b94d5e
-- **Android Package Name**: app.lovable.8119531570f64ad1b5f9255d17b94d5e
+- **iOS Bundle ID**: com.tipit.app
+- **Android Package Name**: com.tipit.app
 
 ## Version Info
 - **Version Name**: 1.0.0

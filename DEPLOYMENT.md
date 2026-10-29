@@ -114,7 +114,7 @@ Before submitting to app stores, update `capacitor.config.ts`:
 ```typescript
 // Remove or comment out the server block for production
 const config: CapacitorConfig = {
-  appId: 'app.lovable.8119531570f64ad1b5f9255d17b94d5e',
+  appId: 'com.tipit.app',
   appName: 'TIPIT',
   webDir: 'dist',
   // Comment out for production:
