@@ -195,9 +195,9 @@ export function MapView() {
   }
 
   return (
-    <div className="flex-1 flex flex-col h-full relative overflow-hidden">
+    <div className="absolute inset-0 flex flex-col overflow-hidden">
       {/* Filter controls - top left */}
-      <div className="absolute top-4 left-4 z-10 flex gap-2">
+      <div className="absolute left-4 z-10 flex gap-2" style={{ top: "calc(var(--header-h) + env(safe-area-inset-top) + 12px)" }}>
         {/* User filter */}
         <Select value={filter} onValueChange={(value) => setFilter(value)}>
           <SelectTrigger className="w-[140px] bg-card shadow-lg">
@@ -278,7 +278,7 @@ export function MapView() {
 
       {/* Back button when viewing a country - below filter */}
       {selectedCountry && (
-        <div className="absolute top-16 left-4 z-10">
+        <div className="absolute left-4 z-10" style={{ top: "calc(var(--header-h) + env(safe-area-inset-top) + 60px)" }}>
           <Button
             variant="secondary"
             size="icon"
@@ -292,8 +292,8 @@ export function MapView() {
 
       {/* Country info overlay - centered */}
       {selectedCountry && (
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 bg-card px-4 py-3 rounded-lg shadow-lg">
-          <h2 className="font-serif text-lg font-semibold text-center">{selectedCountry.name}</h2>
+        <div className="absolute left-1/2 -translate-x-1/2 z-10 bg-card px-4 py-3 rounded-lg shadow-lg" style={{ top: "calc(var(--header-h) + env(safe-area-inset-top) + 12px)" }}>
+          <h2 className="font-display text-lg font-semibold text-center">{selectedCountry.name}</h2>
           
           {tipsWithoutLocation.length > 0 && (
             <Collapsible open={noLocationOpen} onOpenChange={setNoLocationOpen} className="mt-2">

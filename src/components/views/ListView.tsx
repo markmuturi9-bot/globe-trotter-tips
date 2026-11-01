@@ -168,9 +168,9 @@ export function ListView() {
   }
   
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden">
+    <div className="flex-1 flex flex-col">
       {/* Search Bar - on top - NOT scrollable */}
-      <div className="flex-shrink-0 p-4 pb-2 border-b border-border bg-card z-30">
+      <div className="p-4 pb-2 bg-background">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
@@ -183,7 +183,7 @@ export function ListView() {
       </div>
       
       {/* Filter Bar - below search - NOT scrollable */}
-      <div className="flex-shrink-0 px-4 py-2 border-b border-border bg-card z-30">
+      <div className="px-4 py-2 border-b border-border bg-background">
         <div className="flex gap-2">
           {/* User filter */}
           <Select value={userFilter} onValueChange={(value) => setUserFilter(value)}>
@@ -276,8 +276,8 @@ export function ListView() {
         </div>
       </div>
       
-      {/* Tips List - only this area scrolls */}
-      <div className="flex-1 overflow-y-auto app-scroll-container" style={{ overscrollBehavior: 'contain' }}>
+      {/* Tips list - scrolls together with the page (AppShell is the only scroll surface) */}
+      <div className="flex-1">
         {filteredAndGroupedTips.size === 0 ? (
           <div className="text-center py-12">
             <p className="text-muted-foreground">
@@ -304,7 +304,7 @@ export function ListView() {
                       ) : (
                         <ChevronRight className="w-4 h-4 text-muted-foreground" />
                       )}
-                      <span className="font-serif font-medium text-lg">{countryName}</span>
+                      <span className="font-display font-medium text-lg">{countryName}</span>
                     </div>
                     <span className="text-sm text-muted-foreground">{totalTips} tips</span>
                   </button>
