@@ -86,7 +86,7 @@ export default function Support() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="h-dvh overflow-y-auto bg-background" style={{ paddingTop: "env(safe-area-inset-top)", paddingBottom: "env(safe-area-inset-bottom)" }}>
       <div className="container max-w-3xl mx-auto px-4 py-8">
         <Link to="/">
           <Button variant="ghost" size="sm" className="mb-6">

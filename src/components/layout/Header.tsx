@@ -1,74 +1,63 @@
-import { Bell, Plus, Shield } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { ThemeToggle } from "@/components/theme/ThemeToggle";
+import { Bell, ChevronLeft, Shield } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import { DesignToggle } from "@/components/theme/DesignToggle";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdmin } from "@/hooks/useAdmin";
 import appLogo from "@/assets/app-logo.png";
 
 interface HeaderProps {
-  onCreateTip?: () => void;
+  backTo?: { to: string; title: string };
 }
 
-export function Header({ onCreateTip }: HeaderProps) {
+const iconButton =
+  "w-11 h-11 rounded-[14px] border border-border bg-card flex items-center justify-center text-foreground";
+
+export function Header({ backTo }: HeaderProps) {
   const { user } = useAuth();
   const { isAdmin, isModerator } = useAdmin();
   const navigate = useNavigate();
 
   return (
     <header
-      className="z-40 bg-background border-b border-border select-none"
+      className="bg-background/95 backdrop-blur-xl border-b border-border select-none"
       style={{ paddingTop: "env(safe-area-inset-top)" }}
       role="banner"
     >
-      <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <img src={appLogo} alt="" className="w-9 h-9 rounded-xl shadow-sm" aria-hidden="true" />
-          <span className="font-display text-xl font-semibold tracking-tight">TIPIT</span>
-        </div>
+      <div className="px-5 flex items-center justify-between" style={{ height: "var(--header-h)" }}>
+        {backTo ? (
+          <div className="flex items-center gap-3">
+            <Link to={backTo.to} className={iconButton} aria-label="Back">
+              <ChevronLeft className="w-5 h-5" strokeWidth={1.5} aria-hidden="true" />
+            </Link>
+            <h1 className="text-2xl font-bold tracking-tight">{backTo.title}</h1>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2.5">
+            <img src={appLogo} alt="" className="w-9 h-9 rounded-xl" aria-hidden="true" />
+            <span className="font-display text-[22px] font-bold tracking-tight">TIPIT</span>
+          </div>
+        )}
 
-        <div className="flex items-center gap-1" role="toolbar" aria-label="App actions">
-          {isAdmin && <DesignToggle />}
-          <ThemeToggle />
-
-          {user && (
-            <>
-              {isModerator && (
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="rounded-xl"
-                  onClick={() => navigate('/admin')}
-                  aria-label="Open moderation dashboard"
-                >
-                  <Shield className="w-5 h-5" aria-hidden="true" />
-                </Button>
-              )}
-
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="relative rounded-xl"
-                aria-label="Notifications"
+        {!backTo && (
+          <div className="flex items-center gap-2" role="toolbar" aria-label="App actions">
+            {/* Admin-only tools, invisible for normal users */}
+            {isAdmin && <DesignToggle />}
+            {user && isModerator && (
+              <button
+                className={iconButton}
+                onClick={() => navigate("/admin")}
+                aria-label="Open moderation dashboard"
               >
-                <Bell className="w-5 h-5" aria-hidden="true" />
-              </Button>
-
-              {onCreateTip && (
-                <Button 
-                  onClick={onCreateTip} 
-                  size="sm" 
-                  className="gap-2 shadow-sm ml-1"
-                  aria-label="Add new travel tip"
-                >
-                  <Plus className="w-4 h-4" aria-hidden="true" />
-                  <span className="hidden sm:inline">Add Tip</span>
-                </Button>
-              )}
-            </>
-          )}
-        </div>
+                <Shield className="w-5 h-5" strokeWidth={1.5} aria-hidden="true" />
+              </button>
+            )}
+            {user && (
+              <button className={iconButton} aria-label="Notifications">
+                <Bell className="w-5 h-5" strokeWidth={1.5} aria-hidden="true" />
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </header>
   );
