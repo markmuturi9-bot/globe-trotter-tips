@@ -1,52 +1,57 @@
 # TIPIT — nuläge
 
-Senast uppdaterad: 2026-10-29. Backend-bytet (Supabase) är klart och
-mergat. iOS/TestFlight-byggkedjan är **klar och bekräftat fungerande**
-— ett nytt bygge laddades upp till TestFlight framgångsrikt efter
-bundle-ID-fixen. Kvarstår: granska och mergea PR:en för iOS-kedjan, och
-fullständig test av appen mot den nya databasen.
+Senast uppdaterad: 2026-11-01. Backend-bytet (Supabase) och
+iOS/TestFlight-byggkedjan är **klara, mergade till `main` och
+verifierade** — både av automatiska körningar och av Mark som testat
+appen live via TestFlight (skapat profil, lagt till tips, kartan
+fungerar). Inget öppet att granska eller mergea just nu. Nästa fas är
+vanligt funktions-/designarbete på appen.
 
-## iOS-status
+## Arbetsprocess (nytt sedan 2026-11-01)
 
-- `ios/App` är genererat och incheckat (via workflowet **"Bootstrap iOS
-  project"**, körs manuellt på macOS i Actions — behövs normalt bara en
-  gång, projektet är redan committat).
-- **Bundle-ID rättat 2026-10-29**: koden använde hela tiden
-  `app.lovable.8119531570f64ad1b5f9255d17b94d5e` (det gamla
-  Lovable-genererade värdet), men appen i App Store Connect ("Tipit
-  travel") är registrerad med `com.tipit.app`. Det var hela orsaken till
-  att TestFlight-uppladdningen inte kunde hitta appen — inte
-  nyckelbehörighet, inte team-ID. Ändrat till `com.tipit.app` i
-  `capacitor.config.ts`, `ios/App/App.xcodeproj/project.pbxproj` och
-  `ios/App/fastlane/Appfile`, plus i de kvarvarande dokumenten som
-  nämnde det gamla värdet. `com.tipit.app` klarar Capacitors egen
-  appId-validering rakt av, så platshållar-logiken som bootstrap-workflowet
-  behövde för det gamla (ogiltiga) ID:t är borttagen — `cap add ios`
-  körs nu direkt.
-- Behörighetstexter: appen har ingen platsfunktion i koden (ingen
-  GPS/geolocation), bara bilduppladdning via vanlig filväljare
-  (tips-bilder + profilbild). Bootstrap-workflowet lägger därför in
-  kamera- och bibliotek-texter (svenska + engelska i samma sträng),
-  inte platsbehörighet.
-- **Om appen senare får fler native-funktioner**: lägg till motsvarande
-  `NSxxxUsageDescription`-nyckel i bootstrap-workflowets
-  PlistBuddy-steg och kör om det (med "force").
-- **Export compliance (krypteringsfrågan i App Store Connect)**:
-  `Info.plist` deklarerar nu `ITSAppUsesNonExemptEncryption = false`
-  (appen använder bara vanlig HTTPS, ingen egen krypteringskod), så
-  "Manage Compliance"-frågan ska inte dyka upp längre för nya byggen.
-  Deklarationen ligger både i det redan genererade `Info.plist` och i
-  bootstrap-workflowets PlistBuddy-steg, så den överlever även en
-  ommkörning med "force".
+- Innan en ändring som påverkar utseende/beteende rapporteras som klar:
+  Playwright (installerat som dev-beroende) används för att ta
+  skärmdumpar i iPhone-storlek av de påverkade vyerna och läsa av
+  webbläsarkonsolen efter fel. Se CLAUDE.md → "Verifiering innan en
+  ändring rapporteras som klar" för exakt hur.
+- **Viktigt att komma ihåg**: den här sandlådans nätverkspolicy
+  blockerar anrop till Supabase (och troligen Mapbox/Gemini) —
+  `ERR_TUNNEL_CONNECTION_FAILED` i konsolen eller 403 på
+  CONNECT-anropet. Det är en begränsning i testmiljön, inte en bugg.
+  Playwright-skärmdumparna verifierar alltså layout/rendering och
+  klientfel, inte vyer som kräver lyckade data-anrop.
+- Ändringar som rör splash-skärm, statusfält, safe areas, tangentbord,
+  native-behörigheter eller bilduppladdning kan inte verifieras i
+  webbläsaren alls — de kräver en riktig TestFlight-build. Detta ska
+  alltid sägas till Mark explicit när det gäller.
+
+## iOS-byggkedja — sammanfattning (klar)
+
+- `ios/App` är genererat och incheckat via workflowet **"Bootstrap iOS
+  project"** (`.github/workflows/ios-bootstrap.yml`, körs manuellt på
+  macOS i Actions — behövs normalt bara igen om projektet ska
+  regenereras från grunden, med "force").
+- Bundle-ID är **`com.tipit.app`** överallt (`capacitor.config.ts`,
+  `project.pbxproj`, `ios/App/fastlane/Appfile`) — detta är vad som
+  faktiskt är registrerat i App Store Connect ("Tipit travel"). Ändra
+  aldrig detta, se CLAUDE.md.
 - TestFlight-bygget (`.github/workflows/testflight-deploy.yml`) hämtar
-  byggnumret automatiskt från TestFlight och räknar upp.
+  byggnumret automatiskt från TestFlight och räknar upp — ingen manuell
+  hantering av byggnummer behövs.
 - Signering sker automatiskt via App Store Connect-nyckeln
   (Admin-rollen, `-authenticationKeyPath`/`-authenticationKeyID`/
   `-authenticationKeyIssuerID` i `ios/App/fastlane/Fastfile`).
-- **Bekräftat fungerande end-to-end 2026-10-29**: "Deploy to TestFlight"
-  kördes efter bundle-ID-fixen och laddade upp ett bygge till TestFlight
-  utan fel. Hela kedjan (bootstrap → bygge → signering → export →
-  uppladdning) är nu verifierad.
+- `Info.plist` deklarerar `ITSAppUsesNonExemptEncryption = false`
+  (bara vanlig HTTPS, ingen egen krypteringskod) så "Manage
+  Compliance"-frågan i App Store Connect inte dyker upp för varje nytt
+  bygge.
+- Behörighetstexter (kamera + bibliotek, svenska + engelska) ligger i
+  `Info.plist`. Appen har ingen platsfunktion i koden idag. Om fler
+  native-funktioner läggs till senare: uppdatera PlistBuddy-steget i
+  bootstrap-workflowet och kör om det med "force".
+- **Bekräftat end-to-end**: flera lyckade körningar av "Deploy to
+  TestFlight" (bootstrap → bygge → signering → export → uppladdning),
+  och Mark har installerat och testat ett bygge på riktig enhet.
 
 ## Vad som gjorts (Supabase-bytet)
 
@@ -109,18 +114,18 @@ fullständig test av appen mot den nya databasen.
 - Övriga dokument (`DEPLOYMENT.md`, `PUBLISHING_GUIDE.md`,
   `APP_STORE_CHECKLIST.md`, `docs/PROJECT_OVERVIEW.md`,
   `docs/METADATA.md`, `docs/FULL_CODEBASE.md`) nämner fortfarande Lovable
-  på flera ställen (bundle-ID:t i dem är nu rättat till `com.tipit.app`,
+  på flera ställen (bundle-ID:t i dem är rättat till `com.tipit.app`,
   men övrig Lovable-text är inte städad) — kandidater för nästa
   städomgång.
 
-## Nästa steg (prioritetsordning)
+## Nästa steg
 
-1. Mark: kolla i TestFlight-appen (eller App Store Connect) att det nya
-   bygget dykt upp, och installera/testa det på din telefon.
-2. Granska och mergea PR:en för iOS-byggkedjan.
-3. Testa hela flödet i appen mot den nya databasen: registrera konto,
-   skapa tips, vänförfrågan, chatt, rapportera/blockera, admin-panelen.
-4. Bestäm om kontoradering ska göras komplett (kräver en ny edge
-   function med service-role).
-5. Bestäm om notiser ska kopplas ihop (skrivs t.ex. vid ny vänförfrågan,
-   nytt meddelande) eller om tabellen ska tas bort om den inte behövs.
+Ingen akut infrastruktur kvar. Redo för vanligt funktions-/designarbete:
+
+1. Mark beskriver vad som ska ändras (gärna med skärmdumpar för
+   visuella önskemål) — en sak/gren/PR i taget.
+2. När ett läge uppstår: bestäm om kontoradering ska göras komplett
+   (kräver en ny edge function med service-role).
+3. När ett läge uppstår: bestäm om notiser ska kopplas ihop (skrivs
+   t.ex. vid ny vänförfrågan, nytt meddelande) eller om tabellen ska tas
+   bort om den inte behövs.
