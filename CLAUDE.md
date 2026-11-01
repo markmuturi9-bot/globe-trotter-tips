@@ -32,11 +32,41 @@ görs.
   känna igen appen. (Tidigare stod det felaktigt `app.lovable...` här —
   det var aldrig det riktiga bundle-ID:t i App Store Connect, bara det
   gamla Lovable-genererade värdet i koden. Rättat 2026-10-29.)
-- Innan en uppgift rapporteras som klar: kontrollera att build (`npm run
-  build`) och lint (`npm run lint`) går igenom, och att ändringen fungerar
-  som avsett.
 - Håll `docs/STATUS.md` uppdaterad med kort nuläge, kända problem och
   nästa steg, så nästa session kan fortsätta därifrån.
+
+## Verifiering innan en ändring rapporteras som klar
+
+- Kontrollera att build (`npm run build`) och lint (`npm run lint`) går
+  igenom.
+- Om ändringen påverkar hur något ser ut eller fungerar i appen: bygg
+  appen och öppna den i en headless webbläsare (Playwright — ett
+  dev-beroende i projektet; kör `npm install` om det saknas) i
+  iPhone-storlek. Ta skärmdumpar av de vyer som påverkats, granska dem
+  själv, och kontrollera webbläsarkonsolen efter fel. Visa
+  skärmdumparna för Mark. **Ingenting mergas förrän han godkänt dem.**
+  - Kör mot en byggd version: `npm run build` följt av
+    `npx vite preview --host 127.0.0.1 --port 4173`. Använd inte
+    `npm run dev` — dev-servern binder till IPv6 (`::`), vilket inte
+    fungerar i den här sandlådan.
+  - Exempel: `chromium.launch()`, `newContext({ ...devices['iPhone 14'] })`,
+    `page.goto('http://127.0.0.1:4173/')`, `page.screenshot(...)`, samt
+    en `console`-lyssnare som fångar `type() === 'error'`.
+  - **Känd begränsning i den här sandlådan**: anrop till Supabase (och
+    troligen Mapbox/Gemini) blockeras av nätverkspolicyn
+    (`ERR_TUNNEL_CONNECTION_FAILED` i webbläsarkonsolen, eller en 403 på
+    CONNECT-anropet om man kollar `curl
+    http://127.0.0.1:45161/__agentproxy/status`). Det är en begränsning
+    i testmiljön, inte ett fel i appen eller i koden — rapportera det
+    inte som en bugg. Skärmdumparna visar layout, rendering och
+    konsolfel på klientkoden, men inte vyer som är beroende av lyckade
+    data-anrop mot backend.
+- Säg alltid till Mark när ändringen rör sådant som bara går att
+  verifiera i en riktig TestFlight-build: splash-skärm, statusfält,
+  safe areas (hack/notch), tangentbordsbeteende, native-behörigheter
+  (kamera/bibliotek) och bilduppladdning. Webbläsarskärmdumpar räcker
+  inte för de delarna — säg det tydligt istället för att låtsas att de
+  är verifierade.
 
 ## Hemligheter och nycklar
 
