@@ -1,4 +1,6 @@
 import { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '@/lib/i18n';
 import { Search, ChevronDown, ChevronRight, Filter, ArrowUpDown, Users, User, Globe2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -34,6 +36,8 @@ type UserFilterType = 'all' | 'friends' | 'me' | string;
 
 export function ListView() {
   const { user } = useAuth();
+  const { t } = useLanguage();
+  const navigate = useNavigate();
   const { data: tips, isLoading } = useTips();
   const { data: countries } = useCountries();
   const { data: friendships } = useFriendships();
@@ -281,10 +285,15 @@ export function ListView() {
         {filteredAndGroupedTips.size === 0 ? (
           <div className="text-center py-12">
             <p className="text-muted-foreground">
-              {searchQuery || selectedCategories.size < allCategories.length 
+              {!user
+                ? t('tips.loginRequired')
+                : searchQuery || selectedCategories.size < allCategories.length 
                 ? 'No tips match your filters.'
                 : 'No tips have been shared yet.'}
             </p>
+            {!user && (
+              <Button className="mt-4" onClick={() => navigate('/profile')}>{t('tips.loginButton')}</Button>
+            )}
           </div>
         ) : (
           <div className="divide-y divide-border">

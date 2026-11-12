@@ -1,7 +1,10 @@
-# Förslag: "Vem kan se din profil" (steg 5 – inget är körd)
+# Profilsynlighet (steg 5) — beslutad: alternativ A
 
-Det här är ett **förslag**. Ingen migrering är skapad eller körd. Mark väljer väg
-nedan innan något ändras i databasen.
+**Beslut (Mark):** alternativ A, utloggade ser inga tips, tips visas bara från
+användare med "Alla" eller vänner. Migreringen är skriven i
+`supabase/migrations/20261112000000_tips_visibility.sql` och körs automatiskt
+när PR:en mergas till `main` (workflowet "supabase-deploy"). Nya användare
+startar fortsatt som "Bara vänner" (oförändrat standardvärde).
 
 ## Vad som finns i dag
 

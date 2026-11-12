@@ -1,4 +1,6 @@
 import { useState, useMemo, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '@/lib/i18n';
 import { Globe, ArrowLeft, ChevronDown, ChevronRight, Filter, Users, User, Globe2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { TipDetail } from '@/components/tips/TipDetail';
@@ -29,6 +31,8 @@ const allCategories: TipCategory[] = ['general', 'food', 'attractions', 'activit
 
 export function MapView() {
   const { user } = useAuth();
+  const { t } = useLanguage();
+  const navigate = useNavigate();
   const { data: friendships } = useFriendships();
   const { data: countriesWithTips, isLoading: countriesLoading } = useCountriesWithTips();
   const { data: allTips, isLoading: tipsLoading } = useTips();
@@ -314,6 +318,16 @@ export function MapView() {
               </CollapsibleContent>
             </Collapsible>
           )}
+        </div>
+      )}
+
+      {!user && (
+        <div
+          className="absolute inset-x-4 z-10 bg-card rounded-2xl shadow-lg border border-border p-4 text-center space-y-3"
+          style={{ bottom: "calc(var(--nav-h) + max(env(safe-area-inset-bottom), 8px) + 24px)" }}
+        >
+          <p className="text-sm">{t('tips.loginRequired')}</p>
+          <Button onClick={() => navigate('/profile')}>{t('tips.loginButton')}</Button>
         </div>
       )}
 

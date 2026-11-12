@@ -59,6 +59,9 @@ const en = {
   'settings.saved': 'Settings updated',
   'settings.saveFailed': 'Failed to update privacy settings.',
 
+  'tips.loginRequired': 'Log in to see tips from friends and public profiles.',
+  'tips.loginButton': 'Log in',
+
   'tip.publish': 'Publish',
   'tip.publishing': 'Publishing...',
 } as const;
@@ -114,6 +117,9 @@ const sv: Record<TranslationKey, string> = {
   'settings.deleting': 'Raderar...',
   'settings.saved': 'Inställningar sparade',
   'settings.saveFailed': 'Det gick inte att spara integritetsinställningen.',
+
+  'tips.loginRequired': 'Logga in för att se tips från vänner och öppna profiler.',
+  'tips.loginButton': 'Logga in',
 
   'tip.publish': 'Publicera',
   'tip.publishing': 'Publicerar...',

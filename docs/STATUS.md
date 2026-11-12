@@ -23,8 +23,9 @@ per steg.
   engelska, sparas på enheten).
 - **Känt/kvar**: bara nya/ändrade texter är översatta — resten av appen är
   fortfarande på engelska. Push-notiser finns inte i appen: kontrollen sparar
-  bara valet på enheten. "Bara vänner" döljer ännu inget i databasen — se
-  `docs/FORSLAG-profilsynlighet.md` (väntar på Marks beslut, inget körs).
+  bara valet på enheten. Synligheten är nu på riktigt: migreringen
+  `20261112000000_tips_visibility.sql` (se `docs/FORSLAG-profilsynlighet.md`)
+  körs vid merge till `main`. Utloggade ser inga tips.
 - **Ej testat på riktig iPhone** (ingen Mac här). Testlista finns i PR-texten.
 
 
