@@ -6,6 +6,8 @@ import {
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,10 +19,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { ChangePasswordDialog } from '@/components/settings/ChangePasswordDialog';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { useLanguage, type Language } from '@/lib/i18n';
+import { useLanguage, type Language, type TranslationKey } from '@/lib/i18n';
 import { CONTACT_EMAIL } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 
@@ -84,12 +87,15 @@ function Segmented<T extends string>({
 // ---- page -------------------------------------------------------------------
 
 export function SettingsView() {
-  const { user, profile, loading, signOut, refreshProfile } = useAuth();
+  const { user, profile, loading, signOut, refreshProfile, deleteAccount } = useAuth();
   const { theme, setTheme } = useTheme();
   const { t, language, setLanguage } = useLanguage();
   const { toast } = useToast();
   const [pushOn, setPushOn] = useState(readPush);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deleteError, setDeleteError] = useState<TranslationKey | null>(null);
 
   if (loading) return null;
   if (!user) return <Navigate to="/profile" replace />;
@@ -124,21 +130,36 @@ export function SettingsView() {
 
   const handleDeleteAccount = async () => {
     setIsDeleting(true);
+    setDeleteError(null);
     try {
-      await supabase.from('tips').delete().eq('user_id', user.id);
-      await supabase.from('friendships').delete().or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`);
-      await supabase.from('messages').delete().eq('sender_id', user.id);
-      await supabase.from('notifications').delete().eq('user_id', user.id);
+      const { error } = await deleteAccount(deletePassword);
+      if (error) {
+        const keys: Record<string, TranslationKey> = {
+          wrong_password: 'settings.deleteWrongPassword',
+          last_admin: 'settings.deleteLastAdmin',
+          files_failed: 'settings.deleteFilesFailed',
+        };
+        setDeleteError(keys[error.code] ?? 'settings.deleteGeneric');
+        return;
+      }
+      // Only now has the server confirmed that the account is gone.
+      setDeleteOpen(false);
       await signOut();
-      toast({ title: 'Account deleted', description: 'Your account and all data have been deleted.' });
-    } catch {
-      toast({
-        title: 'Deletion failed',
-        description: 'Could not delete account. Please try again or contact support.',
-        variant: 'destructive',
-      });
+      toast({ title: t('settings.deleteDone'), description: t('settings.deleteDoneText') });
+    } catch (err) {
+      console.error('Account deletion failed:', err);
+      setDeleteError('settings.deleteGeneric');
     } finally {
       setIsDeleting(false);
+    }
+  };
+
+  const handleDeleteOpenChange = (open: boolean) => {
+    if (isDeleting) return;
+    setDeleteOpen(open);
+    if (!open) {
+      setDeletePassword('');
+      setDeleteError(null);
     }
   };
 
@@ -150,6 +171,7 @@ export function SettingsView() {
           <span className="flex-1">{t('settings.username')}</span>
           <span className="text-[15px] text-muted-foreground">@{profile.username}</span>
         </div>
+        <ChangePasswordDialog rowClassName={rowClass} iconClassName={iconClass} />
         <button type="button" className={rowClass} onClick={() => signOut()}>
           <LogOut className={iconClass} strokeWidth={1.5} aria-hidden="true" />
           <span className="flex-1">{t('settings.signOut')}</span>
@@ -250,7 +272,7 @@ export function SettingsView() {
           <p className="text-base font-semibold text-destructive">{t('settings.deleteAccount')}</p>
           <p className="text-[13px] text-muted-foreground">{t('settings.deleteHelp')}</p>
         </div>
-        <AlertDialog>
+        <AlertDialog open={deleteOpen} onOpenChange={handleDeleteOpenChange}>
           <AlertDialogTrigger asChild>
             <Button variant="destructive" className="min-h-[44px] rounded-xl px-4 font-semibold" disabled={isDeleting}>
               <Trash2 className="w-[18px] h-[18px] mr-2" strokeWidth={1.75} aria-hidden="true" />
@@ -272,10 +294,31 @@ export function SettingsView() {
                 </ul>
               </AlertDialogDescription>
             </AlertDialogHeader>
+            <div className="space-y-2">
+              <Label htmlFor="delete-password">{t('settings.deletePassword')}</Label>
+              <Input
+                id="delete-password"
+                type="password"
+                autoComplete="current-password"
+                value={deletePassword}
+                onChange={(e) => setDeletePassword(e.target.value)}
+                disabled={isDeleting}
+              />
+              {deleteError && (
+                <div role="alert" className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
+                  {t(deleteError)}
+                </div>
+              )}
+            </div>
             <AlertDialogFooter>
-              <AlertDialogCancel>{t('settings.cancel')}</AlertDialogCancel>
+              <AlertDialogCancel disabled={isDeleting}>{t('settings.cancel')}</AlertDialogCancel>
               <AlertDialogAction
-                onClick={handleDeleteAccount}
+                onClick={(e) => {
+                  // Keep the dialog open until the server has answered.
+                  e.preventDefault();
+                  handleDeleteAccount();
+                }}
+                disabled={isDeleting || deletePassword.length === 0}
                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               >
                 {isDeleting ? t('settings.deleting') : t('settings.deleteConfirm')}

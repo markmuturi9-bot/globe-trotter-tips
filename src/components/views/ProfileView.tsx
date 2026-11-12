@@ -1,13 +1,10 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Settings, Calendar, FileText, Globe, Camera, Mail, Lock, User } from 'lucide-react';
+import { AuthScreen } from '@/components/auth/AuthScreen';
+import { Settings, Calendar, FileText, Globe, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
 import { useTipsByUser } from '@/hooks/useTips';
 import { useImageUpload } from '@/hooks/useImageUpload';
@@ -19,74 +16,20 @@ import { TipCard } from '@/components/tips/TipCard';
 import { TipDetail } from '@/components/tips/TipDetail';
 import { useLanguage } from '@/lib/i18n';
 import type { Tip } from '@/types';
-import appLogo from '@/assets/app-logo.png';
 
 export function ProfileView() {
-  const { user, profile, signIn, signUp, loading, refreshProfile } = useAuth();
+  const { user, profile, loading, refreshProfile } = useAuth();
   const { t, language } = useLanguage();
   const [selectedTip, setSelectedTip] = useState<Tip | null>(null);
   const { data: userTips } = useTipsByUser(user?.id || null);
   const { toast } = useToast();
   const { uploadImage, uploading } = useImageUpload();
   
-  // Auth form state
-  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [username, setUsername] = useState('');
-  const [acceptedTerms, setAcceptedTerms] = useState(false);
-  const [authLoading, setAuthLoading] = useState(false);
-  const [authError, setAuthError] = useState<string | null>(null);
-  
+  // Kept true while a password reset is saved, so the sign-in screen stays open.
+  const [resetBusy, setResetBusy] = useState(false);
+
   const uniqueCountries = new Set(userTips?.map(tip => tip.country_id) || []);
 
-  const handleAuthSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setAuthLoading(true);
-    setAuthError(null);
-
-    try {
-      if (authMode === 'signup') {
-        if (!username.trim()) {
-          setAuthError('Username is required');
-          setAuthLoading(false);
-          return;
-        }
-        if (!acceptedTerms) {
-          setAuthError('You must accept the Terms of Service and Privacy Policy');
-          setAuthLoading(false);
-          return;
-        }
-        const { error } = await signUp(email, password, username);
-        if (error) {
-          if (error.message.includes('already registered')) {
-            setAuthError('This email is already registered. Please sign in instead.');
-          } else {
-            setAuthError(error.message);
-          }
-        } else {
-          toast({
-            title: 'Account created',
-            description: 'Welcome to TIPIT! You can now start sharing tips.',
-          });
-        }
-      } else {
-        const { error } = await signIn(email, password);
-        if (error) {
-          if (error.message.includes('Invalid login credentials')) {
-            setAuthError('Invalid email or password. Please try again.');
-          } else {
-            setAuthError(error.message);
-          }
-        }
-      }
-    } catch (error: any) {
-      setAuthError(error.message || 'An error occurred');
-    } finally {
-      setAuthLoading(false);
-    }
-  };
-  
   const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file || !user) return;
@@ -130,118 +73,9 @@ export function ProfileView() {
     );
   }
   
-  // Show auth form when not logged in
-  if (!user) {
-    return (
-      <div className="flex-1 flex flex-col">
-        <div className="flex-1 flex flex-col items-center justify-center p-6">
-          <div className="w-full max-w-sm space-y-6">
-            {/* Logo */}
-            <div className="text-center">
-              <img src={appLogo} alt="TIPIT" className="w-20 h-20 mx-auto mb-4 rounded-2xl shadow-lg" />
-              <h1 className="text-2xl font-display font-semibold">Welcome to TIPIT</h1>
-              <p className="text-muted-foreground mt-1">Share and discover travel tips</p>
-            </div>
-
-            <Card>
-              <CardHeader className="pb-4">
-                <Tabs value={authMode} onValueChange={(v) => { setAuthMode(v as 'signin' | 'signup'); setAuthError(null); }}>
-                  <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="signin">Sign In</TabsTrigger>
-                    <TabsTrigger value="signup">Sign Up</TabsTrigger>
-                  </TabsList>
-                </Tabs>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleAuthSubmit} className="space-y-4">
-                  {authMode === 'signup' && (
-                    <div className="space-y-2">
-                      <Label htmlFor="username">Username</Label>
-                      <div className="relative">
-                        <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                        <Input
-                          id="username"
-                          type="text"
-                          placeholder="Choose a username"
-                          value={username}
-                          onChange={(e) => setUsername(e.target.value)}
-                          className="pl-10"
-                          required
-                        />
-                      </div>
-                    </div>
-                  )}
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="email">{authMode === 'signin' ? 'Email or Username' : 'Email'}</Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <Input
-                        id="email"
-                        type={authMode === 'signin' ? 'text' : 'email'}
-                        placeholder={authMode === 'signin' ? 'Email or username' : 'Enter your email'}
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="pl-10"
-                        required
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="password">Password</Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <Input
-                        id="password"
-                        type="password"
-                        placeholder="Enter your password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="pl-10"
-                        required
-                        minLength={6}
-                      />
-                    </div>
-                  </div>
-
-                  {authMode === 'signup' && (
-                    <div className="flex items-start space-x-3">
-                      <Checkbox 
-                        id="terms" 
-                        checked={acceptedTerms}
-                        onCheckedChange={(checked) => setAcceptedTerms(checked === true)}
-                        className="mt-0.5"
-                      />
-                      <Label htmlFor="terms" className="text-sm leading-relaxed cursor-pointer text-muted-foreground">
-                        I accept the{' '}
-                        <Link to="/terms" className="text-primary hover:underline font-medium" target="_blank">
-                          Terms of Service
-                        </Link>{' '}
-                        and{' '}
-                        <Link to="/privacy" className="text-primary hover:underline font-medium" target="_blank">
-                          Privacy Policy
-                        </Link>
-                      </Label>
-                    </div>
-                  )}
-
-                  {authError && (
-                    <div className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
-                      {authError}
-                    </div>
-                  )}
-
-                  <Button type="submit" className="w-full" disabled={authLoading}>
-                    {authLoading ? 'Please wait...' : (authMode === 'signin' ? 'Sign In' : 'Create Account')}
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </div>
-    );
+  // Show sign-in / sign-up when not logged in
+  if (!user || resetBusy) {
+    return <AuthScreen onBusyChange={setResetBusy} />;
   }
   
   // Show loading for profile
