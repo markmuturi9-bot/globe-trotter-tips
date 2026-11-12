@@ -15,7 +15,7 @@ export function ChatView() {
       {/* Sidebar - Chat list */}
       <div className={`w-full md:w-80 border-r border-border bg-card flex flex-col ${selectedChat ? 'hidden md:flex' : 'flex'}`}>
         <div className="p-4 border-b border-border flex items-center justify-between">
-          <h2 className="font-serif text-lg font-semibold flex items-center gap-2">
+          <h2 className="font-display text-lg font-semibold flex items-center gap-2">
             <MessageCircle className="w-5 h-5" />
             Messages
           </h2>

@@ -7,7 +7,7 @@ export default function List() {
   const [showCreateTip, setShowCreateTip] = useState(false);
 
   return (
-    <AppShell activeView="list" onCreateTip={() => setShowCreateTip(true)}>
+    <AppShell activeView="list" onCreateTip={() => setShowCreateTip(true)} hideHeaderOnScroll>
       <ListView />
 
       {showCreateTip && <CreateTipDialog onClose={() => setShowCreateTip(false)} />}

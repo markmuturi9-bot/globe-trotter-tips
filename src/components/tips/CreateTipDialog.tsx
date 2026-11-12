@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/select';
 import { useCountries, useCreateTip } from '@/hooks/useTips';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/lib/i18n';
 import { ImageUpload } from './ImageUpload';
 import { AddressAutocomplete } from './AddressAutocomplete';
 import { BulkTipImport } from './BulkTipImport';
@@ -29,6 +30,7 @@ export function CreateTipDialog({ onClose }: CreateTipDialogProps) {
   const { data: countries, isLoading: loadingCountries } = useCountries();
   const createTip = useCreateTip();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [showBulkImport, setShowBulkImport] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -104,28 +106,34 @@ export function CreateTipDialog({ onClose }: CreateTipDialogProps) {
   };
   
   return (
-    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm animate-fade-in">
-      <div className="fixed inset-x-4 top-[5%] bottom-[5%] md:inset-x-auto md:left-1/2 md:-translate-x-1/2 md:w-full md:max-w-lg bg-card rounded-xl shadow-strong overflow-hidden animate-scale-in">
-        <div className="flex items-center justify-between p-4 border-b border-border">
-          <h2 className="font-serif text-xl font-semibold">Share a Tip</h2>
+    // Full-screen sheet without the bottom nav. The fields scroll; the Publish button stays put.
+    <div className="fixed inset-0 z-50 bg-background flex flex-col animate-fade-in">
+      <div
+        className="flex-shrink-0 border-b border-border bg-background"
+        style={{ paddingTop: 'env(safe-area-inset-top)' }}
+      >
+        <div className="flex items-center justify-between px-5 h-14">
+          <h2 className="font-display text-xl font-bold">Share a Tip</h2>
           <div className="flex items-center gap-2">
             <Button
               type="button"
               variant="ghost"
               size="sm"
               onClick={() => setShowBulkImport(true)}
-              className="text-primary"
+              className="text-primary min-h-[44px]"
             >
-              <Sparkles className="w-4 h-4 mr-1" />
+              <Sparkles className="w-4 h-4 mr-1" strokeWidth={1.5} />
               AI Import
             </Button>
-            <Button type="button" variant="ghost" size="icon" onClick={onClose}>
-              <X className="w-5 h-5" />
+            <Button type="button" variant="ghost" size="icon" onClick={onClose} className="w-11 h-11" aria-label="Close">
+              <X className="w-5 h-5" strokeWidth={1.5} />
             </Button>
           </div>
         </div>
-        
-        <form onSubmit={handleSubmit} className="p-6 overflow-y-auto max-h-[calc(100%-4rem)] space-y-5">
+      </div>
+
+      <form onSubmit={handleSubmit} className="flex-1 min-h-0 flex flex-col">
+        <div className="flex-1 min-h-0 overflow-y-auto app-scroll-container px-5 py-5 space-y-5">
           <div className="space-y-2">
             <Label htmlFor="country">Country *</Label>
             <Select
@@ -226,16 +234,17 @@ export function CreateTipDialog({ onClose }: CreateTipDialogProps) {
             <Label>Photos (optional)</Label>
             <ImageUpload images={images} onImagesChange={setImages} maxImages={5} />
           </div>
-          <div className="flex gap-3 pt-4">
-            <Button type="button" variant="outline" className="flex-1" onClick={onClose}>
-              Cancel
-            </Button>
-            <Button type="submit" className="flex-1" disabled={createTip.isPending}>
-              {createTip.isPending ? 'Creating...' : 'Share Tip'}
-            </Button>
-          </div>
-        </form>
-      </div>
+        </div>
+
+        <div
+          className="flex-shrink-0 border-t border-border bg-background px-5 pt-3"
+          style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 16px)' }}
+        >
+          <Button type="submit" className="w-full h-12 text-base font-semibold" disabled={createTip.isPending}>
+            {createTip.isPending ? t('tip.publishing') : t('tip.publish')}
+          </Button>
+        </div>
+      </form>
     </div>
   );
 }

@@ -6,6 +6,29 @@ mergat. iOS/TestFlight-byggkedjan är **klar och bekräftat fungerande**
 bundle-ID-fixen. Kvarstår: granska och mergea PR:en för iOS-kedjan, och
 fullständig test av appen mot den nya databasen.
 
+## Designuppdatering (november 2026) — väntar på granskning
+
+Gjort enligt designspecen (layout/scroll, tokens, header + bottenmeny med "+",
+ny Profil, ny Settings-sida). Allt ligger på en branch/PR; kommitsen är uppdelade
+per steg.
+
+- **Layout/scroll**: rotorsaken var att `html` hade säkerhetsmarginal (padding)
+  samtidigt som skalet var 100dvh högt, och att `body` var `position: fixed` med
+  `overflow: hidden` → sidan blev högre än skärmen och botten klipptes. Nu finns
+  en enda scrollyta (`AppShell`), säkerhetsområden räknas bara i header (topp) och
+  bottenmeny (botten), och innehållet har utrymme under menyn.
+- **Header** 56 px, döljs vid scroll nedåt på List/Friends/Profile.
+- **Bottenmeny** genomskinlig med oskärpa, "+" i mitten.
+- **Nytt**: `/settings`, minimal språkhantering (`src/lib/i18n.tsx`, svenska +
+  engelska, sparas på enheten).
+- **Känt/kvar**: bara nya/ändrade texter är översatta — resten av appen är
+  fortfarande på engelska. Push-notiser finns inte i appen: kontrollen sparar
+  bara valet på enheten. Synligheten är nu på riktigt: migreringen
+  `20261112000000_tips_visibility.sql` (se `docs/FORSLAG-profilsynlighet.md`)
+  körs vid merge till `main`. Utloggade ser inga tips.
+- **Ej testat på riktig iPhone** (ingen Mac här). Testlista finns i PR-texten.
+
+
 ## iOS-status
 
 - `ios/App` är genererat och incheckat (via workflowet **"Bootstrap iOS
