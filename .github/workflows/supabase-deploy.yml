@@ -32,7 +32,7 @@ jobs:
         run: supabase link --project-ref "${{ secrets.SUPABASE_PROJECT_REF }}"
 
       - name: Run database migrations
-        run: supabase db push --remote
+        run: supabase db push --remote --yes
 
       - name: Set Edge Function secrets
         run: |
