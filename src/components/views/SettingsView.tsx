@@ -17,6 +17,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { ChangePasswordDialog } from '@/components/settings/ChangePasswordDialog';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -150,6 +151,7 @@ export function SettingsView() {
           <span className="flex-1">{t('settings.username')}</span>
           <span className="text-[15px] text-muted-foreground">@{profile.username}</span>
         </div>
+        <ChangePasswordDialog rowClassName={rowClass} iconClassName={iconClass} />
         <button type="button" className={rowClass} onClick={() => signOut()}>
           <LogOut className={iconClass} strokeWidth={1.5} aria-hidden="true" />
           <span className="flex-1">{t('settings.signOut')}</span>

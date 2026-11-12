@@ -19,7 +19,6 @@ import List from "./pages/List";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import Friends from "./pages/Friends";
-import Auth from "./pages/Auth";
 import Admin from "./pages/Admin";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
@@ -70,7 +69,7 @@ function AppRoutes() {
           <Route path="/friends" element={<Friends />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/settings" element={<Settings />} />
-          <Route path="/auth" element={<Auth />} />
+          <Route path="/auth" element={<Navigate to="/profile" replace />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="*" element={<NotFound />} />
         </>
