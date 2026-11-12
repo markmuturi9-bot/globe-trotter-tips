@@ -1,4 +1,4 @@
-import { Bell, ChevronLeft, Shield } from "lucide-react";
+import { ChevronLeft, Shield } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { DesignToggle } from "@/components/theme/DesignToggle";
 import { useAuth } from "@/hooks/useAuth";
@@ -49,11 +49,6 @@ export function Header({ backTo }: HeaderProps) {
                 aria-label="Open moderation dashboard"
               >
                 <Shield className="w-5 h-5" strokeWidth={1.5} aria-hidden="true" />
-              </button>
-            )}
-            {user && (
-              <button className={iconButton} aria-label="Notifications">
-                <Bell className="w-5 h-5" strokeWidth={1.5} aria-hidden="true" />
               </button>
             )}
           </div>
