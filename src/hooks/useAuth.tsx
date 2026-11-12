@@ -17,6 +17,8 @@ interface AuthContextType {
   requestPasswordReset: (email: string) => Promise<{ error: Error | null }>;
   resetPasswordWithCode: (email: string, code: string, newPassword: string) => Promise<{ error: Error | null }>;
   changePassword: (currentPassword: string, newPassword: string) => Promise<{ error: Error | null }>;
+  /** Deletes the signed-in user's account on the server. Error codes: wrong_password, last_admin, files_failed, delete_failed. */
+  deleteAccount: (password: string) => Promise<{ error: (Error & { code: string }) | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
@@ -201,6 +203,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { error: error as Error | null };
   };
 
+  const deleteAccount = async (password: string) => {
+    const { error } = await supabase.functions.invoke('delete-account', { body: { password } });
+    if (!error) return { error: null };
+
+    // The function answers with { error: "<code>" } and a non-2xx status.
+    let code = 'delete_failed';
+    const response = (error as { context?: Response }).context;
+    if (response && typeof response.json === 'function') {
+      try {
+        const body = await response.json();
+        if (typeof body?.error === 'string') code = body.error;
+      } catch {
+        // keep the generic code
+      }
+    }
+    return { error: authError(code) };
+  };
+
   const signOut = async () => {
     await supabase.auth.signOut();
     setUser(null);
@@ -221,6 +241,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       requestPasswordReset,
       resetPasswordWithCode,
       changePassword,
+      deleteAccount,
       signIn,
       signOut,
       refreshProfile,
