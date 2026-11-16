@@ -36,9 +36,9 @@ jobs:
 
       - name: Set Edge Function secrets
         run: |
-          supabase secrets set \
+          supabase secrets set --yes \
             MAPBOX_PUBLIC_TOKEN="${{ secrets.MAPBOX_TOKEN }}" \
             GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}"
 
       - name: Deploy Edge Functions
-        run: supabase functions deploy
+        run: supabase functions deploy --yes
