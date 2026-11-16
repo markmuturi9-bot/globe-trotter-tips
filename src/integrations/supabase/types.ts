@@ -595,6 +595,7 @@ export type Database = {
       }
       is_admin_or_moderator: { Args: { _user_id: string }; Returns: boolean }
       is_own_profile: { Args: { _profile_id: string }; Returns: boolean }
+      is_username_available: { Args: { _username: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"

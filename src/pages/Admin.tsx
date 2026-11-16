@@ -642,6 +642,8 @@ function UsersManagement() {
   const { user: currentUser } = useAuth();
   const manageRole = useManageRole();
   const [selectedRole, setSelectedRole] = useState<AppRole>('moderator');
+  // The last admin cannot lose the admin role (also enforced in the database).
+  const adminCount = users?.filter((u) => u.roles.includes('admin')).length ?? 0;
 
   if (isLoading) {
     return (
@@ -667,7 +669,10 @@ function UsersManagement() {
       <Card>
         <CardHeader>
           <CardTitle className="text-base">User Roles Management</CardTitle>
-          <CardDescription>Assign or remove admin and moderator roles</CardDescription>
+          <CardDescription>
+            Assign or remove admin and moderator roles. You cannot change your own roles, and the last admin
+            can never be removed.
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="rounded-md border overflow-hidden">
@@ -702,8 +707,13 @@ function UsersManagement() {
                             {user.id !== currentUser?.id && (
                               <button
                                 onClick={() => manageRole.mutate({ userId: user.id, role, action: 'remove' })}
-                                className="ml-1 hover:text-destructive"
-                                disabled={manageRole.isPending}
+                                className="ml-1 hover:text-destructive disabled:opacity-40 disabled:hover:text-inherit"
+                                disabled={manageRole.isPending || (role === 'admin' && adminCount <= 1)}
+                                title={
+                                  role === 'admin' && adminCount <= 1
+                                    ? 'This is the last admin and cannot be removed. Make someone else admin first.'
+                                    : 'Remove role'
+                                }
                               >
                                 <XCircle className="w-3 h-3" />
                               </button>

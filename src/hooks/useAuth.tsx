@@ -2,13 +2,23 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import type { Profile } from '@/types';
+import { authError } from '@/lib/authErrors';
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   profile: Profile | null;
   loading: boolean;
-  signUp: (email: string, password: string, username: string) => Promise<{ error: Error | null }>;
+  checkUsernameAvailable: (username: string) => Promise<{ available: boolean; error: Error | null }>;
+  /** needsConfirmation is false if the project does not require email confirmation (user is then signed in). */
+  signUp: (email: string, password: string, username: string) => Promise<{ error: Error | null; needsConfirmation: boolean }>;
+  verifySignupCode: (email: string, code: string) => Promise<{ error: Error | null }>;
+  resendSignupCode: (email: string) => Promise<{ error: Error | null }>;
+  requestPasswordReset: (email: string) => Promise<{ error: Error | null }>;
+  resetPasswordWithCode: (email: string, code: string, newPassword: string) => Promise<{ error: Error | null }>;
+  changePassword: (currentPassword: string, newPassword: string) => Promise<{ error: Error | null }>;
+  /** Deletes the signed-in user's account on the server. Error codes: wrong_password, last_admin, files_failed, delete_failed. */
+  deleteAccount: (password: string) => Promise<{ error: (Error & { code: string }) | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
@@ -83,20 +93,74 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
+  const checkUsernameAvailable = async (username: string) => {
+    const { data, error } = await supabase.rpc('is_username_available', { _username: username });
+    return { available: data === true, error: error as Error | null };
+  };
+
   const signUp = async (email: string, password: string, username: string) => {
-    const redirectUrl = `${window.location.origin}/`;
-    
-    const { error } = await supabase.auth.signUp({
+    // No redirect link: the email contains a 6-digit code that is typed into the app.
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: redirectUrl,
         data: {
           username,
         },
       },
     });
-    
+
+    if (error) return { error: error as Error, needsConfirmation: false };
+
+    // For an email that is already registered, Supabase answers "success" with
+    // no identities (to not reveal which emails exist). Treat it as an error.
+    if (data.user && data.user.identities?.length === 0) {
+      return { error: authError('user_already_exists'), needsConfirmation: false };
+    }
+
+    return { error: null, needsConfirmation: !data.session };
+  };
+
+  const verifySignupCode = async (email: string, code: string) => {
+    const { error } = await supabase.auth.verifyOtp({ email, token: code, type: 'signup' });
+    return { error: error as Error | null };
+  };
+
+  const resendSignupCode = async (email: string) => {
+    const { error } = await supabase.auth.resend({ type: 'signup', email });
+    return { error: error as Error | null };
+  };
+
+  const requestPasswordReset = async (email: string) => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email);
+    return { error: error as Error | null };
+  };
+
+  const resetPasswordWithCode = async (email: string, code: string, newPassword: string) => {
+    const { error: verifyError } = await supabase.auth.verifyOtp({ email, token: code, type: 'recovery' });
+    if (verifyError) return { error: verifyError as Error };
+
+    // The code is used up and we now hold a temporary session. If saving the
+    // new password fails, end that session so the user starts over cleanly.
+    const { error: updateError } = await supabase.auth.updateUser({ password: newPassword });
+    if (updateError) {
+      await supabase.auth.signOut();
+      return { error: updateError as Error };
+    }
+    return { error: null };
+  };
+
+  const changePassword = async (currentPassword: string, newPassword: string) => {
+    if (!user?.email) return { error: authError('not_signed_in') };
+
+    // Check the current password first (updateUser alone would not ask for it).
+    const { error: checkError } = await supabase.auth.signInWithPassword({
+      email: user.email,
+      password: currentPassword,
+    });
+    if (checkError) return { error: checkError as Error };
+
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
     return { error: error as Error | null };
   };
 
@@ -113,21 +177,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         if (lookupError) {
           console.error('Username lookup error:', lookupError);
-          return { error: new Error('Login service temporarily unavailable. Try using your email address.') };
+          return { error: authError('lookup_unavailable') };
         }
         
         if (data?.error) {
-          return { error: new Error(data.error) };
+          return { error: authError('too_many_attempts') };
         }
         
         if (!data?.email) {
-          return { error: new Error('User not found. Please check your username.') };
+          return { error: authError('user_not_found') };
         }
         
         emailToUse = data.email;
       } catch (e) {
         console.error('Username lookup failed:', e);
-        return { error: new Error('Login service temporarily unavailable. Try using your email address.') };
+        return { error: authError('lookup_unavailable') };
       }
     }
     
@@ -137,6 +201,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
     
     return { error: error as Error | null };
+  };
+
+  const deleteAccount = async (password: string) => {
+    const { error } = await supabase.functions.invoke('delete-account', { body: { password } });
+    if (!error) return { error: null };
+
+    // The function answers with { error: "<code>" } and a non-2xx status.
+    let code = 'delete_failed';
+    const response = (error as { context?: Response }).context;
+    if (response && typeof response.json === 'function') {
+      try {
+        const body = await response.json();
+        if (typeof body?.error === 'string') code = body.error;
+      } catch {
+        // keep the generic code
+      }
+    }
+    return { error: authError(code) };
   };
 
   const signOut = async () => {
@@ -152,7 +234,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       session,
       profile,
       loading,
+      checkUsernameAvailable,
       signUp,
+      verifySignupCode,
+      resendSignupCode,
+      requestPasswordReset,
+      resetPasswordWithCode,
+      changePassword,
+      deleteAccount,
       signIn,
       signOut,
       refreshProfile,
