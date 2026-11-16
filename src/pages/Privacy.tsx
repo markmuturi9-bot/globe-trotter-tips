@@ -1,24 +1,24 @@
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function Privacy() {
+  const navigate = useNavigate();
   return (
-    <div className="min-h-screen bg-background">
+    <div className="h-dvh overflow-y-auto bg-background" style={{ paddingTop: "env(safe-area-inset-top)", paddingBottom: "env(safe-area-inset-bottom)" }}>
       <div className="max-w-3xl mx-auto px-4 py-8 md:py-16">
-        <Link to="/">
-          <Button variant="ghost" className="mb-6">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
-          </Button>
-        </Link>
+        {/* Back to wherever the reader came from (e.g. Settings); home if opened directly */}
+        <Button variant="ghost" className="mb-6" onClick={() => (window.history.length > 1 ? navigate(-1) : navigate('/'))}>
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back
+        </Button>
 
-        <h1 className="text-3xl md:text-4xl font-serif font-semibold mb-2">Privacy Policy</h1>
+        <h1 className="text-3xl md:text-4xl font-display font-semibold mb-2">Privacy Policy</h1>
         <p className="text-muted-foreground mb-8">Last updated: {new Date().toLocaleDateString('en-US')}</p>
 
         <div className="prose prose-slate dark:prose-invert max-w-none space-y-8">
           <section>
-            <h2 className="text-xl font-serif font-medium mb-3">1. Introduction</h2>
+            <h2 className="text-xl font-display font-medium mb-3">1. Introduction</h2>
             <p className="text-muted-foreground leading-relaxed">
               We value your privacy and are committed to protecting your personal data. 
               This privacy policy explains how we collect, use, and protect your information 
@@ -27,7 +27,7 @@ export default function Privacy() {
           </section>
 
           <section>
-            <h2 className="text-xl font-serif font-medium mb-3">2. Data Controller</h2>
+            <h2 className="text-xl font-display font-medium mb-3">2. Data Controller</h2>
             <p className="text-muted-foreground leading-relaxed">
               The data controller for the processing of your personal data is the service owner. 
               You can contact us via email for questions about data protection.
@@ -35,7 +35,7 @@ export default function Privacy() {
           </section>
 
           <section>
-            <h2 className="text-xl font-serif font-medium mb-3">3. What Data We Collect</h2>
+            <h2 className="text-xl font-display font-medium mb-3">3. What Data We Collect</h2>
             <p className="text-muted-foreground leading-relaxed mb-4">We collect the following categories of personal data:</p>
             <ul className="list-disc pl-6 text-muted-foreground space-y-2">
               <li><strong>Account information:</strong> Email address, username</li>
@@ -46,7 +46,7 @@ export default function Privacy() {
           </section>
 
           <section>
-            <h2 className="text-xl font-serif font-medium mb-3">4. Legal Basis for Processing</h2>
+            <h2 className="text-xl font-display font-medium mb-3">4. Legal Basis for Processing</h2>
             <p className="text-muted-foreground leading-relaxed mb-4">We process your personal data based on:</p>
             <ul className="list-disc pl-6 text-muted-foreground space-y-2">
               <li><strong>Contract:</strong> To provide the service you registered for</li>
@@ -56,7 +56,7 @@ export default function Privacy() {
           </section>
 
           <section>
-            <h2 className="text-xl font-serif font-medium mb-3">5. How We Use Your Data</h2>
+            <h2 className="text-xl font-display font-medium mb-3">5. How We Use Your Data</h2>
             <ul className="list-disc pl-6 text-muted-foreground space-y-2">
               <li>Provide and improve the service</li>
               <li>Manage your user account</li>
@@ -67,7 +67,7 @@ export default function Privacy() {
           </section>
 
           <section>
-            <h2 className="text-xl font-serif font-medium mb-3">6. Data Sharing</h2>
+            <h2 className="text-xl font-display font-medium mb-3">6. Data Sharing</h2>
             <p className="text-muted-foreground leading-relaxed">
               We never sell your personal data. We may share data with:
             </p>
@@ -79,7 +79,7 @@ export default function Privacy() {
           </section>
 
           <section>
-            <h2 className="text-xl font-serif font-medium mb-3">7. User-Generated Content</h2>
+            <h2 className="text-xl font-display font-medium mb-3">7. User-Generated Content</h2>
             <p className="text-muted-foreground leading-relaxed mb-4">
               Content you create (tips, images, messages) is stored on our servers and may be visible to:
             </p>
@@ -95,7 +95,7 @@ export default function Privacy() {
           </section>
 
           <section>
-            <h2 className="text-xl font-serif font-medium mb-3">8. Storage and Security</h2>
+            <h2 className="text-xl font-display font-medium mb-3">8. Storage and Security</h2>
             <p className="text-muted-foreground leading-relaxed">
               Your data is stored on secure servers within the EU/EEA. We use encryption and 
               other technical measures to protect your data, including:
@@ -113,7 +113,7 @@ export default function Privacy() {
           </section>
 
           <section>
-            <h2 className="text-xl font-serif font-medium mb-3">9. Your Rights</h2>
+            <h2 className="text-xl font-display font-medium mb-3">9. Your Rights</h2>
             <p className="text-muted-foreground leading-relaxed mb-4">
               Under GDPR, you have the following rights:
             </p>
@@ -132,7 +132,7 @@ export default function Privacy() {
           </section>
 
           <section>
-            <h2 className="text-xl font-serif font-medium mb-3">10. Cookies</h2>
+            <h2 className="text-xl font-display font-medium mb-3">10. Cookies</h2>
             <p className="text-muted-foreground leading-relaxed">
               We use cookies for the service to function correctly. See our cookie banner 
               for more information and to manage your preferences. Necessary cookies 
@@ -141,7 +141,7 @@ export default function Privacy() {
           </section>
 
           <section>
-            <h2 className="text-xl font-serif font-medium mb-3">11. Changes to Policy</h2>
+            <h2 className="text-xl font-display font-medium mb-3">11. Changes to Policy</h2>
             <p className="text-muted-foreground leading-relaxed">
               We may update this policy when needed. For significant changes, we will notify 
               you via email or in the service.
@@ -149,7 +149,7 @@ export default function Privacy() {
           </section>
 
           <section>
-            <h2 className="text-xl font-serif font-medium mb-3">12. Complaints</h2>
+            <h2 className="text-xl font-display font-medium mb-3">12. Complaints</h2>
             <p className="text-muted-foreground leading-relaxed">
               If you are dissatisfied with how we handle your personal data, you have the right to 
               file a complaint with a data protection authority. In Sweden, this is 
@@ -158,7 +158,7 @@ export default function Privacy() {
           </section>
 
           <section>
-            <h2 className="text-xl font-serif font-medium mb-3">13. Contact</h2>
+            <h2 className="text-xl font-display font-medium mb-3">13. Contact</h2>
             <p className="text-muted-foreground leading-relaxed">
               For questions about this privacy policy or how we process your data, 
               contact us at{' '}

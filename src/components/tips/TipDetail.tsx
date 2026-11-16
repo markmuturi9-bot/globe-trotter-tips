@@ -217,7 +217,7 @@ export function TipDetail({ tip, onClose }: TipDetailProps) {
           </div>
           
           <div className="p-6 overflow-y-auto max-h-[calc(100%-4rem)]">
-            <h2 className="font-serif text-2xl font-semibold mb-4">{displayTitle}</h2>
+            <h2 className="font-display text-2xl font-semibold mb-4">{displayTitle}</h2>
             
             {isShowingTranslation && (
               <p className="text-xs text-muted-foreground mb-2 italic">Translated</p>

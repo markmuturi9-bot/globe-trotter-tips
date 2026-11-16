@@ -89,7 +89,7 @@ export const PRIVACY_SETTINGS = ['public', 'friends_only', 'private'] as const;
 export type PrivacySetting = typeof PRIVACY_SETTINGS[number];
 
 // Contact Email
-export const CONTACT_EMAIL = 'support@tipit.app';
+export const CONTACT_EMAIL = 'mark.muturi9@gmail.com';
 export const PRIVACY_EMAIL = 'privacy@tipit.app';
 
 // External Links

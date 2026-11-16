@@ -17,7 +17,7 @@
     --popover-foreground: 240 10% 10%;
 
     /* Modern purple-blue accent */
-    --primary: 252 87% 64%;
+    --primary: 250 100% 64%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 240 6% 96%;
@@ -26,15 +26,15 @@
     --muted: 240 5% 94%;
     --muted-foreground: 240 5% 46%;
 
-    --accent: 252 87% 97%;
-    --accent-foreground: 252 87% 50%;
+    --accent: 252 100% 97%;
+    --accent-foreground: 250 100% 64%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
     --border: 240 6% 90%;
     --input: 240 6% 90%;
-    --ring: 252 87% 64%;
+    --ring: 250 100% 64%;
 
     --radius: 0.75rem;
 
@@ -53,16 +53,16 @@
     --category-other: 240 5% 55%;
 
     /* Modern gradients */
-    --gradient-hero: linear-gradient(135deg, hsl(252 87% 64%) 0%, hsl(280 85% 60%) 50%, hsl(210 95% 55%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(250 100% 64%) 0%, hsl(280 85% 60%) 50%, hsl(210 95% 55%) 100%);
     --gradient-card: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(240 6% 99%) 100%);
     --gradient-subtle: linear-gradient(135deg, hsl(252 87% 97%) 0%, hsl(210 95% 97%) 100%);
-    --gradient-glow: radial-gradient(ellipse at center, hsl(252 87% 64% / 0.15) 0%, transparent 70%);
+    --gradient-glow: radial-gradient(ellipse at center, hsl(250 100% 64% / 0.15) 0%, transparent 70%);
 
     /* Modern shadows with blur */
     --shadow-sm: 0 1px 2px 0 hsl(240 10% 10% / 0.03);
     --shadow-md: 0 4px 16px -4px hsl(240 10% 10% / 0.08), 0 2px 4px -2px hsl(240 10% 10% / 0.04);
     --shadow-lg: 0 16px 48px -12px hsl(240 10% 10% / 0.12), 0 4px 8px -4px hsl(240 10% 10% / 0.06);
-    --shadow-glow: 0 0 32px hsl(252 87% 64% / 0.2);
+    --shadow-glow: 0 0 32px hsl(250 100% 64% / 0.2);
     --shadow-card: 0 1px 3px 0 hsl(240 10% 10% / 0.04), 0 1px 2px -1px hsl(240 10% 10% / 0.04);
 
     /* Smooth transitions */
@@ -72,12 +72,12 @@
 
     --sidebar-background: 0 0% 99%;
     --sidebar-foreground: 240 10% 10%;
-    --sidebar-primary: 252 87% 64%;
+    --sidebar-primary: 250 100% 64%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 252 87% 97%;
-    --sidebar-accent-foreground: 252 87% 50%;
+    --sidebar-accent: 252 100% 97%;
+    --sidebar-accent-foreground: 250 100% 64%;
     --sidebar-border: 240 6% 92%;
-    --sidebar-ring: 252 87% 64%;
+    --sidebar-ring: 250 100% 64%;
   }
 
   .dark {
@@ -90,7 +90,7 @@
     --popover: 240 10% 8%;
     --popover-foreground: 0 0% 95%;
 
-    --primary: 252 87% 64%;
+    --primary: 250 100% 64%;
     --primary-foreground: 240 10% 6%;
 
     --secondary: 240 6% 14%;
@@ -107,7 +107,7 @@
 
     --border: 240 6% 18%;
     --input: 240 6% 18%;
-    --ring: 252 87% 64%;
+    --ring: 250 100% 64%;
 
     --warm-cream: 240 10% 10%;
     --text-primary: 0 0% 95%;
@@ -117,17 +117,17 @@
     --shadow-sm: 0 1px 2px 0 hsl(0 0% 0% / 0.1);
     --shadow-md: 0 4px 16px -4px hsl(0 0% 0% / 0.2), 0 2px 4px -2px hsl(0 0% 0% / 0.1);
     --shadow-lg: 0 16px 48px -12px hsl(0 0% 0% / 0.3), 0 4px 8px -4px hsl(0 0% 0% / 0.15);
-    --shadow-glow: 0 0 40px hsl(252 87% 64% / 0.25);
+    --shadow-glow: 0 0 40px hsl(250 100% 64% / 0.25);
     --shadow-card: 0 1px 3px 0 hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.06);
 
     --sidebar-background: 240 10% 6%;
     --sidebar-foreground: 0 0% 95%;
-    --sidebar-primary: 252 87% 64%;
+    --sidebar-primary: 250 100% 64%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 252 40% 16%;
     --sidebar-accent-foreground: 252 87% 70%;
     --sidebar-border: 240 6% 16%;
-    --sidebar-ring: 252 87% 64%;
+    --sidebar-ring: 250 100% 64%;
   }
 }
 
@@ -142,13 +142,15 @@
     --safe-area-inset-right: env(safe-area-inset-right, 0px);
     --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
     --safe-area-inset-left: env(safe-area-inset-left, 0px);
+
+    /* App shell sizes (see AppShell) */
+    --header-h: 56px;
+    --nav-h: 64px;
   }
 
   html {
-    /* Enable safe area on iOS */
-    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-    min-height: 100vh;
-    min-height: 100dvh;
+    /* Safe areas are handled once, in the header (top) and the bottom nav
+       (bottom) - never on html/body, or they get counted twice. */
     height: 100%;
   }
 
@@ -165,12 +167,8 @@
     user-select: none;
     /* Prevent tap highlight */
     -webkit-tap-highlight-color: transparent;
-    /* Lock body to prevent any scroll */
+    /* Lock body to prevent any scroll - the page scrolls in .app-scroll-container */
     overflow: hidden;
-    position: fixed;
-    inset: 0;
-    width: 100%;
-    height: 100%;
   }
 
   /* Allow text selection in input fields */
@@ -204,8 +202,6 @@
     font-feature-settings: "ss01", "ss02", "cv01";
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    min-height: 100vh;
-    min-height: 100dvh;
     height: 100%;
   }
 
@@ -220,17 +216,15 @@
 
   /* Ensure #root fills entire viewport */
   #root {
-    min-height: 100vh;
-    min-height: 100dvh;
     height: 100%;
     display: flex;
     flex-direction: column;
-    overflow: hidden;
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: 'DM Sans', 'Inter', system-ui, sans-serif;
-    @apply font-semibold tracking-tight;
+    @apply font-semibold;
+    letter-spacing: -0.02em;
   }
 }
 

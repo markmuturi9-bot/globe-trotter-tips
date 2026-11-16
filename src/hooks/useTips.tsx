@@ -1,10 +1,15 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 import type { Tip, TipCategory, Country } from '@/types';
 
+// Tips are only readable when signed in (the database enforces it too), and
+// only from users who are public or friends - so the cache is per user.
 export function useTips() {
+  const { user } = useAuth();
   return useQuery({
-    queryKey: ['tips'],
+    queryKey: ['tips', user?.id ?? null],
+    enabled: !!user,
     queryFn: async () => {
       // Fetch tips
       const { data, error } = await supabase
@@ -63,8 +68,9 @@ export function useTips() {
 }
 
 export function useTipsByCountry(countryId: string | null) {
+  const { user } = useAuth();
   return useQuery({
-    queryKey: ['tips', 'country', countryId],
+    queryKey: ['tips', 'country', countryId, user?.id ?? null],
     queryFn: async () => {
       if (!countryId) return [];
       
@@ -111,7 +117,7 @@ export function useTipsByCountry(countryId: string | null) {
       
       return tipsWithData as Tip[];
     },
-    enabled: !!countryId,
+    enabled: !!countryId && !!user,
   });
 }
 

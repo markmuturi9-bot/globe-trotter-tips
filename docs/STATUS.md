@@ -1,11 +1,67 @@
 # TIPIT — nuläge
+Senast uppdaterad: 2026-11-12. Backend-bytet (Supabase), iOS/TestFlight-
+kedjan och designuppdateringen är mergade. Pågående arbete (en PR): ta bort
+notisklockan, fylla hela skärmen på iPhone, kontoskapande med e-postkod,
+adminskydd och riktig kontoradering. Se "Pågående PR" nedan.
 
-Senast uppdaterad: 2026-11-01. Backend-bytet (Supabase) och
-iOS/TestFlight-byggkedjan är **klara, mergade till `main` och
-verifierade** — både av automatiska körningar och av Mark som testat
-appen live via TestFlight (skapat profil, lagt till tips, kartan
-fungerar). Inget öppet att granska eller mergea just nu. Nästa fas är
-vanligt funktions-/designarbete på appen.
+## Pågående PR (nov 2026) — väntar på granskning och test
+
+- **Notisklockan borttagen** från headern (hade ingen funktion). Tabellen
+  `notifications` är orörd.
+- **Skärmen fylls ut på iPhone**: `ios.contentInset` ändrat från
+  `'automatic'` till `'never'` i `capacitor.config.ts` (iOS la på
+  säkerhetsområdena själv, och appens CSS gjorde det också → svarta kanter).
+  **Ej testat** (kan inte köras här). Skicka skärmdump efter nästa
+  TestFlight-bygge; ligger kanterna kvar ska orsaken utredas, inte gissas.
+- **Konto och lösenord**: registrering bekräftas med en kod på 6 siffror
+  (mejlet skickas av Supabase Auth), kod kan skickas igen (60 s mellan),
+  glömt lösenord med kod, byta lösenord i Inställningar. Lösenord minst 8
+  tecken. Användarnamn 3–30 tecken (`a-z A-Z 0-9 _ -`), unikt oavsett
+  versaler (databasen vaktar via migreringen
+  `20261113000000_username_rules.sql`, appen frågar via
+  `is_username_available`). Sidan `/auth` skickar nu vidare till Profil —
+  all inloggning ligger i `src/components/auth/AuthScreen.tsx`.
+  **Fungerar inte fullt ut förrän Mark gjort stegen i
+  `docs/SUPABASE-INSTALLNING.md`** (Confirm email på, lösenordslängd 8,
+  mejlmallar med `{{ .Token }}`).
+- **Admin**: den sista admin kan inte tas bort eller nedgraderas
+  (databastrigger i `20261113000100_last_admin_guard.sql` + avstängd knapp i
+  `Admin.tsx`). Första admin skapas manuellt i SQL Editor
+  (`docs/SUPABASE-INSTALLNING.md`, steg 4).
+- **Kontoradering på riktigt**: ny edge function `delete-account` (kräver
+  lösenord, vägrar sista admin, tar bort filer i `tip-images/<user-id>/`,
+  raderar sedan inloggningen; resten följer med via cascade — även
+  chattar för den andra parten). Klienten visar "raderat" först när
+  servern bekräftat. **Ej testad mot riktiga Supabase** — funktionen
+  driftsätts vid merge till main.
+- **Kvar efter radering (medvetet orört, ska beslutas av Mark)**:
+  `reports` och `blocked_users` har inga främmande nycklar, så rader som
+  nämner det raderade id:t ligger kvar. `support_requests.user_id` sätts
+  till null, men raden behåller `name`, `email`, `subject` och
+  `message`.
+
+## Designuppdatering (november 2026) — mergad
+
+Gjort enligt designspecen (layout/scroll, tokens, header + bottenmeny med "+",
+ny Profil, ny Settings-sida).
+
+- **Layout/scroll**: rotorsaken var att `html` hade säkerhetsmarginal (padding)
+  samtidigt som skalet var 100dvh högt, och att `body` var `position: fixed` med
+  `overflow: hidden` → sidan blev högre än skärmen och botten klipptes. Nu finns
+  en enda scrollyta (`AppShell`), säkerhetsområden räknas bara i header (topp) och
+  bottenmeny (botten), och innehållet har utrymme under menyn.
+- **Header** 56 px, döljs vid scroll nedåt på List/Friends/Profile.
+- **Bottenmeny** genomskinlig med oskärpa, "+" i mitten.
+- **Nytt**: `/settings`, minimal språkhantering (`src/lib/i18n.tsx`, svenska +
+  engelska, sparas på enheten).
+- **Känt/kvar**: inloggning, registrering, lösenord och radering är nu
+  översatta; resten av appen (t.ex. adminsidan, tips, vänner) är
+  fortfarande på engelska. Push-notiser finns inte i appen: kontrollen sparar
+  bara valet på enheten. Synligheten är nu på riktigt: migreringen
+  `20261112000000_tips_visibility.sql` (se `docs/FORSLAG-profilsynlighet.md`)
+  körs vid merge till `main`. Utloggade ser inga tips.
+- **Ej testat på riktig iPhone** (ingen Mac här).
+
 
 ## Arbetsprocess (nytt sedan 2026-11-01)
 
@@ -94,11 +150,11 @@ vanligt funktions-/designarbete på appen.
 
 ## Kända problem / begränsningar
 
-- **Kontoradering är inte komplett**: den tar bort tips, vänskapsrelationer,
-  meddelanden och notiser, men själva inloggningskontot (`auth.users`) och
-  profilraden lever kvar, eftersom en riktig radering kräver
-  service-role-behörighet (en edge function). Bör byggas som en egen
-  uppgift om det är viktigt.
+- **Obekräftade konton håller kvar sitt användarnamn** tills de rensas
+  manuellt (Authentication → Users).
+- **`npm run lint` har ~30 äldre fel** (mest `any`-typer och en `require`
+  i `tailwind.config.ts`) som inte rörts i den här PR:en. Inga nya fel
+  tillkom.
 - **Notiser skapas aldrig**: `notifications`-tabellen och dess policyer
   finns, men inget i appen skriver dit några rader idag. Funktionen är
   förberedd men inte kopplad.
@@ -122,10 +178,13 @@ vanligt funktions-/designarbete på appen.
 
 Ingen akut infrastruktur kvar. Redo för vanligt funktions-/designarbete:
 
-1. Mark beskriver vad som ska ändras (gärna med skärmdumpar för
-   visuella önskemål) — en sak/gren/PR i taget.
-2. När ett läge uppstår: bestäm om kontoradering ska göras komplett
-   (kräver en ny edge function med service-role).
-3. När ett läge uppstår: bestäm om notiser ska kopplas ihop (skrivs
-   t.ex. vid ny vänförfrågan, nytt meddelande) eller om tabellen ska tas
-   bort om den inte behövs.
+1. Mark: gör stegen i `docs/SUPABASE-INSTALLNING.md` (kolla användarnamn
+   före merge, sedan Confirm email, lösenordslängd, mejlmallar, första
+   admin).
+2. Granska och mergea PR:en; kör "Deploy to TestFlight" och skicka
+   skärmdump av skärmen (svarta kanter borta?).
+3. Testa hela flödet: registrera med kod, glömt lösenord, byt lösenord,
+   radera konto, adminpanelen.
+4. Besluta vad som ska hända med `reports`, `blocked_users` och
+   `support_requests` vid kontoradering (se ovan).
+5. Besluta om notiser ska kopplas ihop eller om tabellen ska tas bort.

@@ -7,6 +7,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { SystemChromeSync } from "@/components/theme/SystemChromeSync";
 import { CookieConsent } from "@/components/gdpr/CookieConsent";
+import { LanguageProvider } from "@/lib/i18n";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { isNativeApp } from "@/lib/platform";
@@ -16,8 +17,8 @@ import Landing from "./pages/Landing";
 import Map from "./pages/Map";
 import List from "./pages/List";
 import Profile from "./pages/Profile";
+import Settings from "./pages/Settings";
 import Friends from "./pages/Friends";
-import Auth from "./pages/Auth";
 import Admin from "./pages/Admin";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
@@ -67,7 +68,8 @@ function AppRoutes() {
           <Route path="/list" element={<List />} />
           <Route path="/friends" element={<Friends />} />
           <Route path="/profile" element={<Profile />} />
-          <Route path="/auth" element={<Auth />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/auth" element={<Navigate to="/profile" replace />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="*" element={<NotFound />} />
         </>
@@ -85,6 +87,7 @@ function AppRoutes() {
 const App = () => (
   <ErrorBoundary>
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+      <LanguageProvider>
       <SystemChromeSync />
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
@@ -99,6 +102,7 @@ const App = () => (
           </TooltipProvider>
         </AuthProvider>
       </QueryClientProvider>
+      </LanguageProvider>
     </ThemeProvider>
   </ErrorBoundary>
 );

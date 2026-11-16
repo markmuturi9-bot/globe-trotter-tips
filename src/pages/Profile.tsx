@@ -7,7 +7,7 @@ export default function Profile() {
   const [showCreateTip, setShowCreateTip] = useState(false);
 
   return (
-    <AppShell activeView="profile" onCreateTip={() => setShowCreateTip(true)}>
+    <AppShell activeView="profile" onCreateTip={() => setShowCreateTip(true)} hideHeaderOnScroll>
       <ProfileView />
 
       {showCreateTip && <CreateTipDialog onClose={() => setShowCreateTip(false)} />}

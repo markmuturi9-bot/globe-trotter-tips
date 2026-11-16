@@ -266,7 +266,7 @@ export function BulkTipImport({ onClose }: BulkTipImportProps) {
         <div className="flex items-center justify-between p-4 border-b border-border">
           <div className="flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-primary" />
-            <h2 className="font-serif text-xl font-semibold">AI Tip Import</h2>
+            <h2 className="font-display text-xl font-semibold">AI Tip Import</h2>
           </div>
           <Button variant="ghost" size="icon" onClick={onClose}>
             <X className="w-5 h-5" />

@@ -51,7 +51,7 @@ export function AddFriendDialog({ onClose }: AddFriendDialogProps) {
     <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm animate-fade-in">
       <div className="fixed inset-x-4 top-[10%] md:inset-x-auto md:left-1/2 md:-translate-x-1/2 md:w-full md:max-w-md bg-card rounded-xl shadow-strong overflow-hidden animate-scale-in">
         <div className="flex items-center justify-between p-4 border-b border-border">
-          <h2 className="font-serif text-xl font-semibold">Add Friend</h2>
+          <h2 className="font-display text-xl font-semibold">Add Friend</h2>
           <Button variant="ghost" size="icon" onClick={onClose}>
             <X className="w-5 h-5" />
           </Button>

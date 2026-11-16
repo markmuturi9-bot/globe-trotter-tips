@@ -7,7 +7,7 @@ export default function Friends() {
   const [showCreateTip, setShowCreateTip] = useState(false);
 
   return (
-    <AppShell activeView="friends" onCreateTip={() => setShowCreateTip(true)}>
+    <AppShell activeView="friends" onCreateTip={() => setShowCreateTip(true)} hideHeaderOnScroll>
       <FriendsView />
 
       {showCreateTip && <CreateTipDialog onClose={() => setShowCreateTip(false)} />}
